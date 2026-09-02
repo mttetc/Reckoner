@@ -1,0 +1,18 @@
+# python
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+*.egg-info/
+# node
+node_modules/
+.next/
+out/
+# env
+.env
+.env.*
+!.env.example
+# os / editors
+.DS_Store
+.idea/
+.vscode/
