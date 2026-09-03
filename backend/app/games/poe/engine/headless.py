@@ -7,6 +7,7 @@ surfaces as ``EngineUnavailable``; anything PoB refuses surfaces as ``InvalidMod
 
 from __future__ import annotations
 
+import collections
 import json
 import os
 import shutil
@@ -87,6 +88,7 @@ class PobHeadless:
         self.source_commit = source_commit or settings.pob_source_commit
         self._proc: subprocess.Popen[str] | None = None
         self._info: EngineInfo | None = None
+        self._stderr: collections.deque[str] = collections.deque(maxlen=40)
         self._lock = threading.Lock()
         self._next_id = 0
 
@@ -138,16 +140,20 @@ class PobHeadless:
                 env=env,
                 stdin=subprocess.PIPE,
                 stdout=subprocess.PIPE,
-                stderr=subprocess.DEVNULL,
+                stderr=subprocess.PIPE,
                 text=True,
                 bufsize=1,
             )
         except OSError as exc:
             raise EngineUnavailable(f"cannot start {self.luajit_bin}: {exc}") from exc
+        self._stderr.clear()
+        threading.Thread(target=self._drain_stderr, args=(self._proc,), daemon=True).start()
         ready = self._readline()
         if not ready or ready.get("event") != "ready":
             self._kill()
-            raise EngineUnavailable("engine did not become ready (see PoB stderr)")
+            raise EngineUnavailable(
+                "engine did not become ready. PoB stderr tail:\n" + self.stderr_tail()
+            )
         info = ready.get("info") or {}
         self._info = EngineInfo(
             engine=info.get("engine") or "Path of Building",
@@ -156,6 +162,15 @@ class PobHeadless:
             source_commit=info.get("source_commit") or self.source_commit,
             modification_kinds=tuple(info.get("modification_kinds") or ()),
         )
+
+    def _drain_stderr(self, proc: subprocess.Popen[str]) -> None:
+        # PoB logs progress (and startup errors) on stderr; keep the tail for diagnostics.
+        assert proc.stderr is not None
+        for line in proc.stderr:
+            self._stderr.append(line.rstrip("\n"))
+
+    def stderr_tail(self) -> str:
+        return "\n".join(self._stderr)
 
     def _kill(self) -> None:
         if self._proc is not None:
