@@ -15,7 +15,9 @@ def test_games_lists_capabilities_honestly():
     [poe] = r.json()
     assert poe["id"] == "poe"
     assert poe["capabilities"]["analyze_existing"] is True
-    assert poe["capabilities"]["recalculate_modified"] is False
+    from app.games.poe.engine import get_engine
+
+    assert poe["capabilities"]["recalculate_modified"] is get_engine().available()
 
 
 def test_analyze_modern(code_modern):

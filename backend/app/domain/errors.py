@@ -20,6 +20,12 @@ class EngineUnavailable(DomainError):
     code = "engine_unavailable"
 
 
+class InvalidModification(DomainError):
+    """A requested change cannot be applied as stated (unknown target, unreachable, bad value)."""
+
+    code = "invalid_modification"
+
+
 class ProvenanceViolation(DomainError):
     """A numeric value was produced without provenance (SPEC § 13.1: a bare float is a failure)."""
 

@@ -74,6 +74,20 @@ export interface BuildSnapshot {
   extra: Record<string, unknown>;
 }
 
+export interface Modification {
+  kind: string;
+  payload: Record<string, unknown>;
+}
+
+export interface BuildVariant {
+  id: string;
+  parent_snapshot_id: string;
+  modifications: Modification[];
+  snapshot: BuildSnapshot;
+  /** The parent re-evaluated by the same engine with no modification — like-for-like deltas. */
+  baseline: BuildSnapshot | null;
+}
+
 export interface ApiError {
   code: string;
   message: string;
@@ -90,28 +104,42 @@ export class ApiRequestError extends Error {
 
 export const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
 
-export async function analyzeBuild(code: string, game?: string): Promise<BuildSnapshot> {
+async function post(path: string, body: unknown): Promise<Response> {
   let res: Response;
   try {
-    res = await fetch(`${API_URL}/api/v1/builds/analyze`, {
+    res = await fetch(`${API_URL}${path}`, {
       method: "POST",
       headers: { "content-type": "application/json" },
-      body: JSON.stringify({ code, game: game ?? null }),
+      body: JSON.stringify(body),
     });
   } catch {
     throw new ApiRequestError(0, { code: "backend_unreachable", message: "The analysis service is unreachable." });
   }
-  if (!res.ok) {
-    let body: ApiError = { code: "http_error", message: `HTTP ${res.status}` };
-    try {
-      const json = await res.json();
-      if (json && typeof json.code === "string") body = json;
-      else if (json && json.detail) body = { code: "validation_error", message: JSON.stringify(json.detail) };
-    } catch {
-      /* keep default */
-    }
-    throw new ApiRequestError(res.status, body);
+  return res;
+}
+
+export async function recalculateBuild(code: string, modifications: Modification[], game?: string): Promise<BuildVariant> {
+  const res = await post("/api/v1/builds/recalculate", { code, game: game ?? null, modifications });
+  if (!res.ok) throw await toError(res);
+  const json = (await res.json()) as { variant: BuildVariant };
+  return json.variant;
+}
+
+async function toError(res: Response): Promise<ApiRequestError> {
+  let body: ApiError = { code: "http_error", message: `HTTP ${res.status}` };
+  try {
+    const json = await res.json();
+    if (json && typeof json.code === "string") body = json;
+    else if (json && json.detail) body = { code: "validation_error", message: JSON.stringify(json.detail) };
+  } catch {
+    /* keep default */
   }
+  return new ApiRequestError(res.status, body);
+}
+
+export async function analyzeBuild(code: string, game?: string): Promise<BuildSnapshot> {
+  const res = await post("/api/v1/builds/analyze", { code, game: game ?? null });
+  if (!res.ok) throw await toError(res);
   const json = (await res.json()) as { snapshot: BuildSnapshot };
   return json.snapshot;
 }

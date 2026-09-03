@@ -4,7 +4,13 @@ from fastapi.responses import JSONResponse
 
 from app.api.routes import builds, games
 from app.config import settings
-from app.domain.errors import DomainError, EngineUnavailable, InvalidBuildCode, UnsupportedGame
+from app.domain.errors import (
+    DomainError,
+    EngineUnavailable,
+    InvalidBuildCode,
+    InvalidModification,
+    UnsupportedGame,
+)
 
 app = FastAPI(title="Reckoner", version="0.1.0")
 app.add_middleware(
@@ -14,7 +20,12 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-_STATUS = {InvalidBuildCode: 422, UnsupportedGame: 404, EngineUnavailable: 503}
+_STATUS = {
+    InvalidBuildCode: 422,
+    InvalidModification: 422,
+    UnsupportedGame: 404,
+    EngineUnavailable: 503,
+}
 
 
 @app.exception_handler(DomainError)

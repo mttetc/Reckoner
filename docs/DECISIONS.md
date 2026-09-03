@@ -76,3 +76,35 @@ so `TotalDPS` is 0 while `FullDPS` is in the millions; (b) minion builds report 
 main skill and absent DPS. `scripts/harvest_forum_codes.py` reproduces the pass; it is also the
 seed of the § 7 corpus ingestion (official forum → build codes), rate-limited and identified.
 
+## ADR-008 — Headless Path of Building through our own stdio bridge, pinned by commit (2026-09-03)
+
+**Context.** SPEC § 5 B forbids approximating a modified build: only a real engine may produce
+the numbers. Upstream PoB ships `HeadlessWrapper.lua` (used by its own test-suite) which exposes
+`loadBuildFromXML` and the full `build` object, but no API. A JSON-RPC layer exists only as an
+open upstream PR (#9505, used by the various `pob-mcp` servers).
+
+**Decision.**
+- Run upstream PoB unmodified under LuaJIT, at a **pinned commit** installed by
+  `backend/scripts/install_pob.sh` into `.engines/pob` (sparse checkout, no tree sprites: 646 MB).
+- Talk to it through **our own** 240-line `bridge.lua` (newline-delimited JSON on stdio), not the
+  unmerged PR: fewer moving parts, no dependency on a fork, and every refusal rule is ours to test.
+- The only PoB dependency we shim is `lua-utf8`, which PoB uses solely to format thousands
+  separators for display. The shim is byte-wise `string.*`; we never read formatted strings.
+- Supported modifications: `tree.allocate`, `tree.deallocate`, `config.set`, `gem.set_level`,
+  `gem.set_quality`. Each is validated against PoB's own data (node exists, node reachable,
+  config value in PoB's list — case-insensitive, canonicalised) and refused with a precise message
+  (`InvalidModification`, HTTP 422). Unknown kinds are refused, never ignored.
+- `recalculate()` returns the variant **and a baseline recomputed by the same engine**. The export's
+  own numbers may come from a different PoB version and game-data patch (the 3.27 fixture drifts
+  by ~0.4 % DPS and −19 life on current data), so like-for-like deltas need a same-engine baseline.
+- Engine metrics carry `source=pob:headless`, the real `engine_version` (e.g. 2.67.2), the pinned
+  commit and the engine's data version in `context`, plus the list of modifications PoB applied.
+- No engine configured → capability `recalculate_modified=false` and HTTP 503 with the install hint.
+  The default `backend` CI job runs in that mode on purpose; the `engine` job runs with PoB and
+  fails if the engine tests skip.
+
+**Consequences.** One persistent LuaJIT process per API worker, requests serialised, a fresh
+`load` before every modification set (no state leaks). ~2 s cold start, ~0.3–0.8 s per request.
+`RawSource` still keeps only a hash: the recalculation endpoint takes the code again (stateless
+until ADR-004 is revisited). Item edits and mastery selection are not yet exposed.
+

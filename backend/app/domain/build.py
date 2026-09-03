@@ -158,6 +158,14 @@ class BuildVariant(BaseModel):
     parent_snapshot_id: UUID
     modifications: tuple[Modification, ...]
     snapshot: BuildSnapshot
+    baseline: BuildSnapshot | None = Field(
+        default=None,
+        description=(
+            "The parent re-evaluated by the same engine version with no modification. Deltas "
+            "between `baseline` and `snapshot` are like-for-like; deltas against the parent's own "
+            "metrics may include engine/data drift."
+        ),
+    )
 
 
 class Build(BaseModel):

@@ -95,3 +95,44 @@ test("minion build: minion DPS is its own metric, player DPS stays 0", async ({ 
   await expect(minion.locator(".value")).toHaveText("136.6K");
   await expect(page.getByTestId("row-minion.life.max").locator(".num")).toHaveText("4,285");
 });
+
+test.describe("what-if recalculation (real headless engine)", () => {
+  test("deallocating a notable lowers DPS; both columns carry engine provenance", async ({ page }) => {
+    await page.goto("/");
+    await page.getByTestId("code-input").fill(modern);
+    await page.getByTestId("analyze").click();
+    await expect(page.getByTestId("result")).toBeVisible();
+
+    await page.getByTestId("mod-kind").selectOption("tree.deallocate");
+    await page.getByTestId("mod-node").fill("41119");
+    await page.getByTestId("recalc").click();
+
+    const table = page.getByTestId("whatif-result");
+    await expect(table).toBeVisible({ timeout: 30_000 });
+    // Baseline and variant come from the same pinned engine; the export column is what PoB wrote.
+    await expect(page.getByTestId("engine-prov")).toContainText("calculated · Path of Building 2.");
+    await expect(page.getByTestId("engine-prov")).toContainText("pob:headless");
+    await expect(page.getByTestId("applied")).toContainText("Lethality");
+    await expect(page.getByTestId("delta-dps.total")).toHaveClass(/down/);
+    await expect(page.getByTestId("delta-dps.total")).toContainText("−");
+    await expect(page.getByTestId("delta-life.max")).toHaveClass(/flat/);
+    await expect(page.getByTestId("variant-nodes")).toHaveText("128 nodes");
+  });
+
+  test("a modification PoB cannot honour is refused with its reason", async ({ page }) => {
+    await page.goto("/");
+    await page.getByTestId("code-input").fill(modern);
+    await page.getByTestId("analyze").click();
+    await expect(page.getByTestId("result")).toBeVisible();
+
+    await page.getByTestId("mod-kind").selectOption("tree.allocate");
+    await page.getByTestId("mod-node").fill("1");
+    await page.getByTestId("recalc").click();
+
+    const err = page.getByTestId("recalc-error");
+    await expect(err).toBeVisible({ timeout: 30_000 });
+    await expect(err).toContainText("unknown passive node id 1");
+    await expect(err).toContainText("[invalid_modification]");
+    await expect(page.getByTestId("whatif-result")).toHaveCount(0);
+  });
+});

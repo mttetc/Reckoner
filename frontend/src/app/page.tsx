@@ -1,7 +1,15 @@
 "use client";
 
 import { useState } from "react";
-import { analyzeBuild, ApiRequestError, type BuildSnapshot, type Metric } from "@/lib/api";
+import {
+  analyzeBuild,
+  ApiRequestError,
+  recalculateBuild,
+  type BuildSnapshot,
+  type BuildVariant,
+  type Metric,
+  type Modification,
+} from "@/lib/api";
 import { formatMetric, METRIC_LABELS, PRIMARY_METRICS } from "@/lib/format";
 
 type State =
@@ -14,6 +22,7 @@ const ERROR_COPY: Record<string, string> = {
   invalid_build_code: "This does not look like a build code we can read.",
   unsupported_game: "This game is not supported yet.",
   engine_unavailable: "The calculation engine is unavailable; no approximation is shown.",
+  invalid_modification: "The engine refused this modification.",
   backend_unreachable: "The analysis service is unreachable.",
 };
 
@@ -55,7 +64,164 @@ function StatCard({ m }: { m: Metric }) {
   );
 }
 
-function Result({ snapshot: s }: { snapshot: BuildSnapshot }) {
+type WhatIfState =
+  | { kind: "idle" }
+  | { kind: "loading" }
+  | { kind: "error"; code: string; message: string }
+  | { kind: "result"; variant: BuildVariant };
+
+const BOSS_OPTIONS = ["None", "Boss", "Pinnacle", "Uber"];
+
+function Delta({ before, after, unit, testId }: { before: number | null; after: number | null; unit: string | null; testId: string }) {
+  if (before === null || after === null) return <span className="delta flat" data-testid={testId}>—</span>;
+  const diff = after - before;
+  const dir = Math.abs(diff) < 1e-9 ? "flat" : diff > 0 ? "up" : "down";
+  const pct = before !== 0 ? ` (${diff > 0 ? "+" : "−"}${Math.abs((diff / before) * 100).toFixed(1)}%)` : "";
+  const f = formatMetric(Math.abs(diff), unit).short;
+  return (
+    <span className={`delta ${dir}`} data-testid={testId}>
+      {dir === "flat" ? "±0" : `${diff > 0 ? "+" : "−"}${f}${pct}`}
+    </span>
+  );
+}
+
+/** SPEC § 5 B — a modification is only ever evaluated by the real engine; the UI shows what it said. */
+function WhatIf({ code, parent }: { code: string; parent: BuildSnapshot }) {
+  const [kind, setKind] = useState("tree.deallocate");
+  const [node, setNode] = useState("");
+  const [boss, setBoss] = useState("Uber");
+  const [gem, setGem] = useState(parent.main_skill ?? "");
+  const [level, setLevel] = useState("21");
+  const [state, setState] = useState<WhatIfState>({ kind: "idle" });
+
+  function modification(): Modification | null {
+    if (kind === "tree.deallocate" || kind === "tree.allocate") {
+      const id = Number(node);
+      return Number.isInteger(id) ? { kind, payload: { node_id: id } } : null;
+    }
+    if (kind === "config.set") return { kind, payload: { name: "enemyIsBoss", value: boss } };
+    if (kind === "gem.set_level") return gem ? { kind, payload: { gem, level: Number(level) } } : null;
+    return null;
+  }
+
+  async function onSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    const mod = modification();
+    if (!mod) return;
+    setState({ kind: "loading" });
+    try {
+      setState({ kind: "result", variant: await recalculateBuild(code, [mod]) });
+    } catch (err) {
+      if (err instanceof ApiRequestError) setState({ kind: "error", code: err.body.code, message: err.body.message });
+      else setState({ kind: "error", code: "unexpected", message: String(err) });
+    }
+  }
+
+  const v = state.kind === "result" ? state.variant : null;
+  const engineProv = v?.snapshot.metrics.find((m) => m.provenance)?.provenance ?? null;
+  const applied = (engineProv?.context.modifications_applied as Array<Record<string, unknown>> | undefined) ?? [];
+
+  return (
+    <section className="whatif" aria-label="What if">
+      <h2>What if</h2>
+      <p className="hint">
+        Changes are applied inside headless Path of Building and recalculated there. Baseline = this export re-evaluated by the same
+        engine; the export column is what the author&apos;s PoB wrote.
+      </p>
+      <form onSubmit={onSubmit}>
+        <select value={kind} onChange={(e) => setKind(e.target.value)} data-testid="mod-kind" aria-label="Modification">
+          <option value="tree.deallocate">Deallocate passive node</option>
+          <option value="tree.allocate">Allocate passive node</option>
+          <option value="config.set">Enemy is boss</option>
+          <option value="gem.set_level">Main gem level</option>
+        </select>
+        {kind === "tree.deallocate" || kind === "tree.allocate" ? (
+          <input value={node} onChange={(e) => setNode(e.target.value)} placeholder="node id, e.g. 41119" inputMode="numeric" data-testid="mod-node" aria-label="Node id" />
+        ) : null}
+        {kind === "config.set" ? (
+          <select value={boss} onChange={(e) => setBoss(e.target.value)} data-testid="mod-boss" aria-label="Enemy is boss">
+            {BOSS_OPTIONS.map((o) => (
+              <option key={o} value={o}>
+                {o}
+              </option>
+            ))}
+          </select>
+        ) : null}
+        {kind === "gem.set_level" ? (
+          <>
+            <input value={gem} onChange={(e) => setGem(e.target.value)} placeholder="gem name" data-testid="mod-gem" aria-label="Gem" />
+            <input value={level} onChange={(e) => setLevel(e.target.value)} inputMode="numeric" style={{ width: 64 }} data-testid="mod-level" aria-label="Level" />
+          </>
+        ) : null}
+        <button type="submit" disabled={state.kind === "loading" || !modification()} data-testid="recalc">
+          {state.kind === "loading" ? "Recalculating…" : "Recalculate"}
+        </button>
+        {state.kind === "error" ? (
+          <span className="status error" data-testid="recalc-error" role="alert">
+            {ERROR_COPY[state.code] ?? state.message}
+            {ERROR_COPY[state.code] ? ` ${state.message}` : ""} <span className="muted">[{state.code}]</span>
+          </span>
+        ) : null}
+      </form>
+
+      {v && v.baseline ? (
+        <div data-testid="whatif-result">
+          <p className="prov" data-testid="engine-prov">
+            <b className="calculated">calculated</b> · {engineProv?.engine} {engineProv?.engine_version} · source {engineProv?.source} · data{" "}
+            {String(engineProv?.context.engine_data_version ?? "?")}
+            {engineProv?.context.engine_source_commit ? ` · commit ${String(engineProv.context.engine_source_commit).slice(0, 8)}` : ""}
+          </p>
+          <p className="mono" data-testid="applied">
+            applied:{" "}
+            {applied.map((a, i) => (
+              <span key={i}>
+                {i > 0 ? "; " : ""}
+                {String(a.kind)} {String(a.name ?? a.gem ?? "")}
+                {a.value !== undefined ? ` → ${String(a.value)}` : a.level !== undefined ? ` → ${String(a.level)}` : ""}
+              </span>
+            ))}
+            {" · "}
+            <span data-testid="variant-nodes">{v.snapshot.tree.node_ids.length} nodes</span>
+          </p>
+          <table>
+            <thead>
+              <tr>
+                <th>Metric</th>
+                <th style={{ textAlign: "right" }}>Export</th>
+                <th style={{ textAlign: "right" }}>Baseline (engine)</th>
+                <th style={{ textAlign: "right" }}>Variant</th>
+                <th style={{ textAlign: "right" }}>Δ vs baseline</th>
+              </tr>
+            </thead>
+            <tbody>
+              {PRIMARY_METRICS.map((k) => {
+                const exp = parent.metrics.find((m) => m.key === k);
+                const base = v.baseline!.metrics.find((m) => m.key === k);
+                const after = v.snapshot.metrics.find((m) => m.key === k);
+                if (!base && !after) return null;
+                const cell = (m: Metric | undefined) =>
+                  m && m.value !== null ? formatMetric(m.value, m.unit).short : <span className="muted">unknown</span>;
+                return (
+                  <tr key={k} data-testid={`whatif-${k}`}>
+                    <td>{METRIC_LABELS[k] ?? k}</td>
+                    <td className="num">{cell(exp)}</td>
+                    <td className="num">{cell(base)}</td>
+                    <td className="num">{cell(after)}</td>
+                    <td className="num">
+                      <Delta before={base?.value ?? null} after={after?.value ?? null} unit={after?.unit ?? null} testId={`delta-${k}`} />
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      ) : null}
+    </section>
+  );
+}
+
+function Result({ snapshot: s, code }: { snapshot: BuildSnapshot; code: string }) {
   const primary = PRIMARY_METRICS.map((k) => s.metrics.find((m) => m.key === k)).filter(Boolean) as Metric[];
   const rest = s.metrics.filter((m) => !PRIMARY_METRICS.includes(m.key));
   return (
@@ -152,6 +318,8 @@ function Result({ snapshot: s }: { snapshot: BuildSnapshot }) {
           ))}
         </tbody>
       </table>
+
+      <WhatIf code={code} parent={s} />
     </section>
   );
 }
@@ -212,7 +380,7 @@ export default function Home() {
 
       {state.kind === "result" ? (
         <div style={{ marginTop: 16 }}>
-          <Result snapshot={state.snapshot} />
+          <Result snapshot={state.snapshot} code={code} />
         </div>
       ) : null}
     </main>

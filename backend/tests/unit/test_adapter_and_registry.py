@@ -62,9 +62,14 @@ def test_legacy_snapshot_unknowns_are_explicit(code_legacy):
     assert snap.tree.unknown_reason is None
 
 
-def test_recalculate_refuses_to_approximate(code_modern):
-    adapter = get_adapter("poe")
-    snap = adapter.parse_build(code_modern)
-    with pytest.raises(EngineUnavailable):
-        adapter.recalculate(snap, [])
+def test_recalculate_refuses_to_approximate_without_engine(code_modern):
+    from app.domain.build import Modification
+    from app.games.poe.adapter import PoEAdapter
+    from app.games.poe.engine import PobHeadless
+
+    adapter = PoEAdapter(engine=PobHeadless(pob_src=None))
     assert adapter.capabilities().recalculate_modified is False
+    with pytest.raises(EngineUnavailable):
+        adapter.recalculate(
+            code_modern, [Modification(kind="tree.deallocate", payload={"node_id": 41119})]
+        )

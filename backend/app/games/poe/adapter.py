@@ -16,9 +16,10 @@ from app.domain.build import (
     SkillGroup,
     Tree,
 )
-from app.domain.errors import EngineUnavailable
+from app.domain.errors import EngineUnavailable, InvalidModification
 from app.domain.provenance import Metric, MetricKey, Provenance, ProvenanceStatus
 from app.games.base import AdapterCapabilities
+from app.games.poe.engine import EngineInfo, EngineStats, PobHeadless, get_engine
 from app.games.poe.pob import codec
 from app.games.poe.pob.items import parse_item_text
 from app.games.poe.pob.stats import (
@@ -31,17 +32,27 @@ from app.games.poe.pob.tree_url import decode_tree_url
 from app.games.poe.pob.xml_parser import PobExport, parse_xml
 
 ENGINE_NAME = "Path of Building"
-SOURCE_ID = "pob:export"
+SOURCE_EXPORT = (
+    "pob:export"  # numbers PoB wrote into the export, by whatever version the author ran
+)
+SOURCE_HEADLESS = "pob:headless"  # numbers our pinned headless PoB computed just now
 
 
 class PoEAdapter:
     game = GameId.POE
     display_name = "Path of Exile"
 
+    def __init__(self, engine: PobHeadless | None = None) -> None:
+        self._engine = engine
+
+    @property
+    def engine(self) -> PobHeadless:
+        return self._engine if self._engine is not None else get_engine()
+
     def capabilities(self) -> AdapterCapabilities:
         return AdapterCapabilities(
             analyze_existing=True,
-            recalculate_modified=False,  # headless PoB not wired yet — see docs/DECISIONS.md
+            recalculate_modified=self.engine.available(),  # honest: depends on the installed engine
             corpus_search=False,
             performance_observed=False,
         )
@@ -61,19 +72,81 @@ class PoEAdapter:
         xml = codec.decode(payload)
         export = parse_xml(xml)
         raw = RawSource.from_text("pob_code", "".join(payload.split()))
-        return self._to_snapshot(export, raw)
+        return self._to_snapshot(
+            export,
+            raw,
+            stats=export.stats,
+            minion_stats=export.minion_stats,
+            source=SOURCE_EXPORT,
+            engine_version=None,  # PoB does not embed its own version in the export
+            context={},
+        )
 
-    def recalculate(
-        self, snapshot: BuildSnapshot, modifications: list[Modification]
-    ) -> BuildVariant:
-        raise EngineUnavailable(
-            "modified-build recalculation requires the headless Path of Building engine, "
-            "which is not integrated yet (SPEC § 5 B). No approximation is offered."
+    def recalculate(self, payload: str, modifications: list[Modification]) -> BuildVariant:
+        """SPEC § 5 B: apply modifications inside headless PoB; never approximate.
+
+        Returns the variant *and* a baseline computed by the same engine, because the export's
+        own numbers may come from another PoB version and game-data patch.
+        """
+        if not self.engine.available():
+            raise EngineUnavailable(
+                "modified-build recalculation needs the headless Path of Building engine: "
+                + self.engine.unavailable_reason()
+            )
+        if not modifications:
+            raise InvalidModification("no modifications given")
+        xml = codec.decode(payload)
+        parent = self.parse_build(payload)
+        mods = [{"kind": m.kind, "payload": m.payload} for m in modifications]
+        info, base_stats, result = self.engine.evaluate_modified(xml.decode(), mods)
+        raw = RawSource.from_text("pob_code", "".join(payload.split()))
+
+        baseline = self._engine_snapshot(parse_xml(xml), raw, info, base_stats, applied=())
+        variant = self._engine_snapshot(
+            parse_xml(result.xml.encode()), raw, info, result.stats, applied=result.applied
+        )
+        return BuildVariant(
+            parent_snapshot_id=parent.id,
+            modifications=tuple(modifications),
+            snapshot=variant,
+            baseline=baseline,
+        )
+
+    def _engine_snapshot(
+        self,
+        export: PobExport,
+        raw: RawSource,
+        info: EngineInfo,
+        stats: EngineStats,
+        applied: tuple[dict, ...],
+    ) -> BuildSnapshot:
+        return self._to_snapshot(
+            export,
+            raw,
+            stats=stats.player,
+            minion_stats=stats.minion,
+            source=SOURCE_HEADLESS,
+            engine_version=info.engine_version,
+            context={
+                "engine_source_commit": info.source_commit,
+                "engine_data_version": tree_version_to_patch(info.latest_tree_version),
+                "modifications_applied": list(applied),
+            },
         )
 
     # ------------------------------------------------------------------ mapping
 
-    def _to_snapshot(self, export: PobExport, raw: RawSource) -> BuildSnapshot:
+    def _to_snapshot(
+        self,
+        export: PobExport,
+        raw: RawSource,
+        *,
+        stats: dict[str, float],
+        minion_stats: dict[str, float],
+        source: str,
+        engine_version: str | None,
+        context: dict,
+    ) -> BuildSnapshot:
         patch = tree_version_to_patch(export.spec.tree_version if export.spec else None)
         skills = tuple(
             SkillGroup(
@@ -107,12 +180,13 @@ class PoEAdapter:
         config_ctx = {k: v for k, v in export.config.items() if k in PROVENANCE_CONFIG_KEYS}
         base_prov = dict(
             status=ProvenanceStatus.CALCULATED,
-            source=SOURCE_ID,
+            source=source,
             engine=ENGINE_NAME,
-            engine_version=None,  # PoB does not embed its own version in the export
+            engine_version=engine_version,
             game=self.game.value,
             game_version=patch,
             context={
+                **context,
                 "export_layout": export.layout,
                 # PoB computes TotalDPS for whichever socket group the author left selected when
                 # exporting. That selection may be a movement or utility skill; we report it as-is.
@@ -128,7 +202,7 @@ class PoEAdapter:
 
         metrics: list[Metric] = []
         for stat_name, key, unit in STAT_MAP:
-            if stat_name in export.stats:
+            if stat_name in stats:
                 prov = Provenance(snapshot_id=snapshot_id, **base_prov)
                 if key is MetricKey.DPS_FULL and full_dps_breakdown:
                     # Say what the aggregate is made of; the number alone hides that.
@@ -141,7 +215,7 @@ class PoEAdapter:
                         }
                     )
                 metrics.append(
-                    Metric(key=key.value, value=export.stats[stat_name], unit=unit, provenance=prov)
+                    Metric(key=key.value, value=stats[stat_name], unit=unit, provenance=prov)
                 )
             else:
                 metrics.append(
@@ -150,11 +224,11 @@ class PoEAdapter:
                     )
                 )
         for stat_name, key, unit in MINION_STAT_MAP:
-            if stat_name in export.minion_stats:
+            if stat_name in minion_stats:
                 metrics.append(
                     Metric(
                         key=key.value,
-                        value=export.minion_stats[stat_name],
+                        value=minion_stats[stat_name],
                         unit=unit,
                         provenance=Provenance(snapshot_id=snapshot_id, **base_prov),
                     )
@@ -180,8 +254,8 @@ class PoEAdapter:
                 "poe.bandit": export.header.bandit,
                 "poe.pantheon_major": export.header.pantheon_major,
                 "poe.pantheon_minor": export.header.pantheon_minor,
-                "poe.pob_stats": export.stats,
-                "poe.pob_minion_stats": export.minion_stats,
+                "poe.pob_stats": stats,
+                "poe.pob_minion_stats": minion_stats,
                 "poe.full_dps_breakdown": full_dps_breakdown,
                 "poe.pob_target_version": export.header.target_version,
             },

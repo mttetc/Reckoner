@@ -36,8 +36,9 @@ class GameAdapter(Protocol):
         """SPEC § 5 A. Raises ``InvalidBuildCode`` on undecodable input."""
         ...
 
-    def recalculate(
-        self, snapshot: BuildSnapshot, modifications: list[Modification]
-    ) -> BuildVariant:
-        """SPEC § 5 B. Must run a real engine or raise ``EngineUnavailable``. Never approximate."""
+    def recalculate(self, payload: str, modifications: list[Modification]) -> BuildVariant:
+        """SPEC § 5 B. Re-parses ``payload`` (snapshots keep a hash, not the paste), applies the
+        modifications inside a real engine and returns the variant plus a same-engine baseline.
+        Must raise ``EngineUnavailable`` when no engine is configured — never approximate.
+        """
         ...
