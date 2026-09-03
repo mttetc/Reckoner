@@ -297,7 +297,7 @@ class ScriptedLLM:
                     )
                     who = f"{ch.get('class_name')} {ch.get('subclass') or ''}"
                     lines.append(
-                        f"• {who} · {it['main_skill']} · {dps_s} · {life_s}"
+                        f"- {who} · {it['main_skill']} · {dps_s} · {life_s}"
                         f" · patch {it['game_version']}{src}"
                     )
             elif isinstance(res, dict) and "snapshots" in res:
@@ -314,7 +314,7 @@ class ScriptedLLM:
                 lines.append(f"From the official {pretty_game} patch notes:")
                 for h in res[:3]:
                     lines.append(
-                        f"• [{h['game']} {h['patch']} · {h['heading'] or h['title']}] "
+                        f"- [{h['game']} {h['patch']} · {h['heading'] or h['title']}] "
                         f"{h['excerpt'][:200]} (source: {h['source_url']})"
                     )
             elif isinstance(res, dict) and "main_skill" in res:
@@ -331,10 +331,13 @@ class ScriptedLLM:
                     f"Your build: {ch.get('class_name')} {ch.get('subclass') or ''}, "
                     f"{res['main_skill']}, patch {res['game_version']}. DPS {dps_s}."
                 )
-        return (
-            "\n".join(lines)
-            or "The tools returned nothing usable; I cannot answer without inventing."
-        )
+        # Markdown: paragraphs need a blank line between them, bullets are "- " items.
+        out: list[str] = []
+        for line in lines:
+            if out and not (line.startswith("- ") and out[-1].startswith("- ")):
+                out.append("")
+            out.append(line)
+        return "\n".join(out) or "Nothing usable came back; I will not invent an answer."
 
 
 def get_llm() -> LLMClient:
