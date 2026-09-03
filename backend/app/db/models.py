@@ -128,3 +128,16 @@ class KnowledgeChunkRow(Base):
     )
     embedder: Mapped[str] = mapped_column(String(64))
     embedding: Mapped[list[float]] = mapped_column(Vector(384))
+
+
+class FeedbackRow(Base):
+    """A thumbs up / down on one answer. Read by humans; never fed back to any model."""
+
+    __tablename__ = "answer_feedback"
+
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    message_id: Mapped[str] = mapped_column(String(128), index=True)
+    rating: Mapped[str] = mapped_column(String(16))
+    question: Mapped[str | None] = mapped_column(Text)
+    answer: Mapped[str | None] = mapped_column(Text)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())

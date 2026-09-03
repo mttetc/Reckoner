@@ -12,6 +12,13 @@ test.describe("conversation (assistant-ui thread; scripted policy — no model i
     await expect(result.getByTestId("ask-answer")).toContainText("18,619,973.8 DPS");
     await expect(result.getByTestId("ask-audit")).toHaveClass(/ok/);
     await expect(result.getByTestId("ask-audit")).toHaveText("✓ numbers verified");
+    // Live steps stay in the answer once done, in plain words.
+    await expect(result.getByTestId("step").first()).toContainText("Searched builds");
+    await expect(result.getByTestId("step").first()).toHaveAttribute("data-state", "ok");
+    // Follow-ups are offered, feedback and read-aloud are one click away.
+    await expect(page.getByTestId("suggestions").getByRole("button").first()).toBeVisible();
+    await result.hover();
+    await expect(result.getByTestId("feedback-positive")).toBeVisible();
     await result.getByTestId("sources").locator("summary").click();
     await expect(result.getByTestId("sources-list")).toContainText("calculated by Path of Building");
     await expect(result.getByTestId("sources-list")).toContainText("DPS 18,619,974");

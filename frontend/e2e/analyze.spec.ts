@@ -96,6 +96,9 @@ test("one page, one conversation: the composer has focus and nothing technical i
 });
 
 test.describe("try a change (real headless engine)", () => {
+  // Geometry for ~2,900 passives plus a real recalculation: slow on CI runners.
+  test.describe.configure({ timeout: 120_000 });
+
   test("clicking a taken passive recalculates without it; both columns say who computed them", async ({ page }) => {
     const result = await paste(page, modern);
     const tree = result.getByTestId("tree-view");

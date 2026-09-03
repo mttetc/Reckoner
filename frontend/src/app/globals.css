@@ -31,6 +31,14 @@
   --color-popover: var(--popover);
   --color-card-foreground: var(--card-foreground);
   --color-card: var(--card);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
@@ -85,6 +93,14 @@
   --border: var(--line);
   --input: var(--line-2);
   --ring: var(--accent);
+  --sidebar: var(--bg-2);
+  --sidebar-foreground: var(--fg);
+  --sidebar-primary: var(--accent);
+  --sidebar-primary-foreground: #14120c;
+  --sidebar-accent: var(--panel-2);
+  --sidebar-accent-foreground: var(--fg);
+  --sidebar-border: var(--line);
+  --sidebar-ring: var(--accent);
 }
 
 @layer base {
@@ -108,6 +124,13 @@
 .aui-assistant-message-root { border-left: 2px solid var(--accent); padding-left: 12px; }
 .aui-thread-welcome-suggestion { border-color: var(--line-2) !important; color: var(--fg-2) !important; font-family: var(--sans); }
 .reckoner-extras { margin-top: 10px; }
+/* live steps while answering */
+.step-line { display: flex; align-items: center; gap: 6px; font-family: var(--mono); font-size: 11.5px; color: var(--muted); margin: 2px 0; }
+.step-line[data-state="ok"] .step-icon { color: var(--ok); }
+.step-line[data-state="error"] { color: var(--bad); }
+.step-icon.spin { animation: spin 0.9s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
 /* our specific content inside an answer (tool UIs) */
 .in-chat-card { margin: 10px 0 4px; padding: 12px 14px; border: 1px solid var(--line); border-left: 2px solid var(--accent); border-radius: var(--r); background: var(--bg); }
 .in-chat-card .panel { border: 0; padding: 0; box-shadow: none; background: transparent; }

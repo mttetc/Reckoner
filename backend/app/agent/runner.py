@@ -2,9 +2,12 @@
 
 from __future__ import annotations
 
+import inspect
 import json
 import time
+from collections.abc import Awaitable, Callable
 from dataclasses import dataclass, field
+from typing import Any
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -15,6 +18,8 @@ from app.agent.tools import TOOLS, ToolCallRecord, ToolContext, run_tool
 from app.config import settings
 from app.domain.evidence import Evidence
 
+EventHook = Callable[[dict[str, Any]], Awaitable[None] | None]
+
 
 @dataclass
 class AgentAnswer:
@@ -24,6 +29,7 @@ class AgentAnswer:
     evidence: list[Evidence] = field(default_factory=list)
     audit: Audit = field(default_factory=Audit)
     degraded: list[str] = field(default_factory=list)
+    suggestions: list[str] = field(default_factory=list)
     input_tokens: int = 0
     output_tokens: int = 0
     duration_ms: int = 0
@@ -48,8 +54,18 @@ async def ask(
     code: str | None = None,
     llm: LLMClient | None = None,
     max_steps: int | None = None,
+    on_event: EventHook | None = None,
 ) -> AgentAnswer:
+    """``on_event`` receives step_start / step_end dicts as tools run — for live UIs."""
     t0 = time.monotonic()
+
+    async def emit(event: dict[str, Any]) -> None:
+        if on_event is None:
+            return
+        out = on_event(event)
+        if inspect.isawaitable(out):
+            await out
+
     llm = llm or get_llm()
     ctx = ToolContext(session=session, game=game, code=code)
     content = question
@@ -80,8 +96,19 @@ async def ask(
         messages.append({"role": "assistant", "content": assistant_content})
         tool_blocks = []
         for call in resp.tool_calls:
+            await emit({"type": "step_start", "id": call.id, "tool": call.name, "args": call.args})
             result, record = await run_tool(ctx, call.name, call.args)
             answer.steps.append(record)
+            await emit(
+                {
+                    "type": "step_end",
+                    "id": call.id,
+                    "tool": call.name,
+                    "ok": record.ok,
+                    "summary": record.summary,
+                    "error": record.error,
+                }
+            )
             if result is None:
                 answer.degraded.append(f"{call.name}: {record.error}")
                 tool_blocks.append(
@@ -111,7 +138,35 @@ async def ask(
         )
 
     answer.audit = audit_answer(answer.text, results_for_audit, question=question)
+    answer.suggestions = follow_ups(answer, code is not None)
     if not answer.steps:
         answer.degraded.append("no tool was used: the answer contains nothing verifiable")
     answer.duration_ms = int((time.monotonic() - t0) * 1000)
     return answer
+
+
+def follow_ups(answer: AgentAnswer, has_code: bool) -> list[str]:
+    """Deterministic next questions, derived from what the tools actually returned."""
+    tools = [s.tool for s in answer.steps if s.ok]
+    out: list[str] = []
+    if "analyze_build_code" in tools or has_code:
+        out += [
+            "What would change if I fought an Uber boss?",
+            "Which passives matter most for this build's damage?",
+            "What changed for this build's main skill in the latest patch?",
+        ]
+    elif "search_builds" in tools:
+        out += [
+            "Which of these is the tankiest?",
+            "Tell me more about the first one",
+            "Show me the same for another class",
+        ]
+    elif "get_patch_changes" in tools or "search_knowledge" in tools:
+        out += [
+            "What about the other game?",
+            "Find me a build using that skill",
+            "What else changed in that patch?",
+        ]
+    if not out:
+        out = ["Find me a tanky build", "What changed in the latest patch?"]
+    return out[:3]

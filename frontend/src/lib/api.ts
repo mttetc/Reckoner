@@ -170,6 +170,7 @@ export interface AskStep {
 }
 
 export interface AskResponse {
+  suggestions: string[];
   answer: string;
   model: string;
   steps: AskStep[];

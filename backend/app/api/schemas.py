@@ -114,7 +114,17 @@ class AuditView(BaseModel):
     clean: bool
 
 
+class FeedbackRequest(BaseModel):
+    message_id: str = Field(min_length=1, max_length=128)
+    rating: str = Field(pattern="^(positive|negative)$")
+    question: str | None = Field(default=None, max_length=2000)
+    answer: str | None = Field(default=None, max_length=8000)
+
+
 class AskResponse(BaseModel):
+    suggestions: list[str] = Field(
+        default_factory=list, description="Follow-up questions to offer."
+    )
     answer: str
     model: str = Field(description="Provider and model that orchestrated; 'scripted' = no model.")
     steps: list[StepView]

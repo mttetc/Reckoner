@@ -8,6 +8,8 @@ export default defineConfig({
   testDir: "./e2e",
   timeout: 30_000,
   fullyParallel: true,
+  // Engine-backed tests share one headless PoB process and draw ~2,900 SVG nodes each; keep CI calm.
+  workers: process.env.CI ? 2 : undefined,
   reporter: process.env.CI ? "github" : "list",
   use: {
     baseURL: "http://localhost:3000",

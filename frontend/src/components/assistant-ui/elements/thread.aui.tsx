@@ -17,6 +17,7 @@ import {
   ComposerPrimitive,
   ErrorPrimitive,
   MessagePrimitive,
+  SuggestionPrimitive,
   ThreadPrimitive,
   useAuiState,
 } from "@assistant-ui/react";
@@ -33,6 +34,9 @@ import {
   PencilIcon,
   RefreshCwIcon,
   SquareIcon,
+  ThumbsDownIcon,
+  ThumbsUpIcon,
+  Volume2Icon,
 } from "lucide-react";
 import type { FC } from "react";
 
@@ -121,7 +125,7 @@ export const Thread: FC = () => {
           >
             <ThreadScrollToBottom />
             <Composer />
-            <AuiIf condition={(s) => isNewChatView(s) && s.composer.isEmpty}>
+            <AuiIf condition={(s) => s.composer.isEmpty && !s.thread.isRunning}>
               <ThreadSuggestions />
             </AuiIf>
           </ThreadPrimitive.ViewportFooter>
@@ -177,19 +181,43 @@ export const EXAMPLE_PROMPTS = [
 
 const ThreadSuggestions: FC = () => {
   return (
-    <div className="aui-thread-welcome-suggestions flex w-full flex-wrap items-center justify-center gap-2 px-4">
-      {EXAMPLE_PROMPTS.map((prompt) => (
-        <div key={prompt} className="aui-thread-welcome-suggestion-display fade-in slide-in-from-bottom-2 animate-in fill-mode-both duration-200">
-          <ThreadPrimitive.Suggestion prompt={prompt} send asChild>
-            <Button
-              variant="ghost"
-              className="aui-thread-welcome-suggestion text-foreground hover:bg-muted border-border/60 h-auto gap-1.5 rounded-full border px-3.5 py-1.5 text-sm font-normal whitespace-nowrap transition-colors"
-            >
-              <span className="aui-thread-welcome-suggestion-text-1">{prompt}</span>
-            </Button>
-          </ThreadPrimitive.Suggestion>
-        </div>
-      ))}
+    <div className="aui-thread-welcome-suggestions flex w-full flex-wrap items-center justify-center gap-2 px-4" data-testid="suggestions">
+      {/* Empty thread: the examples. After an answer: follow-ups from the suggestion adapter. */}
+      <AuiIf condition={isNewChatView}>
+        {EXAMPLE_PROMPTS.map((prompt) => (
+          <div key={prompt} className="aui-thread-welcome-suggestion-display fade-in slide-in-from-bottom-2 animate-in fill-mode-both duration-200">
+            <ThreadPrimitive.Suggestion prompt={prompt} send asChild>
+              <Button
+                variant="ghost"
+                className="aui-thread-welcome-suggestion text-foreground hover:bg-muted border-border/60 h-auto gap-1.5 rounded-full border px-3.5 py-1.5 text-sm font-normal whitespace-nowrap transition-colors"
+              >
+                <span className="aui-thread-welcome-suggestion-text-1">{prompt}</span>
+              </Button>
+            </ThreadPrimitive.Suggestion>
+          </div>
+        ))}
+      </AuiIf>
+      <AuiIf condition={(s) => !isNewChatView(s)}>
+        <ThreadPrimitive.Suggestions>
+          {() => <ThreadSuggestionItem />}
+        </ThreadPrimitive.Suggestions>
+      </AuiIf>
+    </div>
+  );
+};
+
+const ThreadSuggestionItem: FC = () => {
+  return (
+    <div className="aui-thread-welcome-suggestion-display fade-in slide-in-from-bottom-2 animate-in fill-mode-both duration-200">
+      <SuggestionPrimitive.Trigger send asChild>
+        <Button
+          variant="ghost"
+          className="aui-thread-welcome-suggestion text-foreground hover:bg-muted border-border/60 h-auto gap-1.5 rounded-full border px-3.5 py-1.5 text-sm font-normal whitespace-nowrap transition-colors"
+        >
+          <SuggestionPrimitive.Title className="aui-thread-welcome-suggestion-text-1" />
+          <SuggestionPrimitive.Description className="aui-thread-welcome-suggestion-text-2 empty:hidden" />
+        </Button>
+      </SuggestionPrimitive.Trigger>
     </div>
   );
 };
@@ -365,6 +393,26 @@ const AssistantActionBar: FC = () => {
           </AuiIf>
         </TooltipIconButton>
       </ActionBarPrimitive.Copy>
+      <ActionBarPrimitive.FeedbackPositive asChild>
+        <TooltipIconButton tooltip="Good answer" data-testid="feedback-positive">
+          <ThumbsUpIcon />
+        </TooltipIconButton>
+      </ActionBarPrimitive.FeedbackPositive>
+      <ActionBarPrimitive.FeedbackNegative asChild>
+        <TooltipIconButton tooltip="Bad answer" data-testid="feedback-negative">
+          <ThumbsDownIcon />
+        </TooltipIconButton>
+      </ActionBarPrimitive.FeedbackNegative>
+      <ActionBarPrimitive.Speak asChild>
+        <TooltipIconButton tooltip="Read aloud" data-testid="speak">
+          <Volume2Icon />
+        </TooltipIconButton>
+      </ActionBarPrimitive.Speak>
+      <ActionBarPrimitive.StopSpeaking asChild>
+        <TooltipIconButton tooltip="Stop reading">
+          <SquareIcon />
+        </TooltipIconButton>
+      </ActionBarPrimitive.StopSpeaking>
       <ActionBarPrimitive.Reload asChild>
         <TooltipIconButton tooltip="Refresh">
           <RefreshCwIcon />
