@@ -6,14 +6,16 @@ import {
   SimpleTextAttachmentAdapter,
   useLocalRuntime,
   type ChatModelAdapter,
+  type ThreadAssistantMessagePart,
 } from "@assistant-ui/react";
 import { Thread } from "@/components/assistant-ui/elements/thread.aui";
-import { SidePanel } from "@/components/SidePanel";
+import { BuildCardUI } from "@/components/tools/BuildCardUI";
+import { SourcesUI } from "@/components/tools/SourcesUI";
 import { ERROR_COPY } from "@/components/Result";
-import { CODE_RE, type ReckonerCustom } from "@/components/ReckonerExtras";
+import { CODE_RE } from "@/components/UserText";
 import { analyzeBuild, ApiRequestError, askReckoner } from "@/lib/api";
-import { usePanel } from "@/lib/panel";
 
+/** The whole backend behind one adapter: the answer as text, the build and the sources as tool UIs. */
 const adapter: ChatModelAdapter = {
   async run({ messages, abortSignal }) {
     const last = [...messages].reverse().find((m) => m.role === "user");
@@ -32,19 +34,30 @@ const adapter: ChatModelAdapter = {
         code ? analyzeBuild(code).catch(() => undefined) : Promise.resolve(undefined),
       ]);
       if (abortSignal.aborted) return { content: [] };
-      const custom: ReckonerCustom = { reckoner: answer, snapshot, code };
-      return {
-        content: [{ type: "text", text: answer.answer || "(no answer text)" }],
-        metadata: { custom: custom as Record<string, unknown> },
-      };
+      const content: ThreadAssistantMessagePart[] = [{ type: "text", text: answer.answer || "(no answer text)" }];
+      if (snapshot) {
+        content.push({
+          type: "tool-call",
+          toolCallId: `build-${snapshot.id}`,
+          toolName: "build_card",
+          args: {},
+          argsText: "{}",
+          result: { snapshot, code },
+        });
+      }
+      content.push({
+        type: "tool-call",
+        toolCallId: `sources-${Date.now()}`,
+        toolName: "sources",
+        args: {},
+        argsText: "{}",
+        result: { evidence: answer.evidence, audit: answer.audit, degraded: answer.degraded },
+      });
+      return { content };
     } catch (err) {
       const errCode = err instanceof ApiRequestError ? err.body.code : "unexpected";
       const message = err instanceof ApiRequestError ? err.body.message : String(err);
-      const custom: ReckonerCustom = { error: { code: errCode, message } };
-      return {
-        content: [{ type: "text", text: ERROR_COPY[errCode] ?? message }],
-        metadata: { custom: custom as Record<string, unknown> },
-      };
+      return { content: [{ type: "text", text: ERROR_COPY[errCode] ?? message }] };
     }
   },
 };
@@ -53,32 +66,13 @@ export default function Home() {
   const runtime = useLocalRuntime(adapter, {
     adapters: { attachments: new CompositeAttachmentAdapter([new SimpleTextAttachmentAdapter()]) },
   });
-  const panelOpen = usePanel((s) => s.content !== null);
-  const openPanel = usePanel((s) => s.open);
-
-  // Links in answers open on the right, like a reading pane; the site can still be opened in a tab.
-  function onClickCapture(e: React.MouseEvent) {
-    const a = (e.target as HTMLElement).closest?.("a[href^='http']") as HTMLAnchorElement | null;
-    if (!a || a.closest(".side-panel")) return;
-    e.preventDefault();
-    openPanel({ kind: "link", url: a.href, title: a.textContent?.trim() || undefined });
-  }
-
   return (
-    <div className={`shell ${panelOpen ? "with-panel" : ""}`}>
-      <header className="shell-head">
-        <span className="wordmark">
-          Reck<span>o</span>ner
-        </span>
-      </header>
-      <AssistantRuntimeProvider runtime={runtime}>
-        <div className="shell-body">
-          <div className="chat-frame" onClickCapture={onClickCapture}>
-            <Thread />
-          </div>
-          <SidePanel />
-        </div>
-      </AssistantRuntimeProvider>
-    </div>
+    <AssistantRuntimeProvider runtime={runtime}>
+      <BuildCardUI />
+      <SourcesUI />
+      <div className="h-dvh">
+        <Thread />
+      </div>
+    </AssistantRuntimeProvider>
   );
 }

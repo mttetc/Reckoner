@@ -46,7 +46,7 @@ backend/            FastAPI · Python ≥ 3.12
   scripts/ingest_files.py  dev seed / e2e fixtures into the corpus · scripts/db_init.py  schema bootstrap
   scripts/install_pob.sh   pinned, sparse Path of Building checkout into .engines/pob (≈650 MB)
   tests/            unit + integration + engine (pytest; engine tests skip without PoB, CI runs them for real)
-frontend/           Next.js 16 · analyse page · Playwright e2e (drives backend + frontend)
+frontend/           Next.js 16 · assistant-ui conversation (Tailwind v4) · in-chat build card + passive tree · Playwright e2e
 docker-compose.yml  PostgreSQL 17 + pgvector (or `brew install postgresql@17 pgvector`)
 ```
 
@@ -99,7 +99,7 @@ Phase 1 vertical slice, all with tests and CI:
 | § 7 corpus | PostgreSQL + pgvector; policy-enforced ingestion from the official forums; search with unknown-last ordering |
 | § 6 knowledge | Official patch notes for PoE and PoE 2, versioned chunks, local embeddings, game filter by type, isolation test in CI |
 | § 9 agent | Nine deterministic tools with evidence; free local model by default (Ollama), Claude optional, scripted policy for tests; answers number-audited |
-| § 10 UX | No technical jargon reaches the user; every degraded state is drawn; Lighthouse 100 on all pages |
+| § 10 UX | One page, one conversation (assistant-ui): paste a code or ask; the build card with the passive tree and the sources render inside the answer as tool UIs; no technical jargon reaches the user |
 | § 8 metric | Adding PoE 2 knowledge touched one 5-line file under `games/poe2/`; nothing in the common domain |
 
 Not done: the hand-authored visual identity (§ 11, by design — see ADR-005), item modifications

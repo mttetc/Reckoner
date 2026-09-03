@@ -4,7 +4,7 @@ import {
   UserMessageAttachments,
 } from "@/components/assistant-ui/elements/attachment.aui";
 import { MarkdownText } from "@/components/assistant-ui/elements/markdown-text";
-import { ReckonerExtras, UserText } from "@/components/ReckonerExtras";
+import { UserText } from "@/components/UserText";
 import { TooltipIconButton } from "@/components/assistant-ui/elements/tooltip-icon-button";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -157,6 +157,7 @@ const ThreadScrollToBottom: FC = () => {
 const ThreadWelcome: FC = () => {
   return (
     <div className="aui-thread-welcome-root mb-6 flex flex-col items-center px-4 text-center">
+      <p className="text-muted-foreground mb-3 font-mono text-xs tracking-[0.18em] uppercase">Reckoner</p>
       <h1 className="aui-thread-welcome-message-inner fade-in slide-in-from-bottom-1 animate-in fill-mode-both text-2xl font-medium tracking-tight duration-200">
         What do you want to know about a build?
       </h1>
@@ -334,7 +335,6 @@ const AssistantMessage: FC = () => {
           </span>
         </AuiIf>
         <MessageError />
-        <ReckonerExtras />
       </div>
 
       <div

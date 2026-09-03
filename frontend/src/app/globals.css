@@ -108,37 +108,15 @@
 .aui-assistant-message-root { border-left: 2px solid var(--accent); padding-left: 12px; }
 .aui-thread-welcome-suggestion { border-color: var(--line-2) !important; color: var(--fg-2) !important; font-family: var(--sans); }
 .reckoner-extras { margin-top: 10px; }
-/* one page: a wordmark, the conversation, and a reading pane on the right when something is opened */
-.shell { height: 100dvh; display: flex; flex-direction: column; overflow: hidden; }
-.shell-head { display: flex; align-items: center; padding: 14px 20px 10px; border-bottom: 1px solid var(--line); }
-.wordmark { font-family: var(--mono); font-size: 13px; letter-spacing: 0.18em; text-transform: uppercase; font-weight: 600; }
-.wordmark span { color: var(--accent); }
-.shell-body { flex: 1; min-height: 0; display: flex; }
-.chat-frame { flex: 1; min-width: 0; min-height: 0; display: flex; flex-direction: column; }
-.chat-frame > * { flex: 1; min-height: 0; }
-.side-panel { width: min(560px, 48vw); border-left: 1px solid var(--line); background: var(--panel); display: flex; flex-direction: column; min-height: 0; animation: slide-in 0.25s var(--ease); }
-@keyframes slide-in { from { transform: translateX(24px); opacity: 0; } to { transform: none; opacity: 1; } }
-.side-panel-head { display: flex; align-items: center; gap: 10px; padding: 10px 14px; border-bottom: 1px solid var(--line); }
-.side-panel-title { flex: 1; font-weight: 600; font-size: 14px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.side-panel-open { display: inline-flex; align-items: center; gap: 4px; font-size: 12px; }
-.side-panel-close { background: transparent; border: 0; color: var(--muted); cursor: pointer; padding: 4px; border-radius: var(--r); }
-.side-panel-close:hover { color: var(--fg); background: var(--panel-2); }
-.side-panel-body { flex: 1; min-height: 0; overflow-y: auto; padding: 14px 16px 28px; }
-.side-panel-body .panel { border: 0; padding: 0; box-shadow: none; background: transparent; }
-.link-preview { display: flex; flex-direction: column; height: 100%; gap: 8px; }
-.link-preview iframe { flex: 1; min-height: 70vh; width: 100%; border: 1px solid var(--line); border-radius: var(--r); background: #fff; }
-.sources .evidence { list-style: none; padding: 0; }
-.sources .evidence li { padding: 10px 0; border-bottom: 1px solid var(--line); }
+/* our specific content inside an answer (tool UIs) */
+.in-chat-card { margin: 10px 0 4px; padding: 12px 14px; border: 1px solid var(--line); border-left: 2px solid var(--accent); border-radius: var(--r); background: var(--bg); }
+.in-chat-card .panel { border: 0; padding: 0; box-shadow: none; background: transparent; }
+.sources { margin-top: 6px; font-family: var(--mono); font-size: 11px; color: var(--muted); }
+.sources summary { list-style: none; cursor: pointer; }
+.sources summary::-webkit-details-marker { display: none; }
+.sources .evidence { list-style: none; padding: 0; margin: 8px 0 0; }
+.sources .evidence li { padding: 8px 0; border-bottom: 1px solid var(--line); font-family: var(--sans); font-size: 13px; color: var(--fg); }
 .sources blockquote.excerpt { margin: 6px 0 0; padding-left: 10px; border-left: 2px solid var(--warn); color: var(--fg-2); font-size: 13px; }
-.build-chip { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 12px; width: 100%; text-align: left; margin: 10px 0 4px; padding: 10px 12px; background: var(--bg); border: 1px solid var(--line-2); border-left: 2px solid var(--accent); border-radius: var(--r); color: var(--fg); cursor: pointer; transition: background 0.15s var(--ease); }
-.build-chip:hover { background: var(--panel-2); }
-.build-chip-title { font-weight: 600; }
-.build-chip-stats { font-size: 12px; color: var(--fg-2); }
-.build-chip-cta { margin-left: auto; font-size: 12px; color: var(--accent); }
-.answer-foot { display: flex; flex-wrap: wrap; gap: 6px 14px; margin-top: 8px; font-family: var(--mono); font-size: 11px; color: var(--muted); }
-.foot-link { background: transparent; border: 0; padding: 0; color: var(--muted); cursor: pointer; font: inherit; text-decoration: underline; text-underline-offset: 2px; }
-.foot-link:hover { color: var(--fg); }
-@media (max-width: 900px) { .shell-body { flex-direction: column; } .side-panel { width: 100%; border-left: 0; border-top: 1px solid var(--line); max-height: 60vh; } }
 
 a { color: var(--accent); text-decoration: none; }
 a:hover { color: var(--accent-2); text-decoration: underline; text-underline-offset: 2px; }

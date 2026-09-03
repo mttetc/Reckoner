@@ -12,11 +12,9 @@ test.describe("conversation (assistant-ui thread; scripted policy — no model i
     await expect(result.getByTestId("ask-answer")).toContainText("18,619,973.8 DPS");
     await expect(result.getByTestId("ask-audit")).toHaveClass(/ok/);
     await expect(result.getByTestId("ask-audit")).toHaveText("✓ numbers verified");
-    await result.getByTestId("open-sources").click();
-    const panel = page.getByTestId("side-panel");
-    await expect(panel.getByTestId("panel-verified")).toBeVisible();
-    await expect(panel.getByTestId("panel-sources")).toContainText("calculated by Path of Building");
-    await expect(panel.getByTestId("panel-sources")).toContainText("DPS 18,619,974");
+    await result.getByTestId("sources").locator("summary").click();
+    await expect(result.getByTestId("sources-list")).toContainText("calculated by Path of Building");
+    await expect(result.getByTestId("sources-list")).toContainText("DPS 18,619,974");
     // SPEC § 10: no technical jargon reaches the user.
     for (const word of ["tool call", "RAG", "embedding", "vector", "agent", "pipeline", "corpus", "poe ", "scripted", "offline", "model"]) {
       await expect(result).not.toContainText(word);
@@ -31,10 +29,9 @@ test.describe("conversation (assistant-ui thread; scripted policy — no model i
     await expect(result).toBeVisible({ timeout: 20_000 });
     await expect(result.getByTestId("ask-answer")).toContainText("poe2 0.5");
     await expect(result.getByTestId("ask-answer")).not.toContainText("3.29");
-    await result.getByTestId("open-sources").click();
-    await expect(page.getByTestId("panel-sources")).toContainText("stated by the source");
-    await expect(page.getByTestId("panel-sources")).toContainText("Path of Exile 2");
-    await page.getByTestId("panel-close").click();
+    await result.getByTestId("sources").locator("summary").click();
+    await expect(result.getByTestId("sources-list")).toContainText("stated by the source");
+    await expect(result.getByTestId("sources-list")).toContainText("Path of Exile 2");
 
     await page.getByTestId("ask-question").fill("Find me a Templar build");
     await page.getByTestId("ask-submit").click();

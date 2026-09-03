@@ -13,11 +13,8 @@ async function paste(page: import("@playwright/test").Page, code: string, questi
   await page.getByTestId("ask-question").fill(`${question} ${code}`.trim());
   await page.getByTestId("ask-submit").click();
   const answer = page.getByTestId("ask-result").last();
-  await expect(answer.getByTestId("open-build")).toBeVisible({ timeout: 30_000 });
-  await answer.getByTestId("open-build").click();
-  const panel = page.getByTestId("side-panel");
-  await expect(panel.getByTestId("result")).toBeVisible();
-  return panel;
+  await expect(answer.getByTestId("build-card")).toBeVisible({ timeout: 30_000 });
+  return answer;
 }
 
 test("pasting a build code in the conversation shows the build with provenance on every value", async ({ page }) => {
@@ -45,10 +42,8 @@ test("pasting a build code in the conversation shows the build with provenance o
     if (known === "true") await expect(s.locator(".prov b")).toHaveText(/calculated|observed|estimated|stated/);
     else await expect(s.locator(".prov")).toContainText("unknown —");
   }
-  // The written answer keeps only one honesty line; details live in the panel.
-  await expect(page.getByTestId("ask-result").last().getByTestId("ask-audit")).toHaveClass(/ok/);
-  await page.getByTestId("panel-close").click();
-  await expect(page.getByTestId("side-panel")).toHaveCount(0);
+  // One honesty line under the answer; sources fold out on demand.
+  await expect(result.getByTestId("ask-audit")).toHaveClass(/ok/);
 });
 
 test("legacy export: patch unknown, missing values shown as unknown, tree recovered", async ({ page }) => {
@@ -87,7 +82,7 @@ test("an invalid code is refused, not guessed", async ({ page }) => {
   await page.getByTestId("ask-submit").click();
   const result = page.getByTestId("ask-result").last();
   await expect(result).toBeVisible({ timeout: 30_000 });
-  await expect(result.getByTestId("open-build")).toHaveCount(0);
+  await expect(result.getByTestId("build-card")).toHaveCount(0);
   await expect(result).toContainText(/could not|refused|not a build code|invalid|does not look like/i);
 });
 
@@ -121,7 +116,7 @@ test.describe("try a change (real headless engine)", () => {
     await expect(tree.locator(".tree-bar")).toContainText("−1");
     await expect(tree.locator("circle[data-node-id='41119']")).toHaveClass(/removed/);
     for (const word of ["node id", "baseline", "sha256", "engine_version", "pob:", "corpus"]) {
-      await expect(page.getByTestId("side-panel")).not.toContainText(word);
+      await expect(result).not.toContainText(word);
     }
   });
 
