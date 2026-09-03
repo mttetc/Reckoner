@@ -32,6 +32,17 @@ export const METRIC_LABELS: Record<string, string> = {
   "offence.crit_chance": "Crit chance",
   "offence.crit_multiplier": "Crit multi",
   "utility.movement_speed_mod": "Move speed",
+  "minion.dps.total": "Minion DPS",
+  "minion.life.max": "Minion life",
 };
 
-export const PRIMARY_METRICS = ["dps.total", "dps.combined", "life.max", "energy_shield.max", "ehp.total"];
+// dps.full is the sum of the groups the author flagged for Full DPS; it is often the number a
+// guide quotes when dps.total belongs to a utility skill left selected in the export.
+export const PRIMARY_METRICS = [
+  "dps.total",
+  "dps.full",
+  "minion.dps.total",
+  "life.max",
+  "energy_shield.max",
+  "ehp.total",
+];

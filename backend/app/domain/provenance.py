@@ -120,3 +120,6 @@ class MetricKey(StrEnum):
     CRIT_CHANCE = "offence.crit_chance"
     CRIT_MULTIPLIER = "offence.crit_multiplier"
     MOVEMENT_SPEED_MOD = "utility.movement_speed_mod"
+    # Companion / summoned-entity metrics. Emitted only when the build's main skill has one.
+    MINION_DPS_TOTAL = "minion.dps.total"
+    MINION_LIFE_MAX = "minion.life.max"

@@ -34,6 +34,7 @@ backend/            FastAPI · Python ≥ 3.12
     poe2/ diablo3/  Phase 2 / 3 placeholders
   app/api/          /api/v1/builds/analyze · /api/v1/games · /health
   scripts/first_light.py   SPEC § 15: decode a real code, print DPS and life with provenance
+  scripts/harvest_forum_codes.py  collect recent codes linked from the official forums (robustness pass, § 7 seed)
   tests/            unit + integration (pytest)
 frontend/           Next.js 16 · analyse page · Playwright e2e (drives backend + frontend)
 docker-compose.yml  PostgreSQL 17 + pgvector (not used yet — see ADR-004)

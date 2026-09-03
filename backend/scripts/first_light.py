@@ -28,12 +28,10 @@ def main(argv: list[str]) -> int:
         f"tree nodes={len(snap.tree.node_ids)}"
     )
     print()
-    for key in (
-        MetricKey.DPS_TOTAL,
-        MetricKey.DPS_COMBINED,
-        MetricKey.LIFE_MAX,
-        MetricKey.EHP_TOTAL,
-    ):
+    keys = [MetricKey.DPS_TOTAL, MetricKey.DPS_FULL, MetricKey.LIFE_MAX, MetricKey.EHP_TOTAL]
+    if snap.metric(MetricKey.MINION_DPS_TOTAL.value) is not None:
+        keys.insert(2, MetricKey.MINION_DPS_TOTAL)  # optional: only when the export has minion rows
+    for key in keys:
         m = snap.metric(key.value)
         if m is None or not m.known:
             print(f"{key.value:<16} unknown  — {m.unknown_reason if m else 'no metric'}")

@@ -27,6 +27,9 @@ function ProvenanceLine({ m }: { m: Metric }) {
       {p.engine_version ? <> {p.engine_version}</> : p.engine ? <> (version not embedded)</> : null}
       {" · patch "}
       {p.game_version ?? "unknown"}
+      {Array.isArray(p.context.aggregates) && p.context.aggregates.length > 0 ? (
+        <span data-testid="aggregates"> · sums {(p.context.aggregates as string[]).join(", ")}</span>
+      ) : null}
     </span>
   );
 }
@@ -63,7 +66,13 @@ function Result({ snapshot: s }: { snapshot: BuildSnapshot }) {
           {s.character.subclass ? ` · ${s.character.subclass}` : ""}
         </span>
         <span className="mono muted">level {s.character.level ?? "?"}</span>
-        <span className="mono" data-testid="main-skill">{s.main_skill ?? "main skill unknown"}</span>
+        <span
+          className="mono"
+          data-testid="main-skill"
+          title="Socket group selected in the export — PoB's DPS figures are computed for this skill"
+        >
+          {s.main_skill ?? "main skill unknown"}
+        </span>
         <span className="chip" data-testid="patch">patch {s.game_version ?? "unknown"}</span>
         <span className="chip">{s.game}</span>
         <span className="chip" title={s.raw.sha256}>input sha256 {s.raw.sha256.slice(0, 10)}…</span>

@@ -51,3 +51,28 @@ first-class state, reduced-motion respected). The visual identity is to be autho
 Test fixtures are PoB codes: two MIT-licensed ones from `ppoelzl/PathOfBuildingAPI` and one public
 paste from pobb.in, kept with its URL for attribution. No third-party guide text is stored
 (SPEC § 7).
+
+## ADR-007 — The main skill is whatever the export has selected; minion and aggregate DPS are separate facts (2026-09-03)
+
+**Context.** A robustness pass over 37 unique exports linked from the official class forums
+(patches 3.22 → 3.29) parsed without a single failure but surfaced three honest-but-confusing
+situations: (a) the author left a movement or utility skill selected as PoB's main socket group,
+so `TotalDPS` is 0 while `FullDPS` is in the millions; (b) minion builds report player `TotalDPS`
+0 and carry their real numbers in `<MinionStat>` rows; (c) one export had no `TotalDPS` row at all.
+
+**Decision.**
+- `main_skill` stays the export's selection. Guessing a "better" main skill from `includeInFullDPS`
+  flags or from DPS magnitude would be an inference presented as a fact. The provenance context
+  carries `main_skill_source = "socket group selected in the export"` and the UI says so on hover.
+- `dps.full` keeps PoB's number and its provenance context lists the `<FullDPSSkill>` rows it
+  aggregates (`aggregates`), so a reader can see that 19.4M is poison + culling + two skills.
+  The full breakdown lives in `extra["poe.full_dps_breakdown"]`.
+- New canonical keys `minion.dps.total` and `minion.life.max` are emitted **only when the export
+  carries `<MinionStat>` rows**. Absence is not an unknown: a build without minions has nothing to
+  measure. This is the one place where a metric is optional rather than unknown-with-reason.
+- A missing `TotalDPS` row stays `unknown` with the reason "not present in this export". Never 0.
+
+**Consequences.** Six fixtures now cover both layouts, multi-set exports, minions, utility-selected
+main skill and absent DPS. `scripts/harvest_forum_codes.py` reproduces the pass; it is also the
+seed of the § 7 corpus ingestion (official forum → build codes), rate-limited and identified.
+

@@ -30,6 +30,13 @@ STAT_MAP: tuple[tuple[str, MetricKey, str | None], ...] = (
     ("EffectiveMovementSpeedMod", MetricKey.MOVEMENT_SPEED_MOD, "x"),
 )
 
+# ``MinionStat`` rows → canonical keys. Optional: a build without minions has no such rows, and
+# their absence is *not* an unknown — there is simply no minion to measure.
+MINION_STAT_MAP: tuple[tuple[str, MetricKey, str | None], ...] = (
+    ("TotalDPS", MetricKey.MINION_DPS_TOTAL, "dps"),
+    ("Life", MetricKey.MINION_LIFE_MAX, None),
+)
+
 # Configuration inputs that materially condition calculated values; they belong in provenance.
 PROVENANCE_CONFIG_KEYS: tuple[str, ...] = (
     "enemyIsBoss",

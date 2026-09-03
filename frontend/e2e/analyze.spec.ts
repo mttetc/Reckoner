@@ -5,6 +5,8 @@ import path from "node:path";
 const fixtures = path.resolve(__dirname, "../../backend/tests/fixtures/pob");
 const modern = fs.readFileSync(path.join(fixtures, "slayer_lightning_strike_3_27.txt"), "utf8");
 const legacy = fs.readFileSync(path.join(fixtures, "elementalist_bv_2019.txt"), "utf8");
+const voidSphere = fs.readFileSync(path.join(fixtures, "void_sphere_pathfinder_3_29.txt"), "utf8");
+const minions = fs.readFileSync(path.join(fixtures, "srs_guardian_3_23.txt"), "utf8");
 
 test("analyses a modern PoB export and shows provenance on every value", async ({ page }) => {
   await page.goto("/");
@@ -65,4 +67,31 @@ test("submit is disabled on empty input and the page is keyboard reachable", asy
   await expect(page.getByTestId("analyze")).toBeDisabled();
   await page.keyboard.press("Tab");
   await expect(page.getByTestId("code-input")).toBeFocused();
+});
+
+test("utility skill left selected: DPS 0 is reported as-is, Full DPS says what it sums", async ({ page }) => {
+  await page.goto("/");
+  await page.getByTestId("code-input").fill(voidSphere);
+  await page.getByTestId("analyze").click();
+  await expect(page.getByTestId("result")).toBeVisible();
+  await expect(page.getByTestId("main-skill")).toHaveText("Withering Step");
+  await expect(page.getByTestId("stat-dps.total").locator(".value")).toHaveText("0");
+  const full = page.getByTestId("stat-dps.full");
+  await expect(full.locator(".value")).toHaveText("19.4M");
+  await expect(full.getByTestId("aggregates")).toContainText("Void Sphere of Rending, Shield Charge");
+  // No minion card for a build without minions.
+  await expect(page.getByTestId("stat-minion.dps.total")).toHaveCount(0);
+});
+
+test("minion build: minion DPS is its own metric, player DPS stays 0", async ({ page }) => {
+  await page.goto("/");
+  await page.getByTestId("code-input").fill(minions);
+  await page.getByTestId("analyze").click();
+  await expect(page.getByTestId("result")).toBeVisible();
+  await expect(page.getByTestId("character")).toHaveText("Templar · Guardian");
+  await expect(page.getByTestId("stat-dps.total").locator(".value")).toHaveText("0");
+  const minion = page.getByTestId("stat-minion.dps.total");
+  await expect(minion).toHaveAttribute("data-known", "true");
+  await expect(minion.locator(".value")).toHaveText("136.6K");
+  await expect(page.getByTestId("row-minion.life.max").locator(".num")).toHaveText("4,285");
 });

@@ -17,11 +17,16 @@ from app.domain.build import (
     Tree,
 )
 from app.domain.errors import EngineUnavailable
-from app.domain.provenance import Metric, Provenance, ProvenanceStatus
+from app.domain.provenance import Metric, MetricKey, Provenance, ProvenanceStatus
 from app.games.base import AdapterCapabilities
 from app.games.poe.pob import codec
 from app.games.poe.pob.items import parse_item_text
-from app.games.poe.pob.stats import PROVENANCE_CONFIG_KEYS, STAT_MAP, tree_version_to_patch
+from app.games.poe.pob.stats import (
+    MINION_STAT_MAP,
+    PROVENANCE_CONFIG_KEYS,
+    STAT_MAP,
+    tree_version_to_patch,
+)
 from app.games.poe.pob.tree_url import decode_tree_url
 from app.games.poe.pob.xml_parser import PobExport, parse_xml
 
@@ -109,26 +114,49 @@ class PoEAdapter:
             game_version=patch,
             context={
                 "export_layout": export.layout,
+                # PoB computes TotalDPS for whichever socket group the author left selected when
+                # exporting. That selection may be a movement or utility skill; we report it as-is.
                 "main_skill": main_skill,
+                "main_skill_source": "socket group selected in the export",
                 "engine_config": config_ctx,
             },
         )
+        full_dps_breakdown = [
+            {"skill": e.name, "value": e.value, "source": e.source, "part": e.skill_part}
+            for e in export.full_dps
+        ]
 
         metrics: list[Metric] = []
         for stat_name, key, unit in STAT_MAP:
             if stat_name in export.stats:
-                metrics.append(
-                    Metric(
-                        key=key.value,
-                        value=export.stats[stat_name],
-                        unit=unit,
-                        provenance=Provenance(snapshot_id=snapshot_id, **base_prov),
+                prov = Provenance(snapshot_id=snapshot_id, **base_prov)
+                if key is MetricKey.DPS_FULL and full_dps_breakdown:
+                    # Say what the aggregate is made of; the number alone hides that.
+                    prov = prov.model_copy(
+                        update={
+                            "context": {
+                                **prov.context,
+                                "aggregates": [e["skill"] for e in full_dps_breakdown],
+                            }
+                        }
                     )
+                metrics.append(
+                    Metric(key=key.value, value=export.stats[stat_name], unit=unit, provenance=prov)
                 )
             else:
                 metrics.append(
                     Metric.unknown(
                         key.value, f"'{stat_name}' not present in this export", unit=unit
+                    )
+                )
+        for stat_name, key, unit in MINION_STAT_MAP:
+            if stat_name in export.minion_stats:
+                metrics.append(
+                    Metric(
+                        key=key.value,
+                        value=export.minion_stats[stat_name],
+                        unit=unit,
+                        provenance=Provenance(snapshot_id=snapshot_id, **base_prov),
                     )
                 )
 
@@ -153,6 +181,8 @@ class PoEAdapter:
                 "poe.pantheon_major": export.header.pantheon_major,
                 "poe.pantheon_minor": export.header.pantheon_minor,
                 "poe.pob_stats": export.stats,
+                "poe.pob_minion_stats": export.minion_stats,
+                "poe.full_dps_breakdown": full_dps_breakdown,
                 "poe.pob_target_version": export.header.target_version,
             },
         )

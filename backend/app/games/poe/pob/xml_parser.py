@@ -62,6 +62,18 @@ class PobSkillGroup:
     enabled: bool
     main_active_skill: int | None
     gems: tuple[PobGem, ...]
+    include_in_full_dps: bool | None = None  # ``includeInFullDPS`` — None when absent/"nil"
+    source: str | None = None  # item- or effect-granted groups carry ``source="Item:12:…"``
+
+
+@dataclass(frozen=True)
+class PobFullDpsEntry:
+    """One ``<FullDPSSkill>`` row: a contributor to PoB's ``FullDPS`` aggregate."""
+
+    name: str  # skill name, or an aggregate label such as "Full Culling DPS"
+    value: float
+    source: str | None  # skill granting the entry (e.g. a brand triggering a spell), if any
+    skill_part: str | None
 
 
 @dataclass(frozen=True)
@@ -91,6 +103,8 @@ class PobExport:
     config: dict[str, Any]
     notes: str | None
     layout: str = field(default="modern")  # or "legacy" — useful for provenance context
+    minion_stats: dict[str, float] = field(default_factory=dict)  # ``<MinionStat>`` rows
+    full_dps: tuple[PobFullDpsEntry, ...] = ()  # ``<FullDPSSkill>`` rows, export order
 
 
 def _int(v: str | None) -> int | None:
@@ -106,6 +120,26 @@ def _bool(v: str | None, default: bool = True) -> bool:
     if v is None:
         return default
     return v.lower() == "true"
+
+
+def _tri_bool(v: str | None) -> bool | None:
+    if v is None or v in ("", "nil"):
+        return None
+    return v.lower() == "true"
+
+
+def _stat_rows(parent: etree._Element, tag: str) -> dict[str, float]:
+    """Collect ``<tag stat=… value=…/>`` rows; on repeats the first occurrence wins."""
+    out: dict[str, float] = {}
+    for el in parent.findall(tag):
+        name, value = el.get("stat"), el.get("value")
+        if not name or value is None or name in out:
+            continue
+        try:
+            out[name] = float(value)
+        except ValueError:
+            continue
+    return out
 
 
 def parse_xml(xml: bytes) -> PobExport:
@@ -130,15 +164,25 @@ def parse_xml(xml: bytes) -> PobExport:
         main_socket_group=_int(build.get("mainSocketGroup")),
     )
 
-    stats: dict[str, float] = {}
-    for ps in build.findall("PlayerStat"):
-        name, value = ps.get("stat"), ps.get("value")
-        if not name or value is None or name in stats:
-            continue  # legacy exports repeat some stats; keep the first occurrence
+    stats = _stat_rows(build, "PlayerStat")  # legacy exports repeat some stats
+    minion_stats = _stat_rows(build, "MinionStat")  # only present when the main skill has minions
+    full_dps: list[PobFullDpsEntry] = []
+    for fd in build.findall("FullDPSSkill"):
+        name, value = fd.get("stat"), fd.get("value")
+        if not name or value is None:
+            continue
         try:
-            stats[name] = float(value)
+            fval = float(value)
         except ValueError:
             continue
+        full_dps.append(
+            PobFullDpsEntry(
+                name=name,
+                value=fval,
+                source=fd.get("source") or None,
+                skill_part=fd.get("skillPart") or None,
+            )
+        )
 
     skills_el = root.find("Skills")
     layout = "modern"
@@ -171,6 +215,8 @@ def parse_xml(xml: bytes) -> PobExport:
                     enabled=_bool(s.get("enabled")),
                     main_active_skill=_int(s.get("mainActiveSkill")),
                     gems=gems,
+                    include_in_full_dps=_tri_bool(s.get("includeInFullDPS")),
+                    source=s.get("source") or None,
                 )
             )
 
@@ -255,4 +301,6 @@ def parse_xml(xml: bytes) -> PobExport:
         config=config,
         notes=notes or None,
         layout=layout,
+        minion_stats=minion_stats,
+        full_dps=tuple(full_dps),
     )
