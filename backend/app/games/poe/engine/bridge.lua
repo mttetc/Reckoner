@@ -223,8 +223,9 @@ local function treeGeometry(version)
 	for id, node in pairs(tree.nodes) do
 		if node.x and node.y and not node.isProxy then
 			local linked = {}
-			for _, other in ipairs(node.linked or {}) do
-				if other.x and not other.isProxy then linked[#linked + 1] = other.id end
+			for _, otherId in ipairs(node.linkedId or {}) do
+				local other = tree.nodes[otherId]
+				if other and other.x and not other.isProxy then linked[#linked + 1] = otherId end
 			end
 			n = n + 1
 			nodes[n] = {

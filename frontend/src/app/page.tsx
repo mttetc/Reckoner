@@ -1,72 +1,84 @@
 "use client";
 
-import { useState } from "react";
-import { analyzeBuild, ApiRequestError, type BuildSnapshot } from "@/lib/api";
-import { ERROR_COPY, Result } from "@/components/Result";
-import { Nav } from "@/components/Nav";
+import {
+  AssistantRuntimeProvider,
+  CompositeAttachmentAdapter,
+  SimpleTextAttachmentAdapter,
+  useLocalRuntime,
+  type ChatModelAdapter,
+} from "@assistant-ui/react";
+import { Thread } from "@/components/assistant-ui/elements/thread.aui";
+import { SidePanel } from "@/components/SidePanel";
+import { ERROR_COPY } from "@/components/Result";
+import { CODE_RE, type ReckonerCustom } from "@/components/ReckonerExtras";
+import { analyzeBuild, ApiRequestError, askReckoner } from "@/lib/api";
+import { usePanel } from "@/lib/panel";
 
-type State =
-  | { kind: "idle" }
-  | { kind: "loading" }
-  | { kind: "error"; code: string; message: string }
-  | { kind: "result"; snapshot: BuildSnapshot };
+const adapter: ChatModelAdapter = {
+  async run({ messages, abortSignal }) {
+    const last = [...messages].reverse().find((m) => m.role === "user");
+    const raw = last
+      ? last.content
+          .filter((c) => c.type === "text")
+          .map((c) => (c as { text: string }).text)
+          .join("\n")
+      : "";
+    // A pasted Path of Building code travels to the tools, never to the model.
+    const code = raw.match(CODE_RE)?.[0];
+    const question = raw.replace(CODE_RE, "").trim() || (code ? "Analyse this build" : raw);
+    try {
+      const [answer, snapshot] = await Promise.all([
+        askReckoner(question, undefined, code),
+        code ? analyzeBuild(code).catch(() => undefined) : Promise.resolve(undefined),
+      ]);
+      if (abortSignal.aborted) return { content: [] };
+      const custom: ReckonerCustom = { reckoner: answer, snapshot, code };
+      return {
+        content: [{ type: "text", text: answer.answer || "(no answer text)" }],
+        metadata: { custom: custom as Record<string, unknown> },
+      };
+    } catch (err) {
+      const errCode = err instanceof ApiRequestError ? err.body.code : "unexpected";
+      const message = err instanceof ApiRequestError ? err.body.message : String(err);
+      const custom: ReckonerCustom = { error: { code: errCode, message } };
+      return {
+        content: [{ type: "text", text: ERROR_COPY[errCode] ?? message }],
+        metadata: { custom: custom as Record<string, unknown> },
+      };
+    }
+  },
+};
 
 export default function Home() {
-  const [code, setCode] = useState("");
-  const [state, setState] = useState<State>({ kind: "idle" });
+  const runtime = useLocalRuntime(adapter, {
+    adapters: { attachments: new CompositeAttachmentAdapter([new SimpleTextAttachmentAdapter()]) },
+  });
+  const panelOpen = usePanel((s) => s.content !== null);
+  const openPanel = usePanel((s) => s.open);
 
-  async function onSubmit(e: React.FormEvent) {
+  // Links in answers open on the right, like a reading pane; the site can still be opened in a tab.
+  function onClickCapture(e: React.MouseEvent) {
+    const a = (e.target as HTMLElement).closest?.("a[href^='http']") as HTMLAnchorElement | null;
+    if (!a || a.closest(".side-panel")) return;
     e.preventDefault();
-    if (!code.trim()) return;
-    setState({ kind: "loading" });
-    try {
-      const snapshot = await analyzeBuild(code);
-      setState({ kind: "result", snapshot });
-    } catch (err) {
-      if (err instanceof ApiRequestError) setState({ kind: "error", code: err.body.code, message: err.body.message });
-      else setState({ kind: "error", code: "unexpected", message: String(err) });
-    }
+    openPanel({ kind: "link", url: a.href, title: a.textContent?.trim() || undefined });
   }
 
   return (
-    <main className="page">
-      <Nav current="analyze" />
-
-      <form className="panel" onSubmit={onSubmit} aria-label="Analyze a build">
-        <label htmlFor="code" className="muted">
-          Paste a Path of Building export code
-        </label>
-        <textarea
-          id="code"
-          name="code"
-          value={code}
-          onChange={(e) => setCode(e.target.value)}
-          spellCheck={false}
-          placeholder="eNrtfWtz3LbV…"
-          data-testid="code-input"
-        />
-        <div className="row">
-          <button type="submit" disabled={state.kind === "loading" || !code.trim()} data-testid="analyze">
-            {state.kind === "loading" ? "Analyzing…" : "Analyze"}
-          </button>
-          {state.kind === "loading" ? (
-            <span className="status" data-testid="status" role="status">
-              reading export…
-            </span>
-          ) : null}
-          {state.kind === "error" ? (
-            <span className="status error" data-testid="error" role="alert">
-              {ERROR_COPY[state.code] ?? state.message} <span className="muted">[{state.code}]</span>
-            </span>
-          ) : null}
+    <div className={`shell ${panelOpen ? "with-panel" : ""}`}>
+      <header className="shell-head">
+        <span className="wordmark">
+          Reck<span>o</span>ner
+        </span>
+      </header>
+      <AssistantRuntimeProvider runtime={runtime}>
+        <div className="shell-body">
+          <div className="chat-frame" onClickCapture={onClickCapture}>
+            <Thread />
+          </div>
+          <SidePanel />
         </div>
-      </form>
-
-      {state.kind === "result" ? (
-        <div style={{ marginTop: 16 }}>
-          <Result snapshot={state.snapshot} code={code} />
-        </div>
-      ) : null}
-    </main>
+      </AssistantRuntimeProvider>
+    </div>
   );
 }

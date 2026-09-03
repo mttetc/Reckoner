@@ -27,7 +27,9 @@ def test_geometry_covers_the_fixture_tree(code_modern):
     lethality = by_id[41119]
     assert lethality["name"] == "Lethality" and lethality["type"] == "Notable"
     assert isinstance(lethality["x"], int) and isinstance(lethality["y"], int)
+    assert lethality["linked"], "nodes must carry their neighbours"
     assert all(other in ids for other in lethality["linked"])
+    assert sum(len(n["linked"]) for n in geo["nodes"]) > 4000
     assert sum(1 for n in geo["nodes"] if n["type"] == "ClassStart") == 7
     assert len(geo["classes"]) >= 6 and any(c["name"] == "Duelist" for c in geo["classes"])
     assert len(geo["orbit_radii"]) >= 5 and geo["groups"]

@@ -116,7 +116,8 @@ export function PassiveTree({
     };
     const all = box(visible, 300)!;
     // Default framing: the allocated path (what the reader came for), not the whole 25k-unit tree.
-    const build = box(visible.filter((n) => alloc.has(n.id)), 900) ?? all;
+    // Ascendancy groups sit far outside the main tree; framing them too would shrink everything.
+    const build = box(visible.filter((n) => alloc.has(n.id) && !n.ascendancy), 900) ?? all;
     return { visible, edges, bounds: all, buildBounds: build };
   }, [geo, ascendancy, alloc, diff]);
 

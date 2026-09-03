@@ -369,7 +369,7 @@ export function Result({ snapshot: s, code, source }: { snapshot: BuildSnapshot;
         <WhatIf code={code} parent={s} request={treeRequest} onVariant={(v) => setTreeDiff(v ? diffTrees(v) : null)} />
       ) : (
         <p className="hint whatif" data-testid="whatif-unavailable">
-          To try changes on this build, paste its code on the Analyse page — saved builds cannot be recalculated from here.
+          To try changes on this build, paste its Path of Building code in the conversation — saved builds cannot be recalculated from here.
         </p>
       )}
     </section>
