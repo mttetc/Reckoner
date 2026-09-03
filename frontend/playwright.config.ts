@@ -6,7 +6,10 @@ const python = path.join(backendDir, ".venv/bin/python");
 
 export default defineConfig({
   testDir: "./e2e",
-  timeout: 30_000,
+  // CI runners compile the dev bundle on first load and share one headless engine: give them room.
+  timeout: process.env.CI ? 90_000 : 30_000,
+  expect: { timeout: process.env.CI ? 20_000 : 5_000 },
+  retries: process.env.CI ? 1 : 0,
   fullyParallel: true,
   // Engine-backed tests share one headless PoB process and draw ~2,900 SVG nodes each; keep CI calm.
   workers: process.env.CI ? 2 : undefined,
