@@ -8,7 +8,7 @@ from app.games.base import GameAdapter
 
 
 def test_registry():
-    assert [a.game for a in list_adapters()] == [GameId.POE]
+    assert [a.game for a in list_adapters()] == [GameId.POE, GameId.WOW, GameId.WOW_CLASSIC]
     assert isinstance(get_adapter("poe"), GameAdapter)
     with pytest.raises(UnsupportedGame):
         get_adapter("poe2")

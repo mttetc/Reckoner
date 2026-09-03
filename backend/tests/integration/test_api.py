@@ -12,9 +12,14 @@ def test_health():
 def test_games_lists_capabilities_honestly():
     r = client.get("/api/v1/games")
     assert r.status_code == 200
-    [poe] = r.json()
-    assert poe["id"] == "poe"
+    games = {g["id"]: g for g in r.json()}
+    assert set(games) == {"poe", "wow", "wow_classic"}
+    poe = games["poe"]
     assert poe["capabilities"]["analyze_existing"] is True
+    # The two Warcraft adapters analyse today; recalculation needs engines that are not installed.
+    assert games["wow"]["capabilities"]["analyze_existing"] is True
+    assert games["wow_classic"]["capabilities"]["recalculate_modified"] is False
+    assert games["wow"]["latest_tree_version"] is None
     from app.games.poe.engine import get_engine
 
     assert poe["capabilities"]["recalculate_modified"] is get_engine().available()

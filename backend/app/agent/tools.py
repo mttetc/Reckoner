@@ -119,6 +119,8 @@ GAME_NAMES: dict[str, str] = {
     "poe": "Path of Exile",
     "poe2": "Path of Exile 2",
     "diablo3": "Diablo III",
+    "wow": "World of Warcraft",
+    "wow_classic": "World of Warcraft Classic",
 }
 
 

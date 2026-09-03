@@ -25,7 +25,7 @@ import { SourcesUI } from "@/components/tools/SourcesUI";
 import { StepUIs } from "@/components/tools/StepUI";
 import { TreeBackdrop } from "@/components/tree/TreeBackdrop";
 import { ERROR_COPY } from "@/components/Result";
-import { CODE_RE } from "@/components/UserText";
+import { extractBuildPayload } from "@/components/UserText";
 import { API_URL, analyzeBuild, ApiRequestError, type AskResponse } from "@/lib/api";
 
 type StepEvent =
@@ -63,9 +63,11 @@ const adapter: ChatModelAdapter = {
           .map((c) => (c as { text: string }).text)
           .join("\n")
       : "";
-    // A pasted Path of Building code travels to the tools, never to the model.
-    const code = raw.match(CODE_RE)?.[0];
-    const question = raw.replace(CODE_RE, "").trim() || (code ? "Analyse this build" : raw);
+    // A pasted build payload (PoB code, SimulationCraft profile, WoWSims export) travels to the
+    // tools, never to the model; the backend decides which game it belongs to.
+    const found = extractBuildPayload(raw);
+    const code = found?.payload;
+    const question = (code ? raw.replace(code, "") : raw).trim() || (code ? "Analyse this build" : raw);
 
     const snapshotPromise = code ? analyzeBuild(code).catch(() => undefined) : Promise.resolve(undefined);
     const steps: ThreadAssistantMessagePart[] = [];

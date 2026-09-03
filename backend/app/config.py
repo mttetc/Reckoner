@@ -48,5 +48,9 @@ class Settings(BaseSettings):
     )
     agent_max_steps: int = 6
 
+    # World of Warcraft (Retail) engine: SimulationCraft CLI. Unset → recalculation unavailable.
+    simc_bin: str | None = None
+    simc_iterations: int = 1000
+
 
 settings = Settings()

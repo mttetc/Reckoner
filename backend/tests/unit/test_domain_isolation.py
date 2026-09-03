@@ -6,7 +6,7 @@ from pathlib import Path
 DOMAIN = Path(__file__).resolve().parents[2] / "app" / "domain"
 FORBIDDEN = re.compile(
     r"\b(pob|PathOfBuilding|Path of Building|ascendanc\w*|divine|maxroll|mobalytics|"
-    r"leaderboard|greater rift|app\.games)\b",
+    r"leaderboard|greater rift|app\.games|simc|simulationcraft|wowsims|talent\w*|warcraft)\b",
     re.IGNORECASE,
 )
 

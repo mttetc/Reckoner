@@ -114,7 +114,7 @@ Phase 1 vertical slice, all with tests and CI:
 | § 6 knowledge | Official patch notes for PoE and PoE 2, versioned chunks, local embeddings, game filter by type, isolation test in CI |
 | § 9 agent | Nine deterministic tools with evidence; free local model by default (Ollama), Claude optional, scripted policy for tests; answers number-audited |
 | § 10 UX | One page, one conversation on assistant-ui: live steps while answering (SSE), build card with the passive tree and sources as tool UIs, conversation list, follow-up suggestions, feedback, dictation and read-aloud, attachments, edit/branch, markdown; no technical jargon reaches the user |
-| § 8 metric | Adding PoE 2 knowledge touched one 5-line file under `games/poe2/`; nothing in the common domain |
+| § 8 metric | Adding PoE 2 knowledge touched one 5-line file under `games/poe2/`. Adding World of Warcraft Retail (SimulationCraft profiles + engine) and Classic (WoWSims exports): 547 lines in `games/wow*/`, and outside them only two `GameId` values, two `MetricKey` values (hps, dtps), two registry lines, two engine settings and game names in the UI |
 
 Not done: the hand-authored visual identity (§ 11, by design — see ADR-005), item modifications
 in the engine bridge, game-data tools (`get_skill`, `get_item`, `get_tree`), Alembic migrations,

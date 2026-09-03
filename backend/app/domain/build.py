@@ -24,6 +24,8 @@ class GameId(StrEnum):
     POE = "poe"
     POE2 = "poe2"
     DIABLO3 = "diablo3"
+    WOW = "wow"
+    WOW_CLASSIC = "wow_classic"
 
 
 class RawSource(BaseModel):

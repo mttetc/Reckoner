@@ -1,0 +1,18 @@
+# Exported by the SimulationCraft addon (synthetic fixture — no real character)
+warrior="Reckoner"
+level=80
+race=orc
+region=eu
+server=hyjal
+role=attack
+professions=blacksmithing=100/mining=100
+spec=fury
+talents=BsQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+
+# Gear
+head=,id=212002,bonus_id=6652/10356,gem_id=213743,enchant_id=7931,ilevel=639
+neck=,id=225577,bonus_id=1533/10356,ilevel=639
+shoulder=,id=212000,ilevel=639
+chest=,id=212005,enchant_id=7364,ilevel=639
+main_hand=,id=222447,enchant_id=7460,ilevel=636
+off_hand=,id=222447,ilevel=636

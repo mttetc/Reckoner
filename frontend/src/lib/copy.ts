@@ -1,6 +1,12 @@
 // Player-facing wording. Internal identifiers never reach the screen.
 
-export const GAME_NAMES: Record<string, string> = { poe: "Path of Exile", poe2: "Path of Exile 2", diablo3: "Diablo III" };
+export const GAME_NAMES: Record<string, string> = {
+  poe: "Path of Exile",
+  poe2: "Path of Exile 2",
+  diablo3: "Diablo III",
+  wow: "World of Warcraft",
+  wow_classic: "World of Warcraft Classic",
+};
 export const gameName = (id: string | null | undefined) => (id ? GAME_NAMES[id] ?? id : "");
 
 export const STATUS_WORDS: Record<string, string> = {

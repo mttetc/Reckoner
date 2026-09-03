@@ -123,3 +123,5 @@ class MetricKey(StrEnum):
     # Companion / summoned-entity metrics. Emitted only when the build's main skill has one.
     MINION_DPS_TOTAL = "minion.dps.total"
     MINION_LIFE_MAX = "minion.life.max"
+    HPS_TOTAL = "hps.total"  # healing per second, where a game measures it
+    DTPS_TOTAL = "dtps.total"  # damage taken per second

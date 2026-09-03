@@ -6,9 +6,13 @@ from app.domain.build import GameId
 from app.domain.errors import InvalidBuildCode, UnsupportedGame
 from app.games.base import GameAdapter
 from app.games.poe.adapter import PoEAdapter
+from app.games.wow.adapter import WowAdapter
+from app.games.wow_classic.adapter import WowClassicAdapter
 
 _ADAPTERS: dict[GameId, GameAdapter] = {
     GameId.POE: PoEAdapter(),
+    GameId.WOW: WowAdapter(),
+    GameId.WOW_CLASSIC: WowClassicAdapter(),
 }
 
 
