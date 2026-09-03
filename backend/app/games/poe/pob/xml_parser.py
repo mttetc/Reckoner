@@ -12,6 +12,7 @@ provenance) happens in ``stats.py`` / ``adapter.py``.
 
 from __future__ import annotations
 
+import math
 import re
 from dataclasses import dataclass, field
 from typing import Any
@@ -104,6 +105,7 @@ class PobExport:
     notes: str | None
     layout: str = field(default="modern")  # or "legacy" — useful for provenance context
     minion_stats: dict[str, float] = field(default_factory=dict)  # ``<MinionStat>`` rows
+    non_finite_stats: frozenset[str] = frozenset()  # rows PoB wrote as inf/nan (e.g. TotalEHP)
     full_dps: tuple[PobFullDpsEntry, ...] = ()  # ``<FullDPSSkill>`` rows, export order
 
 
@@ -128,17 +130,27 @@ def _tri_bool(v: str | None) -> bool | None:
     return v.lower() == "true"
 
 
-def _stat_rows(parent: etree._Element, tag: str) -> dict[str, float]:
-    """Collect ``<tag stat=… value=…/>`` rows; on repeats the first occurrence wins."""
+def _stat_rows(
+    parent: etree._Element, tag: str, non_finite: set[str] | None = None
+) -> dict[str, float]:
+    """Collect ``<tag stat=… value=…/>`` rows; on repeats the first occurrence wins.
+
+    PoB writes ``inf`` for e.g. TotalEHP when a build takes no damage in its configuration. That is
+    not a number we can store or compare; such rows are reported in ``non_finite`` instead.
+    """
     out: dict[str, float] = {}
     for el in parent.findall(tag):
         name, value = el.get("stat"), el.get("value")
         if not name or value is None or name in out:
             continue
         try:
-            out[name] = float(value)
+            f = float(value)
         except ValueError:
             continue
+        if math.isfinite(f):
+            out[name] = f
+        elif non_finite is not None:
+            non_finite.add(name)
     return out
 
 
@@ -164,8 +176,9 @@ def parse_xml(xml: bytes) -> PobExport:
         main_socket_group=_int(build.get("mainSocketGroup")),
     )
 
-    stats = _stat_rows(build, "PlayerStat")  # legacy exports repeat some stats
-    minion_stats = _stat_rows(build, "MinionStat")  # only present when the main skill has minions
+    non_finite: set[str] = set()
+    stats = _stat_rows(build, "PlayerStat", non_finite)  # legacy exports repeat some stats
+    minion_stats = _stat_rows(build, "MinionStat", non_finite)  # only with a minion main skill
     full_dps: list[PobFullDpsEntry] = []
     for fd in build.findall("FullDPSSkill"):
         name, value = fd.get("stat"), fd.get("value")
@@ -303,4 +316,5 @@ def parse_xml(xml: bytes) -> PobExport:
         layout=layout,
         minion_stats=minion_stats,
         full_dps=tuple(full_dps),
+        non_finite_stats=frozenset(non_finite),
     )

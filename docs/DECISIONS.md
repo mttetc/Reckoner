@@ -112,3 +112,36 @@ open upstream PR (#9505, used by the various `pob-mcp` servers).
 `RawSource` still keeps only a hash: the recalculation endpoint takes the code again (stateless
 until ADR-004 is revisited). Item edits and mastery selection are not yet exposed.
 
+## ADR-009 — Corpus persistence and the fetch policy (2026-09-03)
+
+**Context.** SPEC § 7: the corpus must exist independently of user pastes, be ingested only from
+permitted sources, keep attribution, honour robots.txt and rate limits, never touch Maxroll /
+Mobalytics or undocumented APIs. A sample of 24 recent official-forum build threads showed **no
+inline PoB code**: every author links a paste service (pobb.in mostly, some pastebin).
+
+**Decisions.**
+- **Storage**: PostgreSQL 17 + pgvector (extension enabled now, embeddings later). One JSONB
+  `document` per snapshot is the truth (full `BuildSnapshot`, provenance included, round-trips
+  exactly); scalar columns (`dps_total`, `life_max`, `ehp_total`, class, skill, patch…) are
+  search projections written once from the document. Unknown metrics are `NULL`, never 0, and
+  sort last. `build_snapshots(game, raw_sha256)` is unique: same code ⇒ duplicate, not a row.
+  Schema via `create_all` (`scripts/db_init.py`); Alembic arrives with the first data-preserving
+  migration.
+- **Fetch policy in code** (`app/corpus/policy.py`), unit-tested: an allowlist of hosts each with
+  the *reason* the fetch is permitted (recorded on every source row as `terms`), a denylist
+  (Maxroll, Mobalytics, pastebin `/raw/`, poe.ninja `/pob/raw`), robots.txt parsed and honoured
+  per host, identified User-Agent with a contact, ≥ 2 s between requests per host.
+- **pobb.in**: its robots.txt disallows `/*/raw$` for crawlers, but the project README documents
+  `/:id/raw` as a *public API for third-party integrations* with a User-Agent requirement. The
+  operator's documentation is the authority on tool access; we fetch it as documented, one paste
+  at a time, from links authors posted themselves. pastebin has no such documentation → excluded.
+- **Attribution** = thread URL + title + paste URL. No author handles are stored (data
+  minimisation; the URL is the attribution).
+- Ingestion is a script / cron path (`scripts/ingest_forum.py`), never an HTTP endpoint. The API
+  is read-only: `GET /builds` (filters, sort, unknown-last), `GET /builds/{id}`,
+  `GET /corpus/stats`. An empty corpus answers `{total: 0, items: []}` — a degraded state, not
+  an error (§ 13.8).
+
+**Consequences.** Corpus tests need PostgreSQL (dedicated `reckoner_test` database, created on
+demand; skipped locally without a server, mandatory in CI via a pgvector service container).
+

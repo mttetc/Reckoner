@@ -65,3 +65,10 @@ h2 { font-size: 12px; text-transform: uppercase; letter-spacing: .08em; color: v
 .delta.up { color: var(--ok); }
 .delta.down { color: var(--bad); }
 .delta.flat { color: var(--muted); }
+
+.nav { display: flex; gap: 14px; font-family: var(--mono); font-size: 12px; }
+.nav a { color: var(--muted); text-decoration: none; padding-bottom: 2px; }
+.nav a[aria-current="page"] { color: var(--fg); border-bottom: 1px solid var(--accent); }
+.filters { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.filters select, .filters input { background: var(--bg); color: var(--fg); border: 1px solid var(--line); border-radius: 3px; padding: 7px 9px; font-family: var(--mono); font-size: 12px; }
+.filters select:focus, .filters input:focus { outline: 2px solid var(--accent); outline-offset: 1px; }

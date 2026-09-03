@@ -88,6 +88,50 @@ export interface BuildVariant {
   baseline: BuildSnapshot | null;
 }
 
+export interface SourceInfo {
+  kind: string;
+  url: string;
+  title: string | null;
+  parent_url: string | null;
+  terms: string | null;
+}
+
+export interface BuildSummary {
+  snapshot_id: string;
+  game: string;
+  game_version: string | null;
+  character: BuildSnapshot["character"];
+  main_skill: string | null;
+  metrics: Metric[];
+  node_count: number | null;
+  created_at: string;
+  source: SourceInfo | null;
+}
+
+export interface SearchResponse {
+  total: number;
+  items: BuildSummary[];
+}
+
+export interface BuildDetail {
+  snapshot: BuildSnapshot;
+  source: SourceInfo | null;
+}
+
+export interface SearchParams {
+  game?: string;
+  class_name?: string;
+  subclass?: string;
+  main_skill?: string;
+  game_version?: string;
+  min_dps?: number;
+  min_life?: number;
+  min_ehp?: number;
+  sort?: string;
+  limit?: number;
+  offset?: number;
+}
+
 export interface ApiError {
   code: string;
   message: string;
@@ -142,4 +186,26 @@ export async function analyzeBuild(code: string, game?: string): Promise<BuildSn
   if (!res.ok) throw await toError(res);
   const json = (await res.json()) as { snapshot: BuildSnapshot };
   return json.snapshot;
+}
+
+async function get(path: string): Promise<Response> {
+  try {
+    return await fetch(`${API_URL}${path}`, { cache: "no-store" });
+  } catch {
+    throw new ApiRequestError(0, { code: "backend_unreachable", message: "The analysis service is unreachable." });
+  }
+}
+
+export async function searchBuilds(params: SearchParams): Promise<SearchResponse> {
+  const qs = new URLSearchParams();
+  for (const [k, v] of Object.entries(params)) if (v !== undefined && v !== "" && v !== null) qs.set(k, String(v));
+  const res = await get(`/api/v1/builds?${qs.toString()}`);
+  if (!res.ok) throw await toError(res);
+  return (await res.json()) as SearchResponse;
+}
+
+export async function getBuild(snapshotId: string): Promise<BuildDetail> {
+  const res = await get(`/api/v1/builds/${encodeURIComponent(snapshotId)}`);
+  if (!res.ok) throw await toError(res);
+  return (await res.json()) as BuildDetail;
 }

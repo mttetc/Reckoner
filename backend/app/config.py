@@ -22,5 +22,11 @@ class Settings(BaseSettings):
     luajit_bin: str = "luajit"
     engine_timeout_s: float = 90.0
 
+    # Corpus ingestion (SPEC § 7). Identify the fetcher; sources ask for contact info.
+    corpus_user_agent: str = (
+        "Reckoner/0.1 (+https://github.com/mttetc/Reckoner; contact: GitHub issues)"
+    )
+    corpus_request_delay_s: float = 2.0
+
 
 settings = Settings()

@@ -217,6 +217,14 @@ class PoEAdapter:
                 metrics.append(
                     Metric(key=key.value, value=stats[stat_name], unit=unit, provenance=prov)
                 )
+            elif stat_name in export.non_finite_stats:
+                metrics.append(
+                    Metric.unknown(
+                        key.value,
+                        f"engine reported a non-finite value for '{stat_name}' (inf/nan)",
+                        unit=unit,
+                    )
+                )
             else:
                 metrics.append(
                     Metric.unknown(

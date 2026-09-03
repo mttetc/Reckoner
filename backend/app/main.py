@@ -2,7 +2,7 @@ from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
-from app.api.routes import builds, games
+from app.api.routes import builds, corpus, games
 from app.config import settings
 from app.domain.errors import (
     DomainError,
@@ -40,4 +40,5 @@ def health() -> dict[str, str]:
 
 
 app.include_router(builds.router, prefix="/api/v1")
+app.include_router(corpus.router, prefix="/api/v1")
 app.include_router(games.router, prefix="/api/v1")

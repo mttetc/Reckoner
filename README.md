@@ -23,6 +23,7 @@ agent yet. Modified-build recalculation runs through the real headless Path of B
 | Never simulate a modified calculation | `PoEAdapter.recalculate` runs the real headless Path of Building (pinned commit, `app/games/poe/engine/`) and returns a same-engine baseline next to the variant; without the engine the API returns 503, never a guess (ADR-008) |
 | Build history never overwritten | `BuildSnapshot` is frozen; `Build` only appends snapshot ids |
 | Knowledge is game-aware | `KnowledgeMetadata.game` is mandatory (retrieval filter to come with the RAG layer) |
+| Ingestion respects the source | `app/corpus/policy.py`: allowlist with stated terms, denylist (Maxroll, Mobalytics, undocumented endpoints), robots.txt, identified UA, rate limit — unit-tested |
 
 ## Layout
 
@@ -33,13 +34,16 @@ backend/            FastAPI · Python ≥ 3.12
     poe/            Path of Exile: PoB codec, XML parser (legacy + current layouts), tree URL decoder
       engine/       headless PoB: bridge.lua (JSON over stdio) + Python client; modifications validated by PoB itself
     poe2/ diablo3/  Phase 2 / 3 placeholders
-  app/api/          /api/v1/builds/analyze · /api/v1/builds/recalculate · /api/v1/games · /health
+  app/corpus/       ingestion policy (allowlist, robots.txt, rate limit) + pipeline (validate, dedupe, persist)
+  app/db/           PostgreSQL + pgvector: models, repository (search with unknown-last ordering)
+  app/api/          /builds/analyze · /builds/recalculate · /builds (search) · /builds/{id} · /corpus/stats · /games
   scripts/first_light.py   SPEC § 15: decode a real code, print DPS and life with provenance
-  scripts/harvest_forum_codes.py  collect recent codes linked from the official forums (robustness pass, § 7 seed)
+  scripts/ingest_forum.py  corpus ingestion from the official forums (policy-enforced; cron, not HTTP)
+  scripts/ingest_files.py  dev seed / e2e fixtures into the corpus · scripts/db_init.py  schema bootstrap
   scripts/install_pob.sh   pinned, sparse Path of Building checkout into .engines/pob (≈650 MB)
   tests/            unit + integration + engine (pytest; engine tests skip without PoB, CI runs them for real)
 frontend/           Next.js 16 · analyse page · Playwright e2e (drives backend + frontend)
-docker-compose.yml  PostgreSQL 17 + pgvector (not used yet — see ADR-004)
+docker-compose.yml  PostgreSQL 17 + pgvector (or `brew install postgresql@17 pgvector`)
 ```
 
 ## Run
@@ -55,6 +59,11 @@ cd backend && python3 -m venv .venv && .venv/bin/pip install -e ".[dev]"
 scripts/install_pob.sh                            # → .engines/pob, prints the two env vars
 cp .env.example .env                              # RECKONER_POB_SRC, RECKONER_POB_SOURCE_COMMIT
 .venv/bin/python -m pytest tests/engine -rs       # 12 tests against the real engine
+
+# corpus (PostgreSQL + pgvector; docker compose up -d db, or a local server with a `reckoner` role)
+.venv/bin/python scripts/db_init.py
+.venv/bin/python scripts/ingest_files.py tests/fixtures/pob/*.txt      # dev seed
+.venv/bin/python scripts/ingest_forum.py --threads-per-forum 5          # real ingestion, polite
 .venv/bin/uvicorn app.main:app --reload --port 8000
 
 # frontend
