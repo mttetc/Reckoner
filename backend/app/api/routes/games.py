@@ -9,10 +9,18 @@ router = APIRouter(prefix="/games", tags=["games"])
 
 @router.get("", response_model=list[GameInfo])
 def games() -> list[GameInfo]:
-    return [
-        GameInfo(id=a.game, display_name=a.display_name, capabilities=a.capabilities())
-        for a in list_adapters()
-    ]
+    out = []
+    for a in list_adapters():
+        latest = getattr(a, "latest_tree_version", None)
+        out.append(
+            GameInfo(
+                id=a.game,
+                display_name=a.display_name,
+                capabilities=a.capabilities(),
+                latest_tree_version=latest() if callable(latest) else None,
+            )
+        )
+    return out
 
 
 @router.get("/{game}/tree/{version}")

@@ -147,6 +147,10 @@ class GameInfo(BaseModel):
     id: GameId
     display_name: str
     capabilities: AdapterCapabilities
+    latest_tree_version: str | None = Field(
+        default=None,
+        description="Newest passive tree the engine knows, e.g. 3.29 (None without engine).",
+    )
 
 
 class ErrorBody(BaseModel):

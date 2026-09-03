@@ -89,6 +89,11 @@ test("an invalid code is refused, not guessed", async ({ page }) => {
 test("one page, one conversation: the composer has focus and nothing technical is on screen", async ({ page }) => {
   await page.goto("/");
   await expect(page.getByTestId("ask-question")).toBeFocused();
+  // The passive tree sits behind the conversation, decorative and out of the way.
+  const backdrop = page.getByTestId("tree-backdrop");
+  await expect(backdrop).toBeAttached({ timeout: 30_000 });
+  await expect(backdrop).toHaveAttribute("aria-hidden", "true");
+  expect(await backdrop.locator("circle").count()).toBeGreaterThan(1000);
   await expect(page.locator("nav")).toHaveCount(0);
   for (const word of ["corpus", "engine", "pipeline", "vector", "embedding", "index"]) {
     await expect(page.locator("body")).not.toContainText(word);

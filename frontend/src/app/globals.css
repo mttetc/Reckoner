@@ -124,6 +124,21 @@
 .aui-assistant-message-root { border-left: 2px solid var(--accent); padding-left: 12px; }
 .aui-thread-welcome-suggestion { border-color: var(--line-2) !important; color: var(--fg-2) !important; font-family: var(--sans); }
 .reckoner-extras { margin-top: 10px; }
+/* the passive tree, faint, behind the conversation */
+.tree-backdrop { position: absolute; inset: 0; overflow: hidden; pointer-events: none; z-index: 0; opacity: 0.55; }
+.tree-backdrop svg { width: 100%; height: 100%; display: block; }
+.tree-backdrop::after { content: ""; position: absolute; inset: 0; background: radial-gradient(ellipse at 50% 40%, transparent 30%, var(--bg) 78%); }
+.backdrop-edges { fill: none; stroke: #2a2f3b; stroke-width: 12; opacity: 0.55; }
+.backdrop-node { fill: #232833; }
+.backdrop-node.Notable { fill: #2d3340; }
+.backdrop-node.Keystone { fill: #3a3424; stroke: #5a4a2a; stroke-width: 8; }
+.backdrop-node.ClassStart { fill: #1d2028; stroke: #3d4352; stroke-width: 10; }
+.aui-thread-root { position: relative; z-index: 1; }
+@media (prefers-reduced-motion: no-preference) {
+  .tree-backdrop svg { animation: drift 90s ease-in-out infinite alternate; }
+  @keyframes drift { from { transform: scale(1.02) translate(-0.6%, 0.4%); } to { transform: scale(1.06) translate(0.6%, -0.6%); } }
+}
+
 /* live steps while answering */
 .step-line { display: flex; align-items: center; gap: 6px; font-family: var(--mono); font-size: 11.5px; color: var(--muted); margin: 2px 0; }
 .step-line[data-state="ok"] .step-icon { color: var(--ok); }

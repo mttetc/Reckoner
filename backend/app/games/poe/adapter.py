@@ -134,6 +134,15 @@ class PoEAdapter:
             },
         )
 
+    def latest_tree_version(self) -> str | None:
+        """Newest tree the engine ships, as a patch string; None when no engine is installed."""
+        if not self.engine.available():
+            return None
+        try:
+            return tree_version_to_patch(self.engine.info().latest_tree_version)
+        except EngineUnavailable:
+            return None
+
     def tree_geometry(self, version: str) -> dict:
         """Passive tree geometry for rendering (SPEC § 11 tree diffs). Engine-computed, cached."""
         if not self.engine.available():

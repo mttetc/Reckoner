@@ -23,6 +23,7 @@ import { ThreadListSidebar } from "@/components/assistant-ui/elements/threadlist
 import { BuildCardUI } from "@/components/tools/BuildCardUI";
 import { SourcesUI } from "@/components/tools/SourcesUI";
 import { StepUIs } from "@/components/tools/StepUI";
+import { TreeBackdrop } from "@/components/tree/TreeBackdrop";
 import { ERROR_COPY } from "@/components/Result";
 import { CODE_RE } from "@/components/UserText";
 import { API_URL, analyzeBuild, ApiRequestError, type AskResponse } from "@/lib/api";
@@ -195,7 +196,8 @@ export default function Home() {
             <SidebarTrigger data-testid="sidebar-trigger" />
             <span className="font-mono text-xs tracking-[0.18em] uppercase">Reckoner</span>
           </header>
-          <div className="h-[calc(100dvh-3rem)]">
+          <div className="relative h-[calc(100dvh-3rem)]">
+            <TreeBackdrop />
             <Thread />
           </div>
         </SidebarInset>

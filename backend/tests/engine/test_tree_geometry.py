@@ -51,3 +51,38 @@ def test_api_tree_endpoint(code_modern):
     assert r.status_code == 422
     r = c.get("/api/v1/games/poe2/tree/0.5")
     assert r.status_code == 404
+
+
+def test_known_keystones_and_class_starts_are_where_the_game_puts_them():
+    """Anchors against the real game: names that exist in every recent tree, at plausible places."""
+    geo = get_engine().tree_geometry("3_29")
+    by_name = {n["name"]: n for n in geo["nodes"] if n["type"] == "Keystone"}
+    for name in ("Resolute Technique", "Chaos Inoculation", "Elemental Overload", "Point Blank"):
+        assert name in by_name, f"keystone {name} missing from 3.29"
+    starts = [n for n in geo["nodes"] if n["type"] == "ClassStart"]
+    xs = sorted(n["x"] for n in starts)
+    ys = sorted(n["y"] for n in starts)
+    # Seven class starts spread across the tree, not stacked: the inner ring has real extent.
+    assert xs[-1] - xs[0] > 5000 and ys[-1] - ys[0] > 5000
+    # The main graph is connected data, not a cloud. The only unlinked nodes are cluster-jewel
+    # templates (sockets and the notables/keystones they can hold), which live outside the tree.
+    lonely = [n for n in geo["nodes"] if n["type"] != "Mastery" and not n["linked"]]
+    assert len(lonely) < 80, [n["name"] for n in lonely[:5]]
+    assert all(n["type"] in ("Socket", "Notable", "Keystone", "Normal") for n in lonely)
+    for name in ("Resolute Technique", "Chaos Inoculation", "Elemental Overload", "Point Blank"):
+        assert by_name[name]["linked"], f"{name} must be on the main tree"
+
+
+def test_geometry_follows_the_build_version(code_modern):
+    old = get_engine().tree_geometry("3_27")
+    new = get_engine().tree_geometry("3_29")
+    assert old["version"] == "3_27" and new["version"] == "3_29"
+    assert {n["id"] for n in old["nodes"]} != {n["id"] for n in new["nodes"]}, (
+        "trees change between patches"
+    )
+
+
+def test_games_endpoint_reports_latest_tree():
+    c = TestClient(app)
+    poe = next(g for g in c.get("/api/v1/games").json() if g["id"] == "poe")
+    assert poe["latest_tree_version"] and poe["latest_tree_version"][0] == "3"
