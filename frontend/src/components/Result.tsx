@@ -11,6 +11,7 @@ import {
   type SourceInfo,
 } from "@/lib/api";
 import { formatMetric, METRIC_LABELS, PRIMARY_METRICS } from "@/lib/format";
+import { PassiveTree, type TreeDiff } from "@/components/tree/PassiveTree";
 
 export const ERROR_COPY: Record<string, string> = {
   invalid_build_code: "This does not look like a build code we can read.",
@@ -80,7 +81,17 @@ function Delta({ before, after, unit, testId }: { before: number | null; after: 
 }
 
 /** SPEC § 5 B — a modification is only ever evaluated by the real engine; the UI shows what it said. */
-function WhatIf({ code, parent }: { code: string; parent: BuildSnapshot }) {
+function diffTrees(v: BuildVariant): TreeDiff | null {
+  if (!v.baseline) return null;
+  const before = new Set(v.baseline.tree.node_ids);
+  const after = new Set(v.snapshot.tree.node_ids);
+  return {
+    added: new Set([...after].filter((id) => !before.has(id))),
+    removed: new Set([...before].filter((id) => !after.has(id))),
+  };
+}
+
+function WhatIf({ code, parent, onVariant }: { code: string; parent: BuildSnapshot; onVariant?: (v: BuildVariant | null) => void }) {
   const [kind, setKind] = useState("tree.deallocate");
   const [node, setNode] = useState("");
   const [boss, setBoss] = useState("Uber");
@@ -104,8 +115,11 @@ function WhatIf({ code, parent }: { code: string; parent: BuildSnapshot }) {
     if (!mod) return;
     setState({ kind: "loading" });
     try {
-      setState({ kind: "result", variant: await recalculateBuild(code, [mod]) });
+      const variant = await recalculateBuild(code, [mod]);
+      setState({ kind: "result", variant });
+      onVariant?.(variant);
     } catch (err) {
+      onVariant?.(null);
       if (err instanceof ApiRequestError) setState({ kind: "error", code: err.body.code, message: err.body.message });
       else setState({ kind: "error", code: "unexpected", message: String(err) });
     }
@@ -216,6 +230,7 @@ function WhatIf({ code, parent }: { code: string; parent: BuildSnapshot }) {
 }
 
 export function Result({ snapshot: s, code, source }: { snapshot: BuildSnapshot; code?: string; source?: SourceInfo | null }) {
+  const [treeDiff, setTreeDiff] = useState<TreeDiff | null>(null);
   const primary = PRIMARY_METRICS.map((k) => s.metrics.find((m) => m.key === k)).filter(Boolean) as Metric[];
   const rest = s.metrics.filter((m) => !PRIMARY_METRICS.includes(m.key));
   return (
@@ -272,6 +287,9 @@ export function Result({ snapshot: s, code, source }: { snapshot: BuildSnapshot;
           ? `unknown — ${s.tree.unknown_reason}`
           : `${s.tree.node_ids.length} allocated nodes · tree ${s.tree.version ?? "version unknown"} · ${Object.keys(s.tree.mastery_effects).length} masteries`}
       </p>
+      {!s.tree.unknown_reason ? (
+        <PassiveTree version={s.tree.version} allocated={s.tree.node_ids} ascendancy={s.character.subclass} diff={treeDiff ?? null} />
+      ) : null}
 
       <h2>Items ({s.items.length})</h2>
       <table data-testid="items">
@@ -335,7 +353,7 @@ export function Result({ snapshot: s, code, source }: { snapshot: BuildSnapshot;
         </p>
       ) : null}
       {code ? (
-        <WhatIf code={code} parent={s} />
+        <WhatIf code={code} parent={s} onVariant={(v) => setTreeDiff(v ? diffTrees(v) : null)} />
       ) : (
         <p className="hint whatif" data-testid="whatif-unavailable">
           What-if recalculation needs the original code; the corpus keeps only its hash. Paste the code on the analyse page.

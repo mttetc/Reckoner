@@ -89,6 +89,7 @@ class PobHeadless:
         self._proc: subprocess.Popen[str] | None = None
         self._info: EngineInfo | None = None
         self._stderr: collections.deque[str] = collections.deque(maxlen=40)
+        self._trees: dict[str, dict[str, Any]] = {}
         self._lock = threading.Lock()
         self._next_id = 0
 
@@ -257,6 +258,17 @@ class PobHeadless:
                     applied=tuple(raw.get("applied") or ()),
                 ),
             )
+
+    def tree_geometry(self, version: str) -> dict[str, Any]:
+        """Node positions and links of a tree version, computed by PoB. Cached per version."""
+        key = version.replace(".", "_")
+        with self._lock:
+            cached = self._trees.get(key)
+            if cached is not None:
+                return cached
+            data = self._request("tree", version=key)
+            self._trees[key] = data
+            return data
 
     def close(self) -> None:
         with self._lock:

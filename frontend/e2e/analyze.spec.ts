@@ -143,3 +143,25 @@ test.describe("what-if recalculation (real headless engine)", () => {
     await expect(page.getByTestId("whatif-result")).toHaveCount(0);
   });
 });
+
+test.describe("passive tree (geometry from the engine)", () => {
+  test("draws the allocated tree and shows a what-if diff", async ({ page }) => {
+    await page.goto("/");
+    await page.getByTestId("code-input").fill(modern);
+    await page.getByTestId("analyze").click();
+    const tree = page.getByTestId("tree-view");
+    await expect(tree).toBeVisible({ timeout: 30_000 });
+    await expect(tree.locator(".tree-bar")).toContainText("allocated nodes drawn");
+    await expect(tree.locator(".tree-bar")).toContainText("cluster-jewel nodes not drawn");
+    const lit = tree.locator("circle[data-allocated='true']");
+    expect(await lit.count()).toBeGreaterThan(100);
+    await expect(tree.locator("circle[data-node-id='41119']")).toHaveAttribute("data-allocated", "true");
+
+    await page.getByTestId("mod-kind").selectOption("tree.deallocate");
+    await page.getByTestId("mod-node").fill("41119");
+    await page.getByTestId("recalc").click();
+    await expect(page.getByTestId("whatif-result")).toBeVisible({ timeout: 30_000 });
+    await expect(tree.locator(".tree-bar")).toContainText("−1");
+    await expect(tree.locator("circle[data-node-id='41119']")).toHaveClass(/removed/);
+  });
+});

@@ -181,6 +181,28 @@ export interface AskResponse {
   duration_ms: number;
 }
 
+export interface TreeNode {
+  id: number;
+  name: string;
+  type: string; // Normal · Notable · Keystone · Mastery · Socket · ClassStart · AscendClassStart
+  x: number;
+  y: number;
+  g: number | null;
+  o: number | null;
+  angle: number | null;
+  ascendancy: string | null;
+  class_start: number | null;
+  linked: number[];
+}
+
+export interface TreeGeometry {
+  version: string;
+  orbit_radii: number[];
+  groups: Record<string, { x: number; y: number }>;
+  nodes: TreeNode[];
+  classes: Array<{ name: string; ascendancies: string[] }>;
+}
+
 export interface ApiError {
   code: string;
   message: string;
@@ -271,4 +293,21 @@ export async function askReckoner(question: string, game?: string, code?: string
   const res = await post("/api/v1/ask", { question, game: game ?? null, code: code?.trim() ? code : null });
   if (!res.ok) throw await toError(res);
   return (await res.json()) as AskResponse;
+}
+
+const treeCache = new Map<string, Promise<TreeGeometry>>();
+
+/** Whole-tree geometry for a version, as computed by the game engine. Cached per version. */
+export function getTreeGeometry(game: string, version: string): Promise<TreeGeometry> {
+  const key = `${game}/${version}`;
+  let p = treeCache.get(key);
+  if (!p) {
+    p = get(`/api/v1/games/${game}/tree/${encodeURIComponent(version)}`).then(async (res) => {
+      if (!res.ok) throw await toError(res);
+      return (await res.json()) as TreeGeometry;
+    });
+    p.catch(() => treeCache.delete(key));
+    treeCache.set(key, p);
+  }
+  return p;
 }

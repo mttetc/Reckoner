@@ -16,7 +16,7 @@ from app.domain.build import (
     SkillGroup,
     Tree,
 )
-from app.domain.errors import EngineUnavailable, InvalidModification
+from app.domain.errors import EngineUnavailable, InvalidBuildCode, InvalidModification
 from app.domain.provenance import Metric, MetricKey, Provenance, ProvenanceStatus
 from app.games.base import AdapterCapabilities
 from app.games.poe.engine import EngineInfo, EngineStats, PobHeadless, get_engine
@@ -133,6 +133,18 @@ class PoEAdapter:
                 "modifications_applied": list(applied),
             },
         )
+
+    def tree_geometry(self, version: str) -> dict:
+        """Passive tree geometry for rendering (SPEC § 11 tree diffs). Engine-computed, cached."""
+        if not self.engine.available():
+            raise EngineUnavailable(
+                "tree rendering needs the headless Path of Building engine: "
+                + self.engine.unavailable_reason()
+            )
+        try:
+            return self.engine.tree_geometry(version)
+        except InvalidModification as exc:  # bridge refused the version
+            raise InvalidBuildCode(str(exc)) from exc
 
     # ------------------------------------------------------------------ mapping
 

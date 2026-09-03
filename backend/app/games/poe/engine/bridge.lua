@@ -209,6 +209,59 @@ local function modify(mods)
 	return { applied = applied, stats = stats(), xml = build:SaveDB("code") }
 end
 
+-- ---------------------------------------------------------------- tree geometry
+
+-- Geometry of a whole passive tree version, as PoB computes it (group + orbit → x/y). Only the
+-- data needed to draw it: no stats, no sprites. Cluster-jewel proxy templates are skipped.
+local function treeGeometry(version)
+	if type(version) ~= "string" or not version:match("^%d+_%d+$") then
+		error("version must look like 3_29", 0)
+	end
+	local ok, tree = pcall(function() return __mainObject__.main:LoadTree(version) end)
+	if not ok or not tree then error("tree version " .. version .. " is not available in this PoB checkout", 0) end
+	local nodes, groups, n = {}, {}, 0
+	for id, node in pairs(tree.nodes) do
+		if node.x and node.y and not node.isProxy then
+			local linked = {}
+			for _, other in ipairs(node.linked or {}) do
+				if other.x and not other.isProxy then linked[#linked + 1] = other.id end
+			end
+			n = n + 1
+			nodes[n] = {
+				id = node.id,
+				name = node.dn or node.name or "",
+				type = node.type,
+				x = math.floor(node.x + 0.5),
+				y = math.floor(node.y + 0.5),
+				g = node.g,
+				o = node.o,
+				angle = node.angle,
+				ascendancy = node.ascendancyName or json.null,
+				class_start = node.classStartIndex or json.null,
+				linked = linked,
+			}
+			if node.group and node.g and not groups[tostring(node.g)] then
+				groups[tostring(node.g)] = { x = math.floor(node.group.x + 0.5), y = math.floor(node.group.y + 0.5) }
+			end
+		end
+	end
+	return {
+		version = version,
+		orbit_radii = tree.orbitRadii,
+		groups = groups,
+		nodes = nodes,
+		classes = (function()
+			local out = {}
+			for i, class in ipairs(tree.classes or {}) do
+				local ascs = {}
+				for j, a in ipairs(class.classes or {}) do ascs[j] = a.name end
+				out[i] = { name = class.name, ascendancies = ascs }
+			end
+			return out
+		end)(),
+	}
+end
+
 -- ---------------------------------------------------------------- main loop
 
 local ops = {
@@ -217,6 +270,7 @@ local ops = {
 	stats = function() if not state.xml then error("no build loaded", 0) end return stats() end,
 	modify = function(req) return modify(req.modifications) end,
 	export = function() if not state.xml then error("no build loaded", 0) end return { xml = build:SaveDB("code") } end,
+	tree = function(req) return treeGeometry(req.version) end,
 }
 
 stdout:write(json.encode({ event = "ready", info = info() }), "\n")
