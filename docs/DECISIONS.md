@@ -179,3 +179,30 @@ authoritative and versioned is GGG's own patch notes: PoE 1 (forum `patch-notes`
 `GET /knowledge/stats`. Scores are cosine similarities shown as such, never game numbers.
 `get_patch_changes()` for the agent can be built on `patches()` + a patch filter.
 
+## ADR-011 — Agent: tools own the facts, the model only talks; numbers are audited (2026-09-03)
+
+**Context.** SPEC § 9 wants one perceived interaction for many internal operations, with the
+LLM orchestrating and never being the source of truth. § 13.1: a bare float exposed is a failure.
+
+**Decisions.**
+- **Tools are the only way to a number.** Nine deterministic tools (`search_builds`, `get_build`,
+  `analyze_build_code`, `calculate_build`, `compare_builds`, `search_knowledge`,
+  `get_patch_changes`, `corpus_stats`, `list_games`) wrap the services. Each returns JSON plus
+  `Evidence` items (statement + `Provenance`; knowledge passages are `claimed` with source URL).
+  A refused or failed tool becomes an error result the model must acknowledge and a
+  `degraded` entry in the answer — never an exception to the user, never a guess.
+- **The answer is audited.** Every numeric token in the final text (English, French and compact
+  `18.6M` forms) must match a value present in the tool results; anything else is listed as
+  `unverified` and shown in red. We do not trust the prompt to enforce rule 1; we check.
+- **Provider is a setting.** `openai_compat` (default: a free local model via Ollama,
+  `qwen2.5:7b`; also Groq / Mistral / OpenRouter / Gemini free tiers), `anthropic` (Claude), or
+  `scripted`. The scripted policy has no model: a deterministic tool plan and a templated answer.
+  It labels itself `scripted` in every response and is what tests, CI and e2e run — they verify
+  the loop, the trace, the evidence and the audit, none of which depend on model quality.
+- No agent framework (SPEC § 12): the loop is ~100 lines; the trace, evidence and audit are ours.
+- The user never picks a tool (§ 10): `POST /ask {question, game?, code?}`; the page shows the
+  answer, then the audit line, then collapsible "how it was built" and "evidence" sections.
+
+**Consequences.** Real-model quality is untested in CI by design; `scripts/`-level smoke runs
+against Ollama are the way to evaluate prompts. Streaming and multi-turn memory are not in scope.
+

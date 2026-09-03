@@ -2,7 +2,7 @@ from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
-from app.api.routes import builds, corpus, games, knowledge
+from app.api.routes import ask, builds, corpus, games, knowledge
 from app.config import settings
 from app.domain.errors import (
     DomainError,
@@ -45,3 +45,4 @@ app.include_router(builds.router, prefix="/api/v1")
 app.include_router(corpus.router, prefix="/api/v1")
 app.include_router(games.router, prefix="/api/v1")
 app.include_router(knowledge.router, prefix="/api/v1")
+app.include_router(ask.router, prefix="/api/v1")

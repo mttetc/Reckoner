@@ -32,5 +32,21 @@ class Settings(BaseSettings):
     # "hash" = dependency-free deterministic embedder (tests / CI).
     embedder: str = "auto"
 
+    # Agent (SPEC § 9). Providers:
+    #   openai_compat — any OpenAI-compatible chat API with tool calling: Ollama (free, local,
+    #                   default), Groq / Mistral / OpenRouter / Gemini free tiers, …
+    #   anthropic     — Claude via the Anthropic API (needs anthropic_api_key)
+    #   scripted      — no model: deterministic policy for tests/CI, labelled as such
+    # If the configured provider cannot be reached at startup, the scripted policy answers and
+    # says so; nothing is ever silently approximated.
+    llm: str = "openai_compat"
+    llm_model: str = "qwen2.5:7b"
+    llm_base_url: str = "http://localhost:11434/v1"
+    llm_api_key: str | None = Field(default=None, validation_alias="RECKONER_LLM_API_KEY")
+    anthropic_api_key: str | None = Field(
+        default=None, validation_alias="RECKONER_ANTHROPIC_API_KEY"
+    )
+    agent_max_steps: int = 6
+
 
 settings = Settings()

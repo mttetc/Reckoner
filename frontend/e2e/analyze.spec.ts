@@ -65,13 +65,13 @@ test("invalid code shows the invalid-code state, not a guess", async ({ page }) 
 test("submit is disabled on empty input and the page is keyboard reachable", async ({ page }) => {
   await page.goto("/");
   await expect(page.getByTestId("analyze")).toBeDisabled();
-  // Tab order: nav (Analyse, Builds) then the code textarea — nothing unreachable in between.
-  await page.keyboard.press("Tab");
-  await expect(page.getByRole("link", { name: "Analyse" })).toBeFocused();
-  await page.keyboard.press("Tab");
-  await expect(page.getByTestId("nav-builds")).toBeFocused();
-  await page.keyboard.press("Tab");
-  await expect(page.getByTestId("nav-knowledge")).toBeFocused();
+  // Tab order: every nav link first (all focusable), then the code textarea — nothing trapped.
+  const navLinks = await page.locator("nav a").count();
+  expect(navLinks).toBeGreaterThan(0);
+  for (let i = 0; i < navLinks; i++) {
+    await page.keyboard.press("Tab");
+    await expect(page.locator("nav a").nth(i)).toBeFocused();
+  }
   await page.keyboard.press("Tab");
   await expect(page.getByTestId("code-input")).toBeFocused();
 });

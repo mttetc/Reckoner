@@ -12,7 +12,7 @@ provenance — behind a natural-language interface. The full specification is in
 
 **Status: Phase 1, slice A.** Paste a Path of Building export → normalised build snapshot where every
 number carries its provenance and every gap is an explicit `unknown`. No corpus, knowledge layer or
-agent yet. Modified-build recalculation runs through the real headless Path of Building when installed (tree allocation, config, gem level/quality); item edits are not exposed yet.
+Modified-build recalculation runs through the real headless Path of Building when installed (tree allocation, config, gem level/quality); item edits are not exposed yet.
 
 ## Principles that are enforced in code
 
@@ -23,6 +23,7 @@ agent yet. Modified-build recalculation runs through the real headless Path of B
 | Never simulate a modified calculation | `PoEAdapter.recalculate` runs the real headless Path of Building (pinned commit, `app/games/poe/engine/`) and returns a same-engine baseline next to the variant; without the engine the API returns 503, never a guess (ADR-008) |
 | Build history never overwritten | `BuildSnapshot` is frozen; `Build` only appends snapshot ids |
 | Knowledge is game-aware | `KnowledgeRepository.search(game, …)` refuses an empty game (422); the API requires `game` by type; `tests/corpus/test_knowledge_isolation.py` proves zero cross-game hits both ways, in CI (ADR-010) |
+| The model is never the source of truth | `app/agent`: numbers come only from tools with `Evidence`; the final text is audited and untraceable numbers are shown as unverified (ADR-011) |
 | Ingestion respects the source | `app/corpus/policy.py`: allowlist with stated terms, denylist (Maxroll, Mobalytics, undocumented endpoints), robots.txt, identified UA, rate limit — unit-tested |
 
 ## Layout
@@ -38,7 +39,8 @@ backend/            FastAPI · Python ≥ 3.12
   app/corpus/       ingestion policy (allowlist, robots.txt, rate limit) + pipeline (validate, dedupe, persist)
   app/db/           PostgreSQL + pgvector: models, repository (search with unknown-last ordering)
   app/knowledge/    versioned knowledge: heading-aware chunker, local embeddings (fastembed / hash), game-filtered retrieval
-  app/api/          /builds/analyze · /builds/recalculate · /builds · /builds/{id} · /corpus/stats · /knowledge/search · /knowledge/patches · /games
+  app/agent/        tool registry + evidence, LLM clients (Ollama/OpenAI-compatible, Anthropic, scripted), loop, number audit
+  app/api/          /ask · /builds/analyze · /builds/recalculate · /builds · /builds/{id} · /corpus/stats · /knowledge/search · /knowledge/patches · /games
   scripts/first_light.py   SPEC § 15: decode a real code, print DPS and life with provenance
   scripts/ingest_forum.py  corpus ingestion from the official forums (policy-enforced; cron, not HTTP)
   scripts/ingest_files.py  dev seed / e2e fixtures into the corpus · scripts/db_init.py  schema bootstrap
@@ -69,6 +71,9 @@ cp .env.example .env                              # RECKONER_POB_SRC, RECKONER_P
 .venv/bin/pip install -e ".[rag]"                                        # local ONNX embeddings (optional)
 .venv/bin/python scripts/ingest_patch_notes.py --game poe --limit 5     # official patch notes → knowledge
 .venv/bin/python scripts/ingest_patch_notes.py --game poe2 --limit 5
+
+# agent (free, local): brew install ollama && ollama pull qwen2.5:7b && brew services start ollama
+# then POST /api/v1/ask or open /ask. Without a reachable model the scripted policy answers and says so.
 .venv/bin/uvicorn app.main:app --reload --port 8000
 
 # frontend

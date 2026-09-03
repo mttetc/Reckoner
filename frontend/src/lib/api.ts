@@ -151,6 +151,36 @@ export interface KnowledgeHit {
   score: number;
 }
 
+export interface Evidence {
+  statement: string;
+  provenance: Provenance;
+  source_url: string | null;
+  excerpt: string | null;
+  published_at: string | null;
+  retrieved_at: string | null;
+}
+
+export interface AskStep {
+  tool: string;
+  args: Record<string, unknown>;
+  ok: boolean;
+  summary: string;
+  error: string | null;
+  duration_ms: number;
+}
+
+export interface AskResponse {
+  answer: string;
+  model: string;
+  steps: AskStep[];
+  evidence: Evidence[];
+  audit: { checked: number; unverified: string[]; clean: boolean };
+  degraded: string[];
+  input_tokens: number;
+  output_tokens: number;
+  duration_ms: number;
+}
+
 export interface ApiError {
   code: string;
   message: string;
@@ -235,4 +265,10 @@ export async function searchKnowledge(game: string, q: string, k = 8, patch?: st
   const res = await get(`/api/v1/knowledge/search?${qs.toString()}`);
   if (!res.ok) throw await toError(res);
   return (await res.json()) as KnowledgeHit[];
+}
+
+export async function askReckoner(question: string, game?: string, code?: string): Promise<AskResponse> {
+  const res = await post("/api/v1/ask", { question, game: game ?? null, code: code?.trim() ? code : null });
+  if (!res.ok) throw await toError(res);
+  return (await res.json()) as AskResponse;
 }

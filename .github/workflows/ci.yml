@@ -33,10 +33,10 @@ jobs:
       - run: .venv/bin/ruff check app tests scripts && .venv/bin/ruff format --check app tests scripts
       - name: Tests without the engine (recalculation must degrade to 503, never approximate)
         run: .venv/bin/python -m pytest -q -rs
-        env: { RECKONER_EMBEDDER: hash }
-      - name: Corpus + knowledge-isolation tests must not have skipped (SPEC § 13.3)
+        env: { RECKONER_EMBEDDER: hash, RECKONER_LLM: scripted }
+      - name: Corpus + knowledge-isolation + agent tests must not have skipped (SPEC § 13.3)
         run: .venv/bin/python -m pytest -q tests/corpus -rs 2>&1 | tee /dev/stderr | grep -q "skipped" && exit 1 || true
-        env: { RECKONER_EMBEDDER: hash }
+        env: { RECKONER_EMBEDDER: hash, RECKONER_LLM: scripted }
       - name: SPEC § 15 — first light on a real export
         run: .venv/bin/python scripts/first_light.py tests/fixtures/pob/slayer_lightning_strike_3_27.txt
 
@@ -134,6 +134,7 @@ jobs:
         env:
           CI: "1"
           RECKONER_EMBEDDER: hash
+          RECKONER_LLM: scripted
           RECKONER_POB_SRC: ${{ github.workspace }}/.engines/pob/src
           RECKONER_POB_SOURCE_COMMIT: ${{ env.POB_COMMIT }}
       - uses: actions/upload-artifact@v7

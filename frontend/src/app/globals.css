@@ -76,3 +76,16 @@ h2 { font-size: 12px; text-transform: uppercase; letter-spacing: .08em; color: v
 .hits { list-style: none; padding: 0; margin: 12px 0 0; display: grid; gap: 10px; }
 .hit { border: 1px solid var(--line); border-radius: 4px; padding: 10px 12px; background: var(--bg); }
 .excerpt { margin: 6px 0 0; white-space: pre-wrap; font-family: var(--sans); font-size: 13px; line-height: 1.45; }
+
+.answer { white-space: pre-wrap; font-family: var(--sans); font-size: 14px; line-height: 1.5; margin: 0 0 10px; }
+button.ghost { background: transparent; color: var(--muted); border: 1px solid var(--line); font-weight: 500; }
+button.ghost:hover { color: var(--fg); }
+.audit.ok { color: var(--ok); }
+.audit.bad { color: var(--bad); }
+.degraded { font-family: var(--mono); font-size: 12px; color: var(--warn); margin: 8px 0; padding-left: 18px; }
+details { margin-top: 10px; }
+summary { cursor: pointer; font-family: var(--mono); font-size: 12px; color: var(--muted); }
+.steps, .evidence { font-size: 13px; margin: 6px 0 0; padding-left: 20px; }
+.steps li, .evidence li { margin: 4px 0; }
+.steps li.bad { color: var(--bad); }
+.steps code { font-family: var(--mono); font-size: 12px; }

@@ -7,6 +7,7 @@ from uuid import UUID
 from pydantic import BaseModel, Field
 
 from app.domain.build import BuildSnapshot, BuildVariant, Character, GameId, Modification
+from app.domain.evidence import Evidence
 from app.domain.knowledge import KnowledgeChunk
 from app.domain.provenance import Metric
 from app.games.base import AdapterCapabilities
@@ -86,6 +87,43 @@ class KnowledgeStats(BaseModel):
     chunks: int
     per_game: dict[str, int]
     embedders: list[str]
+
+
+class AskRequest(BaseModel):
+    question: str = Field(min_length=3, max_length=2000)
+    game: GameId | None = Field(
+        default=None, description="Hint; the agent still passes it to tools."
+    )
+    code: str | None = Field(default=None, description="Optional build code to reason about.")
+
+
+class StepView(BaseModel):
+    tool: str
+    args: dict[str, Any]
+    ok: bool
+    summary: str
+    error: str | None
+    duration_ms: int
+
+
+class AuditView(BaseModel):
+    checked: int = Field(description="Numbers found in the answer.")
+    unverified: list[str] = Field(
+        description="Numbers that match no tool result — shown, never hidden."
+    )
+    clean: bool
+
+
+class AskResponse(BaseModel):
+    answer: str
+    model: str = Field(description="Provider and model that orchestrated; 'scripted' = no model.")
+    steps: list[StepView]
+    evidence: list[Evidence]
+    audit: AuditView
+    degraded: list[str]
+    input_tokens: int
+    output_tokens: int
+    duration_ms: int
 
 
 class CorpusStats(BaseModel):

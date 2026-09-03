@@ -24,6 +24,7 @@ export default defineConfig({
         // A dedicated database: e2e assertions count rows, the dev corpus must not leak in.
         RECKONER_DATABASE_URL: process.env.RECKONER_E2E_DATABASE_URL ?? "postgresql+asyncpg://reckoner:reckoner@localhost:5432/reckoner_e2e",
         RECKONER_EMBEDDER: "hash", // deterministic, no model download; e2e asserts isolation, not ranking
+        RECKONER_LLM: "scripted", // no model in e2e: the loop, trace, evidence and audit are what we test
       },
       url: "http://localhost:8000/health",
       reuseExistingServer: !process.env.CI,
