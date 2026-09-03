@@ -11,7 +11,7 @@ from typing import Any
 from pydantic import BaseModel, Field
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.db.repository import BuildQuery
+from app.db.repository import BuildQuery, CorpusRepository
 from app.domain.build import BuildSnapshot, BuildVariant, GameId, Modification
 from app.domain.errors import DomainError
 from app.domain.evidence import Evidence
@@ -91,12 +91,23 @@ def compact_snapshot(s: BuildSnapshot) -> dict:
     main_group = next(
         (g for g in s.skills if any(gem.name == s.main_skill for gem in g.gems)), None
     )
+    dps_total = s.metric(MetricKey.DPS_TOTAL.value)
+    dps_full = s.metric(MetricKey.DPS_FULL.value)
+    ctx_total = dps_total.provenance.context if dps_total and dps_total.provenance else {}
+    ctx_full = dps_full.provenance.context if dps_full and dps_full.provenance else {}
     return {
         "snapshot_id": str(s.id),
         "game": s.game.value,
         "game_version": s.game_version,
         "character": s.character.model_dump(),
         "main_skill": s.main_skill,
+        "main_skill_note": (
+            f"dps.total is the engine's figure for the skill selected in the export "
+            f"({s.main_skill}); source: {ctx_total.get('main_skill_source', 'unknown')}. "
+            "A utility or movement skill left selected gives dps.total 0 while dps.full "
+            "sums the skills the author flagged."
+        ),
+        "dps_full_sums": ctx_full.get("aggregates"),
         "main_skill_links": [g.name for g in main_group.gems] if main_group else [],
         "metrics": {
             k.value: _metric_view(m) for k in HEADLINE if (m := s.metric(k.value)) is not None
@@ -119,6 +130,28 @@ def metric_evidence(s: BuildSnapshot, label: str) -> list[Evidence]:
             )
         )
     return out
+
+
+def _fmt(m: Metric | None) -> str:
+    if m is None or m.value is None:
+        return "unknown"
+    return f"{m.value:,.0f}" if abs(m.value) >= 1000 else f"{m.value:g}"
+
+
+def _one_line(s: BuildSnapshot, title: str | None, url: str | None) -> str:
+    """One self-contained line per build, for the model to copy verbatim (no cross-wiring)."""
+    parts = [
+        _label(s),
+        f"patch {s.game_version or 'unknown'}",
+        f"DPS {_fmt(s.metric(MetricKey.DPS_TOTAL.value))}",
+        f"life {_fmt(s.metric(MetricKey.LIFE_MAX.value))}",
+        f"EHP {_fmt(s.metric(MetricKey.EHP_TOTAL.value))}",
+    ]
+    if title:
+        parts.append(f"source: {title}")
+    if url:
+        parts.append(url)
+    return " · ".join(parts)
 
 
 def _label(s: BuildSnapshot) -> str:
@@ -166,13 +199,29 @@ async def _list_games(ctx: ToolContext, _: NoArgs) -> ToolResult:
 
 class SearchBuildsArgs(BaseModel):
     game: GameId = Field(description="Game the builds belong to. Never mix games.")
-    class_name: str | None = Field(default=None, description="Base class, e.g. Duelist.")
-    subclass: str | None = Field(default=None, description="Specialisation, e.g. Slayer.")
+    class_name: str | None = Field(
+        default=None,
+        description=(
+            "Base class. Path of Exile: Duelist, Marauder, Ranger, Scion, Shadow, Templar, Witch."
+        ),
+    )
+    subclass: str | None = Field(
+        default=None,
+        description=(
+            "Specialisation (ascendancy), e.g. Slayer, Juggernaut, Deadeye, Assassin, "
+            "Inquisitor, Necromancer. Not a base class."
+        ),
+    )
     main_skill: str | None = Field(default=None, description="Substring of the main skill name.")
     game_version: str | None = Field(default=None, description="Patch, e.g. 3.29.")
-    min_dps: float | None = None
-    min_life: float | None = None
-    min_ehp: float | None = None
+    min_dps: float | None = Field(
+        default=None, description="Only when the user gave a number. Never invent a threshold."
+    )
+    min_life: float | None = Field(default=None, description="Only when the user gave a number.")
+    min_ehp: float | None = Field(
+        default=None,
+        description="Only when the user gave a number. For 'tanky', use sort=ehp_total instead.",
+    )
     sort: str = Field(
         default="dps_total", pattern="^(dps_total|dps_full|life_max|ehp_total|created_at)$"
     )
@@ -180,6 +229,24 @@ class SearchBuildsArgs(BaseModel):
 
 
 async def _search_builds(ctx: ToolContext, a: SearchBuildsArgs) -> ToolResult:
+    repo = CorpusRepository(ctx.session)
+    taxonomy = await repo.taxonomy(a.game.value)
+    classes = {c["value"].lower() for c in taxonomy["classes"]}
+    subclasses = {c["value"].lower() for c in taxonomy["subclasses"]}
+    normalised: list[str] = []
+    # Models confuse class and subclass; the corpus knows which is which.
+    if a.subclass and a.subclass.lower() in classes and not a.class_name:
+        a = a.model_copy(update={"class_name": a.subclass, "subclass": None})
+        normalised.append(f"'{a.class_name}' is a class, moved to class_name")
+    if a.class_name and a.class_name.lower() in subclasses and a.class_name.lower() not in classes:
+        a = a.model_copy(update={"subclass": a.class_name, "class_name": None})
+        normalised.append(f"'{a.subclass}' is a subclass, moved to subclass")
+    skills = {c["value"].lower() for c in taxonomy["main_skills"]}
+    for field_name in ("subclass", "class_name"):
+        v = getattr(a, field_name)
+        if v and v.lower() not in classes | subclasses and any(v.lower() in s for s in skills):
+            a = a.model_copy(update={field_name: None, "main_skill": a.main_skill or v})
+            normalised.append(f"'{v}' is a skill, moved to main_skill")
     q = BuildQuery(**{**a.model_dump(), "game": a.game.value})
     res = await search_builds(ctx.session, q)
     items = []
@@ -190,12 +257,23 @@ async def _search_builds(ctx: ToolContext, a: SearchBuildsArgs) -> ToolResult:
         item["source"] = (
             {"url": src.url, "title": src.title, "thread": src.parent_url} if src else None
         )
+        item["label"] = _one_line(s, src.title if src else None, src.url if src else None)
         items.append(item)
         evidence.extend(metric_evidence(s, _label(s)))
+    data: dict[str, Any] = {"total": res.total, "items": items, "filters_applied": q.__dict__}
+    if normalised:
+        data["normalised"] = normalised
+    if res.total == 0:
+        data["available_in_corpus"] = taxonomy
+        data["hint"] = (
+            "No match. Relax ONE filter using available_in_corpus (drop a threshold, widen the "
+            "skill, or drop the subclass), say which one you dropped, and never invent a build."
+        )
     return ToolResult(
-        data={"total": res.total, "items": items},
+        data=data,
         evidence=evidence,
-        summary=f"{res.total} match(es), returned {len(items)}",
+        summary=f"{res.total} match(es), returned {len(items)}"
+        + (f"; normalised: {'; '.join(normalised)}" if normalised else ""),
     )
 
 
@@ -222,16 +300,14 @@ async def _get_build(ctx: ToolContext, a: GetBuildArgs) -> ToolResult:
 
 
 class AnalyzeCodeArgs(BaseModel):
-    code: str | None = Field(
-        default=None,
-        description="Build code. Omit to use the code the user pasted with the question.",
-    )
+    """No arguments: the tool reads the build code attached to the question. A model cannot be
+    trusted to relay a 15 KB base64 blob — small ones try, and invent it."""
 
 
 async def _analyze_code(ctx: ToolContext, a: AnalyzeCodeArgs) -> ToolResult:
-    code = a.code or ctx.code
+    code = ctx.code
     if not code:
-        raise ToolError("no build code was provided with the question")
+        raise ToolError("no build code is attached to the question; ask the user to attach one")
     try:
         s = analyze_code(code)
     except DomainError as exc:
@@ -250,7 +326,6 @@ class CalculateBuildArgs(BaseModel):
             "gem.set_quality {gem, quality}."
         ),
     )
-    code: str | None = Field(default=None, description="Build code; defaults to the pasted one.")
 
 
 def _variant_view(v: BuildVariant) -> dict:
@@ -275,9 +350,9 @@ def _variant_view(v: BuildVariant) -> dict:
 
 
 async def _calculate_build(ctx: ToolContext, a: CalculateBuildArgs) -> ToolResult:
-    code = a.code or ctx.code
+    code = ctx.code
     if not code:
-        raise ToolError("no build code to recalculate; ask the user for their code")
+        raise ToolError("no build code is attached to the question; ask the user to attach one")
     try:
         v = recalculate_code(code, a.modifications)
     except DomainError as exc:
@@ -381,6 +456,10 @@ class PatchChangesArgs(BaseModel):
 async def _get_patch_changes(ctx: ToolContext, a: PatchChangesArgs) -> ToolResult:
     repo = KnowledgeRepository(ctx.session, get_embedder())
     patches = await repo.patches(a.game.value)
+    if a.patch is None and a.topic and patches:
+        # "What changed for X?" without a patch means the latest one; do not make the model
+        # take a second round-trip to find that out.
+        a = a.model_copy(update={"patch": patches[0]["patch"]})
     if a.patch is None:
         return ToolResult(
             data={
@@ -412,7 +491,15 @@ async def _get_patch_changes(ctx: ToolContext, a: PatchChangesArgs) -> ToolResul
         for h in hits
     ]
     return ToolResult(
-        data={"patch": a.patch, "passages": data},
+        data={
+            "patch": a.patch,
+            "known_patches": [p["patch"] for p in patches],
+            "passages": data,
+            "note": (
+                "Passages are ranked by similarity to the topic; if none mentions it, say that "
+                "nothing about it was found in this patch."
+            ),
+        },
         evidence=[knowledge_evidence(h) for h in hits],
         summary=f"{len(hits)} passage(s) for {a.game.value} {a.patch}",
     )
@@ -444,14 +531,15 @@ TOOLS: dict[str, Tool] = {
         ),
         Tool(
             "analyze_build_code",
-            "Parse the build code the user pasted (or one given) into a snapshot with provenance.",
+            "Parse the build code attached to the question into a snapshot with provenance. "
+            "Takes no arguments.",
             AnalyzeCodeArgs,
             _analyze_code,
         ),
         Tool(
             "calculate_build",
-            "Apply modifications to a build inside the real engine and return baseline vs "
-            "variant. Never approximates; may be unavailable.",
+            "Apply modifications to the attached build inside the real engine and return "
+            "baseline vs variant. Never approximates; may be unavailable.",
             CalculateBuildArgs,
             _calculate_build,
         ),

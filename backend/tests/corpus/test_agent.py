@@ -125,3 +125,19 @@ async def test_api_contract(session, all_codes):
             assert r.status_code == 422
     finally:
         app.dependency_overrides.clear()
+
+
+async def test_patch_changes_with_topic_defaults_to_latest_patch(session, all_codes):
+    from app.agent.tools import PatchChangesArgs, ToolContext, run_tool
+
+    await _seed(session, all_codes)
+    ctx = ToolContext(session=session)
+    result, rec = await run_tool(
+        ctx, "get_patch_changes", {"game": "poe2", "topic": "Lightning Strike"}
+    )
+    assert rec.ok, rec.error
+    assert result.data["patch"] == "0.5" and result.data["passages"]
+    assert all(e.provenance.game == "poe2" for e in result.evidence)
+    listing, rec = await run_tool(ctx, "get_patch_changes", {"game": "poe2"})
+    assert rec.ok and [p["patch"] for p in listing.data["patches"]] == ["0.5"]
+    assert PatchChangesArgs(game="poe2").patch is None

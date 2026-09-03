@@ -110,7 +110,7 @@ async def ask(
             or "Step limit reached before a final answer; the tool results are all I have."
         )
 
-    answer.audit = audit_answer(answer.text, results_for_audit)
+    answer.audit = audit_answer(answer.text, results_for_audit, question=question)
     if not answer.steps:
         answer.degraded.append("no tool was used: the answer contains nothing verifiable")
     answer.duration_ms = int((time.monotonic() - t0) * 1000)

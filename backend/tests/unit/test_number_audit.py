@@ -49,3 +49,17 @@ def test_no_numbers_is_clean_and_counts_zero():
 def test_versions_and_counts_are_audited_too():
     assert audit_answer("Two builds match on patch 3.27.", RESULTS).clean
     assert not audit_answer("Seven builds match on patch 3.30.", RESULTS).clean
+
+
+def test_numbers_quoted_from_the_question_are_allowed():
+    q = "What changed in Path of Exile 2 for builds under 20 divines?"
+    a = audit_answer("In Path of Exile 2, nothing under 20 divines matched.", RESULTS, question=q)
+    assert a.clean
+    assert not audit_answer("In Path of Exile 2, nothing under 20 divines matched.", RESULTS).clean
+
+
+def test_list_numbering_is_not_a_claim():
+    text = "Two things:\n1. Life is 3,120.\n2. DPS is 18,619,973.8.\n3) Done."
+    a = audit_answer(text, RESULTS)
+    assert a.clean, a.unverified
+    assert a.checked == 2

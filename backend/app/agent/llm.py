@@ -51,7 +51,8 @@ class OpenAICompatClient:
         self.model = model
         self.name = f"openai_compat:{model}@{self.base_url}"
         headers = {"Authorization": f"Bearer {api_key or 'none'}"}
-        self._client = httpx.AsyncClient(base_url=self.base_url, headers=headers, timeout=120)
+        # Local 7B models on a laptop can take minutes on a cold prompt; retry once on timeout.
+        self._client = httpx.AsyncClient(base_url=self.base_url, headers=headers, timeout=300)
 
     @staticmethod
     def _to_openai(system: str, messages: list[dict]) -> list[dict]:
@@ -102,8 +103,14 @@ class OpenAICompatClient:
                 for t in tools
             ],
             "temperature": 0,
+            "max_tokens": 900,  # a runaway generation must end; answers are meant to be short
         }
-        r = await self._client.post("/chat/completions", json=body)
+        import httpx
+
+        try:
+            r = await self._client.post("/chat/completions", json=body)
+        except httpx.ReadTimeout:
+            r = await self._client.post("/chat/completions", json=body)
         r.raise_for_status()
         data = r.json()
         choice = data["choices"][0]

@@ -74,6 +74,7 @@ cp .env.example .env                              # RECKONER_POB_SRC, RECKONER_P
 
 # agent (free, local): brew install ollama && ollama pull qwen2.5:7b && brew services start ollama
 # then POST /api/v1/ask or open /ask. Without a reachable model the scripted policy answers and says so.
+.venv/bin/python scripts/ask.py "Find me a tanky Duelist Lightning Strike build"   # terminal smoke test
 .venv/bin/uvicorn app.main:app --reload --port 8000
 
 # frontend

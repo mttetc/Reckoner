@@ -206,3 +206,22 @@ LLM orchestrating and never being the source of truth. § 13.1: a bare float exp
 **Consequences.** Real-model quality is untested in CI by design; `scripts/`-level smoke runs
 against Ollama are the way to evaluate prompts. Streaming and multi-turn memory are not in scope.
 
+### ADR-011 field notes — first runs against a real free model (qwen2.5:7b via Ollama, 2026-09-04)
+
+Every defect below was fixed on the *tool* side, deterministically, rather than by pleading in the
+prompt. That is the point of the architecture: a 7B model is allowed to be clumsy.
+
+| Observed | Fix |
+|---|---|
+| `subclass: "Duelist"`, `subclass: "Lightning Strike"` | Tools normalise class / subclass / skill against the corpus taxonomy and say so in the result |
+| Invented threshold `min_ehp: 1000000` → 0 results → "shall I create a build?" | Field descriptions forbid invented thresholds; an empty search returns `available_in_corpus` and a one-relaxation hint; prompt forbids inventing builds |
+| Numbers of one build paired with the title and link of another (numbers all traceable, pairing false) | Each build carries a self-contained `label` line to copy verbatim; prompt rule 7 |
+| Patch question answered after only listing patches ("there were changes…") | `get_patch_changes` with a topic defaults to the latest patch and returns its passages |
+| "Path of Exile 2" and list numbering "2." flagged by the audit | Numbers written by the user are allowed; line-leading list markers are skipped |
+| Pasted-code question: 900 output tokens, empty content, no tool call — the model tried to fill the `code` argument with an invented 15 KB blob | The `code` argument no longer exists; tools read the code attached to the question |
+| Runaway generation hung Ollama for minutes | `max_tokens` cap, 300 s timeout with one retry |
+
+Typical latency on an M2 Pro: 10–50 s per question, 4–11k prompt tokens. After the fixes, the
+three reference questions (build search, PoE 2 patch, pasted code) answer correctly with a clean
+audit and sourced evidence.
+

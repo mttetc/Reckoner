@@ -20,6 +20,7 @@ _NUM_IN_ANSWER = re.compile(
     r"(?<![\w.])(\d{1,3}(?:[ ,]\d{3})+|\d+)(?:[.,](\d+))?\s*([kKmMbB]|%)?(?!\w)(?!\.\d)"
 )
 _NUM_IN_RESULTS = re.compile(r"-?\d+(?:\.\d+)?")
+_LIST_MARKER = re.compile(r"(?m)^[ \t]*\d{1,2}[.)](?=\s)")
 _SUFFIX = {"k": 1e3, "m": 1e6, "b": 1e9}
 _IGNORE_BELOW = 0  # audit everything; small integers are as inventable as large ones
 
@@ -79,10 +80,15 @@ def _matches(value: float, allowed: set[float], compact: bool) -> bool:
     return False
 
 
-def audit_answer(answer: str, results: list[Any]) -> Audit:
+def audit_answer(answer: str, results: list[Any], question: str | None = None) -> Audit:
     allowed = allowed_values(results)
+    if question:
+        # Numbers the user wrote ("PoE 2", "under 20 divines") may be echoed back.
+        allowed |= allowed_values([question])
     audit = Audit(allowed_count=len(allowed))
     for m in _NUM_IN_ANSWER.finditer(answer):
+        if _LIST_MARKER.match(answer, m.start()):
+            continue  # "2." / "3)" opening a line is list numbering, not a claim
         int_part, frac, suffix = m.group(1), m.group(2), m.group(3)
         # "3.29" style tokens: the regex captures int=3 frac=29 → value 3.29 — fine, results
         # contain "3.29" when a patch was quoted.

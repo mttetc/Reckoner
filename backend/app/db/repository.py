@@ -194,6 +194,26 @@ class CorpusRepository:
                     result.sources[row.id] = by_id[row.source_id]
         return result
 
+    async def taxonomy(self, game: str) -> dict:
+        """What the corpus actually contains for a game — for relaxing empty searches honestly."""
+
+        async def distinct(col, limit: int = 30) -> list[dict]:
+            stmt = (
+                select(col, func.count())
+                .where(SnapshotRow.game == game, col.is_not(None))
+                .group_by(col)
+                .order_by(func.count().desc(), col)
+                .limit(limit)
+            )
+            return [{"value": v, "count": n} for v, n in (await self.s.execute(stmt)).all()]
+
+        return {
+            "classes": await distinct(SnapshotRow.class_name),
+            "subclasses": await distinct(SnapshotRow.subclass),
+            "main_skills": await distinct(SnapshotRow.main_skill),
+            "patches": await distinct(SnapshotRow.game_version),
+        }
+
     async def stats(self) -> dict:
         total = (await self.s.execute(select(func.count(SnapshotRow.id)))).scalar_one()
         per_game = (
