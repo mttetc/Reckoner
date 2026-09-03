@@ -5,20 +5,16 @@ from __future__ import annotations
 import asyncio
 import json
 from collections.abc import AsyncIterator
-from typing import Annotated
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter
 from fastapi.responses import StreamingResponse
-from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.agent.runner import AgentAnswer
 from app.agent.runner import ask as run_agent
+from app.api.deps import Builds, Feedback, Knowledge, Session
 from app.api.schemas import AskRequest, AskResponse, AuditView, FeedbackRequest, StepView
-from app.db.engine import get_session
-from app.db.models import FeedbackRow
 
 router = APIRouter(tags=["ask"])
-Session = Annotated[AsyncSession, Depends(get_session)]
 
 
 def _to_response(a: AgentAnswer) -> AskResponse:
@@ -49,15 +45,15 @@ def _to_response(a: AgentAnswer) -> AskResponse:
 
 
 @router.post("/ask", response_model=AskResponse)
-async def ask(req: AskRequest, session: Session) -> AskResponse:
+async def ask(req: AskRequest, builds: Builds, knowledge: Knowledge) -> AskResponse:
     a = await run_agent(
-        session, req.question, game=req.game.value if req.game else None, code=req.code
+        builds, knowledge, req.question, game=req.game.value if req.game else None, code=req.code
     )
     return _to_response(a)
 
 
 @router.post("/ask/stream")
-async def ask_stream(req: AskRequest, session: Session) -> StreamingResponse:
+async def ask_stream(req: AskRequest, builds: Builds, knowledge: Knowledge) -> StreamingResponse:
     """Server-sent events: step_start / step_end while tools run, then `done` with the answer."""
     queue: asyncio.Queue[dict | None] = asyncio.Queue()
 
@@ -67,7 +63,8 @@ async def ask_stream(req: AskRequest, session: Session) -> StreamingResponse:
     async def worker() -> None:
         try:
             a = await run_agent(
-                session,
+                builds,
+                knowledge,
                 req.question,
                 game=req.game.value if req.game else None,
                 code=req.code,
@@ -99,11 +96,7 @@ async def ask_stream(req: AskRequest, session: Session) -> StreamingResponse:
 
 
 @router.post("/feedback", status_code=204)
-async def feedback(req: FeedbackRequest, session: Session) -> None:
+async def feedback(req: FeedbackRequest, store: Feedback, session: Session) -> None:
     """Thumbs up / down on an answer. Stored as-is; read by humans, never fed back to the model."""
-    session.add(
-        FeedbackRow(
-            message_id=req.message_id, rating=req.rating, question=req.question, answer=req.answer
-        )
-    )
+    await store.record(req.message_id, req.rating, req.question, req.answer)
     await session.commit()

@@ -3,21 +3,17 @@
 from __future__ import annotations
 
 import uuid
-from typing import Annotated
 
-from fastapi import APIRouter, Depends, HTTPException, Query
-from sqlalchemy.ext.asyncio import AsyncSession
+from fastapi import APIRouter, HTTPException, Query
 
+from app.api.deps import Builds
 from app.api.schemas import BuildDetail, BuildSummary, CorpusStats, SearchResponse, SourceInfo
-from app.db.engine import get_session
-from app.db.repository import BuildQuery, SourceRef
 from app.domain.build import BuildSnapshot, GameId
+from app.domain.ports import BuildQuery, SourceRef
 from app.domain.provenance import MetricKey
 from app.services.corpus import corpus_stats, get_build, search_builds
 
 router = APIRouter(tags=["corpus"])
-
-Session = Annotated[AsyncSession, Depends(get_session)]
 
 
 def _summary(s: BuildSnapshot, source: SourceRef | None) -> BuildSummary:
@@ -52,7 +48,7 @@ def _source(ref: SourceRef | None) -> SourceInfo | None:
 
 @router.get("/builds", response_model=SearchResponse)
 async def list_builds(
-    session: Session,
+    store: Builds,
     game: GameId | None = None,
     class_name: str | None = None,
     subclass: str | None = None,
@@ -80,7 +76,7 @@ async def list_builds(
         limit=limit,
         offset=offset,
     )
-    result = await search_builds(session, q)
+    result = await search_builds(store, q)
     return SearchResponse(
         total=result.total,
         items=[_summary(s, result.sources.get(s.id)) for s in result.items],
@@ -88,8 +84,8 @@ async def list_builds(
 
 
 @router.get("/builds/{snapshot_id}", response_model=BuildDetail)
-async def build_detail(snapshot_id: uuid.UUID, session: Session) -> BuildDetail:
-    snapshot, source = await get_build(session, snapshot_id)
+async def build_detail(snapshot_id: uuid.UUID, store: Builds) -> BuildDetail:
+    snapshot, source = await get_build(store, snapshot_id)
     if snapshot is None:
         raise HTTPException(
             status_code=404, detail={"code": "not_found", "message": "no such snapshot"}
@@ -98,5 +94,5 @@ async def build_detail(snapshot_id: uuid.UUID, session: Session) -> BuildDetail:
 
 
 @router.get("/corpus/stats", response_model=CorpusStats)
-async def stats(session: Session) -> CorpusStats:
-    return CorpusStats(**await corpus_stats(session))
+async def stats(store: Builds) -> CorpusStats:
+    return CorpusStats(**await corpus_stats(store))

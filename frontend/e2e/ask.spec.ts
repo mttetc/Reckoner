@@ -62,4 +62,18 @@ test.describe("conversation (assistant-ui thread; scripted policy — no model i
     await expect(result).toBeVisible({ timeout: 20_000 });
     await expect(result.getByTestId("ask-answer")).toContainText("Witch");
   });
+
+  test("conversations are stored: a reload brings the thread and its messages back", async ({ page }) => {
+    await page.goto("/");
+    await page.getByTestId("ask-question").fill("Find me a Templar build");
+    await page.getByTestId("ask-submit").click();
+    await expect(page.getByTestId("ask-result").last().getByTestId("ask-audit")).toBeVisible({ timeout: 20_000 });
+    await page.reload();
+    // The list shows the stored conversation, named after its first question.
+    const item = page.getByRole("button", { name: /Find me a Templar build/ }).first();
+    await expect(item).toBeVisible({ timeout: 20_000 });
+    await item.click();
+    await expect(page.getByTestId("ask-user").first()).toContainText("Find me a Templar build");
+    await expect(page.getByTestId("ask-result").last()).toContainText("Guardian");
+  });
 });

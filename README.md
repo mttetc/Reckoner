@@ -82,6 +82,20 @@ cd frontend && pnpm install && pnpm dev          # http://localhost:3000
 pnpm test:e2e                                     # starts both servers itself
 ```
 
+## Architecture (hexagonal, enforced by a test)
+
+```
+domain/     entities + ports (Protocols): BuildStore, KnowledgeStore, ConversationStore, FeedbackStore, GameAdapter
+services/   use cases; depend on ports only
+agent/      tools + loop; depend on ports and services only
+games/      game adapters (PoE parser, headless engine bridge, sources)        → implement GameAdapter
+db/ knowledge/  PostgreSQL + pgvector implementations of the stores
+api/        FastAPI; `api/deps.py` is the composition root — the only place that binds ports to implementations
+```
+
+`tests/unit/test_architecture.py` fails the build if `domain`, `services` or `agent` import SQLAlchemy,
+FastAPI or a concrete repository, or if a route builds a repository itself.
+
 ## Adding a game (the metric that matters — SPEC § 8)
 
 Create `backend/app/games/<game>/` implementing `GameAdapter`, register it in

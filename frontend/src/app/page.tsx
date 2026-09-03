@@ -3,15 +3,20 @@
 import {
   AssistantRuntimeProvider,
   CompositeAttachmentAdapter,
+  RuntimeAdapterProvider,
   SimpleTextAttachmentAdapter,
   WebSpeechDictationAdapter,
   WebSpeechSynthesisAdapter,
+  useAui,
   useLocalRuntime,
+  useRemoteThreadListRuntime,
   type ChatModelAdapter,
   type FeedbackAdapter,
   type SuggestionAdapter,
   type ThreadAssistantMessagePart,
 } from "@assistant-ui/react";
+import { useMemo, type FC, type PropsWithChildren } from "react";
+import { makeThreadListAdapter, threadHistory } from "@/lib/threads";
 import { SidebarInset, SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { EXAMPLE_PROMPTS, Thread } from "@/components/assistant-ui/elements/thread.aui";
 import { ThreadListSidebar } from "@/components/assistant-ui/elements/threadlist-sidebar.aui";
@@ -148,8 +153,24 @@ const feedback: FeedbackAdapter = {
   },
 };
 
-export default function Home() {
-  const runtime = useLocalRuntime(adapter, {
+/** Per-thread context: a history adapter that knows how to obtain the thread's server id. */
+const ThreadProvider: FC<PropsWithChildren> = ({ children }) => {
+  const aui = useAui();
+  const history = useMemo(
+    () =>
+      threadHistory(
+        () => aui.threadListItem().getState().remoteId,
+        async () => (await aui.threadListItem().initialize()).remoteId,
+      ),
+    [aui],
+  );
+  return <RuntimeAdapterProvider adapters={{ history }}>{children}</RuntimeAdapterProvider>;
+};
+
+const threadList = makeThreadListAdapter(ThreadProvider);
+
+function useReckonerRuntime() {
+  return useLocalRuntime(adapter, {
     adapters: {
       attachments: new CompositeAttachmentAdapter([new SimpleTextAttachmentAdapter()]),
       feedback,
@@ -158,6 +179,10 @@ export default function Home() {
       dictation: new WebSpeechDictationAdapter(),
     },
   });
+}
+
+export default function Home() {
+  const runtime = useRemoteThreadListRuntime({ runtimeHook: useReckonerRuntime, adapter: threadList });
   return (
     <AssistantRuntimeProvider runtime={runtime}>
       <BuildCardUI />

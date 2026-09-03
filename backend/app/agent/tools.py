@@ -9,16 +9,13 @@ from dataclasses import dataclass, field
 from typing import Any
 
 from pydantic import BaseModel, Field
-from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.db.repository import BuildQuery, CorpusRepository
 from app.domain.build import BuildSnapshot, BuildVariant, GameId, Modification
 from app.domain.errors import DomainError
 from app.domain.evidence import Evidence
+from app.domain.ports import BuildQuery, BuildStore, Hit, KnowledgeStore
 from app.domain.provenance import Metric, MetricKey, Provenance, ProvenanceStatus
 from app.games import list_adapters
-from app.knowledge.embedder import get_embedder
-from app.knowledge.repository import Hit, KnowledgeRepository
 from app.services.analyze import analyze_code
 from app.services.corpus import corpus_stats, get_build, search_builds
 from app.services.recalculate import recalculate_code
@@ -39,7 +36,8 @@ HEADLINE = (
 
 @dataclass
 class ToolContext:
-    session: AsyncSession
+    builds: BuildStore
+    knowledge: KnowledgeStore
     game: str | None = None
     code: str | None = None  # a build code pasted with the question, if any
 
@@ -272,8 +270,7 @@ class SearchBuildsArgs(BaseModel):
 
 
 async def _search_builds(ctx: ToolContext, a: SearchBuildsArgs) -> ToolResult:
-    repo = CorpusRepository(ctx.session)
-    taxonomy = await repo.taxonomy(a.game.value)
+    taxonomy = await ctx.builds.taxonomy(a.game.value)
     classes = {c["value"].lower() for c in taxonomy["classes"]}
     subclasses = {c["value"].lower() for c in taxonomy["subclasses"]}
     normalised: list[str] = []
@@ -291,7 +288,7 @@ async def _search_builds(ctx: ToolContext, a: SearchBuildsArgs) -> ToolResult:
             a = a.model_copy(update={field_name: None, "main_skill": a.main_skill or v})
             normalised.append(f"'{v}' is a skill, moved to main_skill")
     q = BuildQuery(**{**a.model_dump(), "game": a.game.value})
-    res = await search_builds(ctx.session, q)
+    res = await search_builds(ctx.builds, q)
     items = []
     evidence: list[Evidence] = []
     for s in res.items:
@@ -333,7 +330,7 @@ async def _get_build(ctx: ToolContext, a: GetBuildArgs) -> ToolResult:
         sid = uuid.UUID(a.snapshot_id)
     except ValueError as exc:
         raise ToolError(f"'{a.snapshot_id}' is not a snapshot id") from exc
-    snapshot, source = await get_build(ctx.session, sid)
+    snapshot, source = await get_build(ctx.builds, sid)
     if snapshot is None:
         raise ToolError("no such snapshot in the corpus")
     data = compact_snapshot(snapshot)
@@ -422,7 +419,7 @@ async def _compare_builds(ctx: ToolContext, a: CompareBuildsArgs) -> ToolResult:
     snaps: list[BuildSnapshot] = []
     for sid in a.snapshot_ids:
         try:
-            s, _ = await get_build(ctx.session, uuid.UUID(sid))
+            s, _ = await get_build(ctx.builds, uuid.UUID(sid))
         except ValueError as exc:
             raise ToolError(f"'{sid}' is not a snapshot id") from exc
         if s is None:
@@ -469,8 +466,7 @@ class SearchKnowledgeArgs(BaseModel):
 
 
 async def _search_knowledge(ctx: ToolContext, a: SearchKnowledgeArgs) -> ToolResult:
-    repo = KnowledgeRepository(ctx.session, get_embedder())
-    hits = await repo.search(a.game.value, a.query, k=a.k, patch=a.patch)
+    hits = await ctx.knowledge.search(a.game.value, a.query, k=a.k, patch=a.patch)
     data = [
         {
             "game": h.chunk.metadata.game,
@@ -501,8 +497,7 @@ class PatchChangesArgs(BaseModel):
 
 
 async def _get_patch_changes(ctx: ToolContext, a: PatchChangesArgs) -> ToolResult:
-    repo = KnowledgeRepository(ctx.session, get_embedder())
-    patches = await repo.patches(a.game.value)
+    patches = await ctx.knowledge.patches(a.game.value)
     if a.patch is None and a.topic and patches:
         # "What changed for X?" without a patch means the latest one; do not make the model
         # take a second round-trip to find that out.
@@ -527,7 +522,7 @@ async def _get_patch_changes(ctx: ToolContext, a: PatchChangesArgs) -> ToolResul
             f"no patch notes ingested for {a.game.value} {a.patch}; "
             f"known: {[p['patch'] for p in patches]}"
         )
-    hits = await repo.search(a.game.value, a.topic or "changes", k=20, patch=a.patch)
+    hits = await ctx.knowledge.search(a.game.value, a.topic or "changes", k=20, patch=a.patch)
     data = [
         {
             "heading": h.heading,
@@ -553,7 +548,7 @@ async def _get_patch_changes(ctx: ToolContext, a: PatchChangesArgs) -> ToolResul
 
 
 async def _corpus_stats(ctx: ToolContext, _: NoArgs) -> ToolResult:
-    data = await corpus_stats(ctx.session)
+    data = await corpus_stats(ctx.builds)
     return ToolResult(data=data, summary=f"{data['snapshots']} builds known")
 
 
@@ -646,7 +641,6 @@ async def run_tool(
             name, raw_args, False, "", int((time.monotonic() - t0) * 1000), error=str(exc)
         )
     except Exception as exc:  # validation or unexpected: the model must see a usable error
-        await ctx.session.rollback()
         return None, ToolCallRecord(
             name,
             raw_args,

@@ -4,20 +4,27 @@ import pytest
 from httpx import ASGITransport, AsyncClient
 
 from app.agent.llm import ScriptedLLM
-from app.agent.runner import ask
+from app.agent.runner import ask as _ask
 from app.corpus.pipeline import FetchedCode, ingest_many
 from app.db.engine import get_session
-from app.db.repository import SourceRef
+from app.db.repository import CorpusRepository, SourceRef
 from app.domain.build import GameId
 from app.games import _ADAPTERS
 from app.games.poe.engine import PobHeadless
 from app.knowledge.embedder import HashEmbedder
 from app.knowledge.ingest import ingest_documents
+from app.knowledge.repository import KnowledgeRepository
 from app.main import app
 from tests.corpus.test_knowledge_isolation import POE, POE2  # noqa: E402
 
 pytestmark = pytest.mark.asyncio
 LLM = ScriptedLLM()
+
+
+async def ask(session, question, **kw):
+    return await _ask(
+        CorpusRepository(session), KnowledgeRepository(session, HashEmbedder()), question, **kw
+    )
 
 
 async def _seed(session, all_codes):
@@ -132,7 +139,9 @@ async def test_patch_changes_with_topic_defaults_to_latest_patch(session, all_co
     from app.agent.tools import PatchChangesArgs, ToolContext, run_tool
 
     await _seed(session, all_codes)
-    ctx = ToolContext(session=session)
+    ctx = ToolContext(
+        builds=CorpusRepository(session), knowledge=KnowledgeRepository(session, HashEmbedder())
+    )
     result, rec = await run_tool(
         ctx, "get_patch_changes", {"game": "poe2", "topic": "Lightning Strike"}
     )

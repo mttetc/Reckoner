@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass
 from datetime import datetime
 
 from sqlalchemy import delete, func, select
@@ -11,6 +10,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.db.models import KnowledgeChunkRow
 from app.domain.errors import DomainError
 from app.domain.knowledge import KnowledgeChunk, KnowledgeMetadata
+from app.domain.ports import Hit
 from app.knowledge.chunker import Chunk
 from app.knowledge.embedder import Embedder
 
@@ -19,14 +19,6 @@ class GameFilterMissing(DomainError):
     """Retrieval without a game is refused: PoE/PoE2 vocabulary collides (SPEC § 6)."""
 
     code = "game_filter_missing"
-
-
-@dataclass(frozen=True)
-class Hit:
-    chunk: KnowledgeChunk
-    heading: str | None
-    title: str | None
-    score: float  # cosine similarity, informational only
 
 
 def _to_domain(row: KnowledgeChunkRow) -> KnowledgeChunk:

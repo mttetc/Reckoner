@@ -3,48 +3,22 @@
 from __future__ import annotations
 
 import uuid
-from dataclasses import dataclass, field
 
 from sqlalchemy import Select, func, select
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.db.models import BuildRow, SnapshotRow, SourceRow
+from app.db.models import (
+    BuildRow,
+    FeedbackRow,
+    SnapshotRow,
+    SourceRow,
+    ThreadMessageRow,
+    ThreadRow,
+)
 from app.domain.build import BuildSnapshot
+from app.domain.ports import BuildQuery, SearchResult, SourceRef, StoredMessage, ThreadMeta
 from app.domain.provenance import MetricKey
-
-
-@dataclass(frozen=True)
-class SourceRef:
-    kind: str
-    url: str
-    game: str
-    title: str | None = None
-    parent_url: str | None = None
-    terms: str | None = None
-
-
-@dataclass(frozen=True)
-class BuildQuery:
-    game: str | None = None
-    class_name: str | None = None
-    subclass: str | None = None
-    main_skill: str | None = None  # case-insensitive substring
-    game_version: str | None = None
-    min_dps: float | None = None
-    min_life: float | None = None
-    min_ehp: float | None = None
-    sort: str = "dps_total"  # dps_total · life_max · ehp_total · created_at
-    limit: int = 20
-    offset: int = 0
-
-
-@dataclass
-class SearchResult:
-    total: int
-    items: list[BuildSnapshot] = field(default_factory=list)
-    sources: dict[uuid.UUID, SourceRef] = field(default_factory=dict)
-
 
 _SORTABLE = {
     "dps_total": SnapshotRow.dps_total,
@@ -244,3 +218,108 @@ def _ref(row: SourceRow) -> SourceRef:
         parent_url=row.parent_url,
         terms=row.terms,
     )
+
+
+class ConversationRepository:
+    """PostgreSQL implementation of ``ConversationStore``."""
+
+    def __init__(self, session: AsyncSession) -> None:
+        self.s = session
+
+    @staticmethod
+    def _meta(row: ThreadRow) -> ThreadMeta:
+        return ThreadMeta(
+            id=row.id,
+            title=row.title,
+            status=row.status,
+            created_at=row.created_at,
+            last_message_at=row.last_message_at,
+        )
+
+    async def list_threads(self, *, include_archived: bool = True) -> list[ThreadMeta]:
+        stmt = select(ThreadRow).order_by(
+            func.coalesce(ThreadRow.last_message_at, ThreadRow.created_at).desc()
+        )
+        if not include_archived:
+            stmt = stmt.where(ThreadRow.status == "regular")
+        return [self._meta(r) for r in (await self.s.execute(stmt)).scalars()]
+
+    async def create_thread(self, thread_id: uuid.UUID | None = None) -> ThreadMeta:
+        row = ThreadRow(id=thread_id or uuid.uuid4(), status="regular")
+        self.s.add(row)
+        await self.s.flush()
+        await self.s.refresh(row)
+        return self._meta(row)
+
+    async def get_thread(self, thread_id: uuid.UUID) -> ThreadMeta | None:
+        row = await self.s.get(ThreadRow, thread_id)
+        return self._meta(row) if row else None
+
+    async def update_thread(
+        self, thread_id: uuid.UUID, *, title: str | None = None, status: str | None = None
+    ) -> ThreadMeta | None:
+        row = await self.s.get(ThreadRow, thread_id)
+        if row is None:
+            return None
+        if title is not None:
+            row.title = title
+        if status is not None:
+            row.status = status
+        await self.s.flush()
+        return self._meta(row)
+
+    async def delete_thread(self, thread_id: uuid.UUID) -> bool:
+        row = await self.s.get(ThreadRow, thread_id)
+        if row is None:
+            return False
+        await self.s.delete(row)
+        await self.s.flush()
+        return True
+
+    async def messages(self, thread_id: uuid.UUID) -> list[StoredMessage]:
+        stmt = (
+            select(ThreadMessageRow)
+            .where(ThreadMessageRow.thread_id == thread_id)
+            .order_by(ThreadMessageRow.created_at)
+        )
+        return [
+            StoredMessage(
+                id=r.id, parent_id=r.parent_id, message=r.message, created_at=r.created_at
+            )
+            for r in (await self.s.execute(stmt)).scalars()
+        ]
+
+    async def append_message(
+        self, thread_id: uuid.UUID, message_id: str, parent_id: str | None, message: dict
+    ) -> StoredMessage:
+        existing = await self.s.get(ThreadMessageRow, message_id)
+        if existing is not None:  # upsert: the client may resend a message after an edit
+            existing.parent_id = parent_id
+            existing.message = message
+            row = existing
+        else:
+            row = ThreadMessageRow(
+                id=message_id, thread_id=thread_id, parent_id=parent_id, message=message
+            )
+            self.s.add(row)
+        thread = await self.s.get(ThreadRow, thread_id)
+        if thread is not None:
+            thread.last_message_at = func.now()
+        await self.s.flush()
+        await self.s.refresh(row)
+        return StoredMessage(
+            id=row.id, parent_id=row.parent_id, message=row.message, created_at=row.created_at
+        )
+
+
+class FeedbackRepository:
+    def __init__(self, session: AsyncSession) -> None:
+        self.s = session
+
+    async def record(
+        self, message_id: str, rating: str, question: str | None, answer: str | None
+    ) -> None:
+        self.s.add(
+            FeedbackRow(message_id=message_id, rating=rating, question=question, answer=answer)
+        )
+        await self.s.flush()

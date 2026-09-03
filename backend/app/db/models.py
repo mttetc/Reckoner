@@ -141,3 +141,35 @@ class FeedbackRow(Base):
     question: Mapped[str | None] = mapped_column(Text)
     answer: Mapped[str | None] = mapped_column(Text)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+
+
+class ThreadRow(Base):
+    """A conversation. The client owns message ids and branching; we store what it sends."""
+
+    __tablename__ = "threads"
+
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    title: Mapped[str | None] = mapped_column(Text)
+    status: Mapped[str] = mapped_column(String(16), default="regular")  # regular | archived
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+    last_message_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+
+    messages: Mapped[list[ThreadMessageRow]] = relationship(
+        back_populates="thread",
+        cascade="all, delete-orphan",
+        order_by="ThreadMessageRow.created_at",
+    )
+
+
+class ThreadMessageRow(Base):
+    __tablename__ = "thread_messages"
+
+    id: Mapped[str] = mapped_column(String(128), primary_key=True)  # the client's message id
+    thread_id: Mapped[uuid.UUID] = mapped_column(
+        ForeignKey("threads.id", ondelete="CASCADE"), index=True
+    )
+    parent_id: Mapped[str | None] = mapped_column(String(128))
+    message: Mapped[dict] = mapped_column(JSONB)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+
+    thread: Mapped[ThreadRow] = relationship(back_populates="messages")

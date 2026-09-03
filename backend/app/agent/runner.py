@@ -9,14 +9,13 @@ from collections.abc import Awaitable, Callable
 from dataclasses import dataclass, field
 from typing import Any
 
-from sqlalchemy.ext.asyncio import AsyncSession
-
 from app.agent.audit import Audit, audit_answer
 from app.agent.llm import LLMClient, get_llm
 from app.agent.prompts import SYSTEM_PROMPT
 from app.agent.tools import TOOLS, ToolCallRecord, ToolContext, run_tool
 from app.config import settings
 from app.domain.evidence import Evidence
+from app.domain.ports import BuildStore, KnowledgeStore
 
 EventHook = Callable[[dict[str, Any]], Awaitable[None] | None]
 
@@ -47,7 +46,8 @@ def _dump(obj) -> str:
 
 
 async def ask(
-    session: AsyncSession,
+    builds: BuildStore,
+    knowledge: KnowledgeStore,
     question: str,
     *,
     game: str | None = None,
@@ -67,7 +67,7 @@ async def ask(
             await out
 
     llm = llm or get_llm()
-    ctx = ToolContext(session=session, game=game, code=code)
+    ctx = ToolContext(builds=builds, knowledge=knowledge, game=game, code=code)
     content = question
     if game:
         content += f"\n\n[game: {game}]"
