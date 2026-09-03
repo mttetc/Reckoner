@@ -6,7 +6,8 @@ import { API_URL, getTreeGeometry, type TreeGeometry } from "@/lib/api";
 /**
  * The whole passive tree, faint, behind the conversation. Drawn from the same engine geometry as
  * the build cards — no copyrighted artwork, just the shape every Path of Exile player knows.
- * Purely decorative: no pointer events, hidden from assistive tech, static under reduced motion.
+ * Purely decorative and static: no pointer events, hidden from assistive tech. (An animated drift
+ * cost too much on low-end machines — 2,900 nodes repainting every frame.)
  */
 export function TreeBackdrop() {
   const [geo, setGeo] = useState<TreeGeometry | null>(null);
