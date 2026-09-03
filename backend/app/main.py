@@ -2,7 +2,7 @@ from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
-from app.api.routes import builds, corpus, games
+from app.api.routes import builds, corpus, games, knowledge
 from app.config import settings
 from app.domain.errors import (
     DomainError,
@@ -11,6 +11,7 @@ from app.domain.errors import (
     InvalidModification,
     UnsupportedGame,
 )
+from app.knowledge.repository import GameFilterMissing
 
 app = FastAPI(title="Reckoner", version="0.1.0")
 app.add_middleware(
@@ -21,6 +22,7 @@ app.add_middleware(
 )
 
 _STATUS = {
+    GameFilterMissing: 422,
     InvalidBuildCode: 422,
     InvalidModification: 422,
     UnsupportedGame: 404,
@@ -42,3 +44,4 @@ def health() -> dict[str, str]:
 app.include_router(builds.router, prefix="/api/v1")
 app.include_router(corpus.router, prefix="/api/v1")
 app.include_router(games.router, prefix="/api/v1")
+app.include_router(knowledge.router, prefix="/api/v1")

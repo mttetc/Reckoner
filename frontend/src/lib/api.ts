@@ -132,6 +132,25 @@ export interface SearchParams {
   offset?: number;
 }
 
+export interface KnowledgeMetadata {
+  game: string;
+  version: string | null;
+  patch: string | null;
+  season: string | null;
+  class_name: string | null;
+  source: string;
+  source_url: string | null;
+  published_at: string | null;
+  retrieved_at: string;
+}
+
+export interface KnowledgeHit {
+  chunk: { id: string; text: string; metadata: KnowledgeMetadata };
+  heading: string | null;
+  title: string | null;
+  score: number;
+}
+
 export interface ApiError {
   code: string;
   message: string;
@@ -208,4 +227,12 @@ export async function getBuild(snapshotId: string): Promise<BuildDetail> {
   const res = await get(`/api/v1/builds/${encodeURIComponent(snapshotId)}`);
   if (!res.ok) throw await toError(res);
   return (await res.json()) as BuildDetail;
+}
+
+export async function searchKnowledge(game: string, q: string, k = 8, patch?: string): Promise<KnowledgeHit[]> {
+  const qs = new URLSearchParams({ game, q, k: String(k) });
+  if (patch) qs.set("patch", patch);
+  const res = await get(`/api/v1/knowledge/search?${qs.toString()}`);
+  if (!res.ok) throw await toError(res);
+  return (await res.json()) as KnowledgeHit[];
 }

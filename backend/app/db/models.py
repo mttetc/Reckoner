@@ -7,6 +7,7 @@ from __future__ import annotations
 import uuid
 from datetime import datetime
 
+from pgvector.sqlalchemy import Vector
 from sqlalchemy import (
     DateTime,
     Float,
@@ -97,3 +98,33 @@ class SnapshotRow(Base):
 
     build: Mapped[BuildRow] = relationship(back_populates="snapshots")
     source: Mapped[SourceRow | None] = relationship(back_populates="snapshots")
+
+
+class KnowledgeChunkRow(Base):
+    """One retrievable passage. ``game`` is mandatory and indexed: filtering on it precedes any
+    similarity ranking (SPEC § 6)."""
+
+    __tablename__ = "knowledge_chunks"
+    __table_args__ = (
+        UniqueConstraint("source_url", "ordinal", name="uq_chunk_source_ordinal"),
+        Index("ix_chunk_game_patch", "game", "patch"),
+    )
+
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    game: Mapped[str] = mapped_column(String(16), index=True)
+    version: Mapped[str | None] = mapped_column(String(32))
+    patch: Mapped[str | None] = mapped_column(String(32))
+    season: Mapped[str | None] = mapped_column(String(64))
+    class_name: Mapped[str | None] = mapped_column(String(64))
+    source: Mapped[str] = mapped_column(String(64))  # e.g. ggg:patch-notes
+    source_url: Mapped[str] = mapped_column(Text)
+    title: Mapped[str | None] = mapped_column(Text)
+    heading: Mapped[str | None] = mapped_column(Text)
+    ordinal: Mapped[int] = mapped_column(Integer)
+    text: Mapped[str] = mapped_column(Text)
+    published_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    retrieved_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now()
+    )
+    embedder: Mapped[str] = mapped_column(String(64))
+    embedding: Mapped[list[float]] = mapped_column(Vector(384))

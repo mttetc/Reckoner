@@ -15,6 +15,7 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
+rag = ["fastembed>=0.7"]  # local ONNX embeddings; without it retrieval falls back to HashEmbedder
 dev = [
   "pytest>=8",
   "pytest-asyncio>=0.24",

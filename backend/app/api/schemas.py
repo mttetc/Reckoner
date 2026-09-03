@@ -7,6 +7,7 @@ from uuid import UUID
 from pydantic import BaseModel, Field
 
 from app.domain.build import BuildSnapshot, BuildVariant, Character, GameId, Modification
+from app.domain.knowledge import KnowledgeChunk
 from app.domain.provenance import Metric
 from app.games.base import AdapterCapabilities
 
@@ -65,6 +66,26 @@ class SearchResponse(BaseModel):
 class BuildDetail(BaseModel):
     snapshot: BuildSnapshot
     source: SourceInfo | None
+
+
+class KnowledgeHit(BaseModel):
+    chunk: KnowledgeChunk
+    heading: str | None
+    title: str | None
+    score: float = Field(description="Cosine similarity, informational; never a game number.")
+
+
+class PatchInfo(BaseModel):
+    patch: str
+    published_at: datetime | None
+    chunks: int
+    source_url: str
+
+
+class KnowledgeStats(BaseModel):
+    chunks: int
+    per_game: dict[str, int]
+    embedders: list[str]
 
 
 class CorpusStats(BaseModel):

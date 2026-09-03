@@ -28,5 +28,9 @@ class Settings(BaseSettings):
     )
     corpus_request_delay_s: float = 2.0
 
+    # Knowledge embeddings (SPEC § 6). "auto" = local fastembed model if installed, else hash.
+    # "hash" = dependency-free deterministic embedder (tests / CI).
+    embedder: str = "auto"
+
 
 settings = Settings()

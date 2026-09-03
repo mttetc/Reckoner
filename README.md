@@ -22,7 +22,7 @@ agent yet. Modified-build recalculation runs through the real headless Path of B
 | Nothing game-specific in the common domain | `tests/unit/test_domain_isolation.py` greps the domain package |
 | Never simulate a modified calculation | `PoEAdapter.recalculate` runs the real headless Path of Building (pinned commit, `app/games/poe/engine/`) and returns a same-engine baseline next to the variant; without the engine the API returns 503, never a guess (ADR-008) |
 | Build history never overwritten | `BuildSnapshot` is frozen; `Build` only appends snapshot ids |
-| Knowledge is game-aware | `KnowledgeMetadata.game` is mandatory (retrieval filter to come with the RAG layer) |
+| Knowledge is game-aware | `KnowledgeRepository.search(game, …)` refuses an empty game (422); the API requires `game` by type; `tests/corpus/test_knowledge_isolation.py` proves zero cross-game hits both ways, in CI (ADR-010) |
 | Ingestion respects the source | `app/corpus/policy.py`: allowlist with stated terms, denylist (Maxroll, Mobalytics, undocumented endpoints), robots.txt, identified UA, rate limit — unit-tested |
 
 ## Layout
@@ -33,10 +33,12 @@ backend/            FastAPI · Python ≥ 3.12
   app/games/        adapter registry + one package per game
     poe/            Path of Exile: PoB codec, XML parser (legacy + current layouts), tree URL decoder
       engine/       headless PoB: bridge.lua (JSON over stdio) + Python client; modifications validated by PoB itself
-    poe2/ diablo3/  Phase 2 / 3 placeholders
+    poe2/           Phase 2: knowledge source only for now (patch notes) — 5 lines, nothing common touched
+    diablo3/        Phase 3 placeholder
   app/corpus/       ingestion policy (allowlist, robots.txt, rate limit) + pipeline (validate, dedupe, persist)
   app/db/           PostgreSQL + pgvector: models, repository (search with unknown-last ordering)
-  app/api/          /builds/analyze · /builds/recalculate · /builds (search) · /builds/{id} · /corpus/stats · /games
+  app/knowledge/    versioned knowledge: heading-aware chunker, local embeddings (fastembed / hash), game-filtered retrieval
+  app/api/          /builds/analyze · /builds/recalculate · /builds · /builds/{id} · /corpus/stats · /knowledge/search · /knowledge/patches · /games
   scripts/first_light.py   SPEC § 15: decode a real code, print DPS and life with provenance
   scripts/ingest_forum.py  corpus ingestion from the official forums (policy-enforced; cron, not HTTP)
   scripts/ingest_files.py  dev seed / e2e fixtures into the corpus · scripts/db_init.py  schema bootstrap
@@ -64,6 +66,9 @@ cp .env.example .env                              # RECKONER_POB_SRC, RECKONER_P
 .venv/bin/python scripts/db_init.py
 .venv/bin/python scripts/ingest_files.py tests/fixtures/pob/*.txt      # dev seed
 .venv/bin/python scripts/ingest_forum.py --threads-per-forum 5          # real ingestion, polite
+.venv/bin/pip install -e ".[rag]"                                        # local ONNX embeddings (optional)
+.venv/bin/python scripts/ingest_patch_notes.py --game poe --limit 5     # official patch notes → knowledge
+.venv/bin/python scripts/ingest_patch_notes.py --game poe2 --limit 5
 .venv/bin/uvicorn app.main:app --reload --port 8000
 
 # frontend

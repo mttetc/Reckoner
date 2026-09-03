@@ -72,3 +72,7 @@ h2 { font-size: 12px; text-transform: uppercase; letter-spacing: .08em; color: v
 .filters { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
 .filters select, .filters input { background: var(--bg); color: var(--fg); border: 1px solid var(--line); border-radius: 3px; padding: 7px 9px; font-family: var(--mono); font-size: 12px; }
 .filters select:focus, .filters input:focus { outline: 2px solid var(--accent); outline-offset: 1px; }
+
+.hits { list-style: none; padding: 0; margin: 12px 0 0; display: grid; gap: 10px; }
+.hit { border: 1px solid var(--line); border-radius: 4px; padding: 10px 12px; background: var(--bg); }
+.excerpt { margin: 6px 0 0; white-space: pre-wrap; font-family: var(--sans); font-size: 13px; line-height: 1.45; }

@@ -71,6 +71,8 @@ test("submit is disabled on empty input and the page is keyboard reachable", asy
   await page.keyboard.press("Tab");
   await expect(page.getByTestId("nav-builds")).toBeFocused();
   await page.keyboard.press("Tab");
+  await expect(page.getByTestId("nav-knowledge")).toBeFocused();
+  await page.keyboard.press("Tab");
   await expect(page.getByTestId("code-input")).toBeFocused();
 });
 

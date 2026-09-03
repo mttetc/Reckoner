@@ -145,3 +145,37 @@ inline PoB code**: every author links a paste service (pobb.in mostly, some past
 **Consequences.** Corpus tests need PostgreSQL (dedicated `reckoner_test` database, created on
 demand; skipped locally without a server, mandatory in CI via a pgvector service container).
 
+## ADR-010 — Knowledge: official patch notes, local embeddings, game filter enforced by type (2026-09-03)
+
+**Context.** SPEC § 6 makes the game filter a correctness condition and asks for an automated
+isolation test. § 7's ingestion rules apply to knowledge too. The first knowledge that is both
+authoritative and versioned is GGG's own patch notes: PoE 1 (forum `patch-notes`) and PoE 2
+(forum 2212) live on the same site with the same markup family.
+
+**Decisions.**
+- **Source**: official patch notes only, chunked by section heading (h2/h3/`<strong>` labels),
+  ≤ 1200 chars, never straddling sections; table-of-contents entries and replies are dropped.
+  Each chunk stores `game`, `version` (as printed, `3.29.0b`), `patch` (major.minor, aligned
+  with the tree version stamped on snapshots), `source`, `source_url`, `title`, `heading`,
+  `published_at`, `retrieved_at`, and the embedder name. Re-ingesting a thread replaces its
+  chunks (idempotent per URL). No third-party guide prose.
+- **Embeddings are local.** `fastembed` (ONNX, BAAI/bge-small-en-v1.5, 384 dims) when installed
+  (`pip install -e ".[rag]"`); nothing leaves the machine, no API key, no external provider.
+  Tests and CI use `HashEmbedder`, a deterministic hashed bag-of-words at the same dimension:
+  the isolation test asserts *filtering*, which is independent of ranking quality, and CI must
+  not download models. The embedder name on each row lets a mixed corpus be detected.
+- **Game filter by type, twice.** `KnowledgeRepository.search(game, …)` raises
+  `GameFilterMissing` (HTTP 422) on an empty game; the API declares `game: GameId` as a
+  required query parameter so a cross-game query cannot even be expressed. The filter is a SQL
+  `WHERE game = :game` applied *before* the vector ordering, never a post-filter on top-k.
+- **Isolation test in CI** (`tests/corpus/test_knowledge_isolation.py`): two synthetic
+  documents with the same vocabulary (Lightning Strike, Herald of Ash, Spectral Throw, Ranger),
+  one per game; three queries per game with k=50; zero cross-game hits, both directions. Runs
+  in the `backend` job against the pgvector service and fails the build if it skips.
+- PoE 2 appears as `app/games/poe2/sources/` only (one 5-line file): the abstraction metric
+  of SPEC § 8 holds for knowledge — no common code changed to add the second game.
+
+**Consequences.** `GET /knowledge/search?game=…&q=…`, `GET /knowledge/patches?game=…`,
+`GET /knowledge/stats`. Scores are cosine similarities shown as such, never game numbers.
+`get_patch_changes()` for the agent can be built on `patches()` + a patch filter.
+
