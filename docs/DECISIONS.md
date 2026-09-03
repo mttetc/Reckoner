@@ -88,6 +88,10 @@ open upstream PR (#9505, used by the various `pob-mcp` servers).
   `backend/scripts/install_pob.sh` into `.engines/pob` (sparse checkout, no tree sprites: 646 MB).
 - Talk to it through **our own** 240-line `bridge.lua` (newline-delimited JSON on stdio), not the
   unmerged PR: fewer moving parts, no dependency on a fork, and every refusal rule is ours to test.
+- LuaJIT must be a 2026 rolling build: PoB's sources use `x += 1` (compound assignment), which
+  distro packages (Ubuntu 24.04 ships a 2023-12 snapshot) reject with `'=' expected near '+'`.
+  CI builds LuaJIT from source at the commit PoB's own test container pins; `install_pob.sh`
+  refuses to proceed with an older interpreter.
 - The only PoB dependency we shim is `lua-utf8`, which PoB uses solely to format thousands
   separators for display. The shim is byte-wise `string.*`; we never read formatted strings.
 - Supported modifications: `tree.allocate`, `tree.deallocate`, `config.set`, `gem.set_level`,

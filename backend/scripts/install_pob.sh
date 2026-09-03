@@ -8,6 +8,20 @@
 # Bump POB_COMMIT deliberately: the engine version ends up in every recalculated metric's provenance.
 set -eu
 
+# Preflight: PoB's sources use compound assignment (`x += 1`), accepted only by LuaJIT rolling
+# builds from mid-2026 on (Homebrew is fine; Debian/Ubuntu packages are not — build from source,
+# see .github/workflows/ci.yml for the exact commit).
+LUAJIT="${LUAJIT_BIN:-luajit}"
+if ! command -v "$LUAJIT" >/dev/null 2>&1; then
+  echo "error: '$LUAJIT' not found. brew install luajit, or build https://github.com/LuaJIT/LuaJIT" >&2
+  exit 1
+fi
+if ! "$LUAJIT" -e 'local c = 0; c += 1' >/dev/null 2>&1; then
+  echo "error: $("$LUAJIT" -v 2>&1 | head -1) is too old for Path of Building (no compound assignment)." >&2
+  echo "       Build LuaJIT from source at a 2026 commit; see .github/workflows/ci.yml (LUAJIT_COMMIT)." >&2
+  exit 1
+fi
+
 POB_REPO="https://github.com/PathOfBuildingCommunity/PathOfBuilding.git"
 POB_COMMIT="${POB_COMMIT:-ed354c2f8c42e148bc904c7508dbe851fb2cf952}"   # v2.67.2 line, 2026-08-27
 ROOT="$(cd "$(dirname "$0")/../.." && pwd)"

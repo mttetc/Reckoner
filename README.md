@@ -50,7 +50,8 @@ cd backend && python3 -m venv .venv && .venv/bin/pip install -e ".[dev]"
 .venv/bin/python scripts/first_light.py tests/fixtures/pob/slayer_lightning_strike_3_27.txt
 .venv/bin/python -m pytest                        # engine tests skip until PoB is installed
 
-# headless engine (recalculation) — needs luajit: brew install luajit / apt install luajit
+# headless engine (recalculation) — needs a 2026 LuaJIT: brew install luajit (Linux: build from
+# source, distro packages predate the compound-assignment syntax PoB uses; see ci.yml LUAJIT_COMMIT)
 scripts/install_pob.sh                            # → .engines/pob, prints the two env vars
 cp .env.example .env                              # RECKONER_POB_SRC, RECKONER_POB_SOURCE_COMMIT
 .venv/bin/python -m pytest tests/engine -rs       # 12 tests against the real engine
