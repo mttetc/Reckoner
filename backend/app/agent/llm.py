@@ -269,14 +269,20 @@ class ScriptedLLM:
                 lines.append(f"A tool refused: {res['error']}")
                 continue
             if isinstance(res, dict) and "items" in res and "total" in res:
-                lines.append(f"{res['total']} build(s) in the {game} corpus match.")
+                pretty_game = "Path of Exile 2" if game == "poe2" else "Path of Exile"
+                lines.append(
+                    f"No build matches in {pretty_game}."
+                    if res["total"] == 0
+                    else f"{res['total']} build{'s' if res['total'] > 1 else ''} match "
+                    f"in {pretty_game}."
+                )
                 for it in res["items"]:
                     dps = it["metrics"].get("dps.total", {})
                     life = it["metrics"].get("life.max", {})
                     dps_s = (
-                        f"{dps['value']:,.1f} DPS ({dps['status']}, {dps['engine']})"
+                        f"{dps['value']:,.1f} DPS (calculated by {dps['engine']})"
                         if dps.get("value") is not None
-                        else f"DPS unknown ({dps.get('unknown_reason', 'no value')})"
+                        else "DPS not in the export"
                     )
                     life_s = (
                         f"{life['value']:,.0f} life"
@@ -295,15 +301,17 @@ class ScriptedLLM:
                         f" · patch {it['game_version']}{src}"
                     )
             elif isinstance(res, dict) and "snapshots" in res:
-                lines.append(f"Corpus: {res['snapshots']} snapshot(s) in total.")
+                lines.append(f"{res['snapshots']} builds are known in total.")
             elif isinstance(res, dict) and "patches" in res:
+                pretty_game = "Path of Exile 2" if game == "poe2" else "Path of Exile"
                 lines.append(
-                    f"Known {game} patches in the knowledge base: "
+                    f"Patch notes known for {pretty_game}: "
                     + ", ".join(p["patch"] for p in res["patches"])
                     + "."
                 )
             elif isinstance(res, list) and res and "excerpt" in res[0]:
-                lines.append(f"From the official {game} patch notes:")
+                pretty_game = "Path of Exile 2" if game == "poe2" else "Path of Exile"
+                lines.append(f"From the official {pretty_game} patch notes:")
                 for h in res[:3]:
                     lines.append(
                         f"• [{h['game']} {h['patch']} · {h['heading'] or h['title']}] "
@@ -313,7 +321,7 @@ class ScriptedLLM:
                 m = res["metrics"]
                 dps = m.get("dps.total", {})
                 dps_s = (
-                    f"{dps['value']:,.1f} ({dps['status']}, {dps['engine']}, "
+                    f"{dps['value']:,.1f} (calculated by {dps['engine']}, "
                     f"patch {dps['game_version']})"
                     if dps.get("value") is not None
                     else "unknown"

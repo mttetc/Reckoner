@@ -134,7 +134,7 @@ summary:hover { color: var(--fg); }
 .steps code { font-family: var(--mono); font-size: 12px; }
 
 /* chat (assistant-ui primitives, our styling) */
-.thread { display: flex; flex-direction: column; min-height: 420px; }
+.thread { display: flex; flex-direction: column; min-height: 220px; }
 .thread-viewport { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 14px; padding: 4px 2px 12px; }
 .msg { max-width: 100%; }
 .msg.user { align-self: flex-end; background: var(--panel-2); border: 1px solid var(--line); border-radius: var(--r); padding: 8px 12px; font-size: 14px; max-width: 80%; }
@@ -153,17 +153,19 @@ summary:hover { color: var(--fg); }
 .tree-bar b { color: var(--fg); }
 .tree-hover { padding: 6px 10px; border-top: 1px solid var(--line); font-size: 11px; color: var(--muted); min-height: 26px; }
 .tree svg { display: block; background: radial-gradient(ellipse at center, #15181f 0%, var(--bg) 72%); }
-.edge { fill: none; stroke: #272c37; stroke-width: 10; }
-.edge.on { stroke: var(--accent); stroke-width: 14; }
-.edge.added { stroke: var(--ok); stroke-width: 16; }
-.edge.removed { stroke: var(--bad); stroke-width: 16; stroke-dasharray: 24 14; }
-.node { fill: #1b1e26; stroke: #394050; stroke-width: 4; transition: r 0.2s var(--ease), stroke 0.15s var(--ease); }
+.edge { fill: none; stroke: #232833; stroke-width: 14; }
+.edge.on { stroke: var(--accent); stroke-width: 26; }
+.edge.added { stroke: var(--ok); stroke-width: 28; }
+.edge.removed { stroke: var(--bad); stroke-width: 28; stroke-dasharray: 40 24; }
+.node { fill: #1b1e26; stroke: #333a48; stroke-width: 6; opacity: 0.85; transition: r 0.2s var(--ease), stroke 0.15s var(--ease); }
+.node.on, .node.added, .node.removed { opacity: 1; }
+.tree-actions { display: flex; gap: 6px; }
 .node.Notable { stroke: #6b7080; }
 .node.Keystone { stroke: #8a7a4a; stroke-width: 6; }
 .node.Mastery { fill: #171a21; stroke: #2f3340; }
 .node.Socket { fill: #12141a; stroke: #4a4f5e; stroke-dasharray: 10 8; }
 .node.ClassStart, .node.AscendClassStart { fill: #1a1d25; stroke: #4a4f5e; stroke-width: 6; }
-.node.on { fill: var(--accent); stroke: var(--accent-2); }
+.node.on { fill: var(--accent); stroke: var(--accent-2); stroke-width: 8; }
 .node.Notable.on, .node.Keystone.on { fill: #e2b74a; stroke: #fff2c2; }
 .node.added { fill: var(--ok); stroke: #d6f2d7; }
 .node.removed { fill: var(--bad); stroke: #f5d0d0; }

@@ -4,6 +4,7 @@ import { useState } from "react";
 import { ApiRequestError, searchKnowledge, type KnowledgeHit } from "@/lib/api";
 import { Nav } from "@/components/Nav";
 import { ERROR_COPY } from "@/components/Result";
+import { gameName } from "@/lib/copy";
 
 function staleNote(retrievedAt: string | null): React.ReactNode {
   if (!retrievedAt) return null;
@@ -45,8 +46,8 @@ export default function KnowledgePage() {
       <Nav current="knowledge" />
       <section className="panel">
         <p className="hint">
-          Official patch notes, split by section and tagged with their patch. Results are always limited to the game you pick: PoE and
-          PoE 2 share names, not mechanics, so a passage from the other game is never a valid answer.
+          Search the official patch notes. Results are always limited to the game you pick: Path of Exile and Path of Exile 2 share
+          skill names but not mechanics.
         </p>
         <form className="filters" onSubmit={onSubmit} aria-label="Search knowledge">
           <select value={game} onChange={(e) => setGame(e.target.value)} data-testid="kn-game" aria-label="Game">
@@ -70,7 +71,7 @@ export default function KnowledgePage() {
 
         {state.kind === "result" && state.hits.length === 0 ? (
           <p className="mono muted" data-testid="kn-empty">
-            Nothing in the {state.game} knowledge base matches. Nothing was borrowed from the other game.
+            No {gameName(state.game)} patch note matches. Nothing was borrowed from the other game.
           </p>
         ) : null}
 
@@ -79,7 +80,7 @@ export default function KnowledgePage() {
             {state.hits.map((h) => (
               <li key={h.chunk.id} className="hit" data-testid="kn-hit" data-game={h.chunk.metadata.game}>
                 <div className="prov">
-                  <b className="calculated">{h.chunk.metadata.game}</b>
+                  <b className="calculated">{gameName(h.chunk.metadata.game)}</b>
                   {h.chunk.metadata.patch ? <> · patch {h.chunk.metadata.patch}</> : null}
                   {h.chunk.metadata.version ? <> ({h.chunk.metadata.version})</> : null}
                   {" · "}
@@ -92,7 +93,7 @@ export default function KnowledgePage() {
                   )}
                   {h.heading ? <> › {h.heading}</> : null}
                   {h.chunk.metadata.published_at ? <> · published {h.chunk.metadata.published_at.slice(0, 10)}</> : null}
-                  <span className="muted"> · relevance {Math.round(h.score * 100)}%</span>
+
                   {staleNote(h.chunk.metadata.retrieved_at)}
                 </div>
                 <pre className="excerpt">{h.chunk.text}</pre>

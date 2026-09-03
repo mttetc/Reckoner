@@ -12,6 +12,7 @@ import {
 } from "@/lib/api";
 import { formatMetric, METRIC_LABELS, PRIMARY_METRICS } from "@/lib/format";
 import { PassiveTree, type TreeDiff } from "@/components/tree/PassiveTree";
+import { provenanceLine, unknownReason } from "@/lib/copy";
 
 export const ERROR_COPY: Record<string, string> = {
   invalid_build_code: "This does not look like a build code we can read.",
@@ -22,18 +23,14 @@ export const ERROR_COPY: Record<string, string> = {
 };
 
 function ProvenanceLine({ m }: { m: Metric }) {
-  if (!m.provenance) return <span className="prov">unknown — {m.unknown_reason}</span>;
+  if (!m.provenance) return <span className="prov">unknown — {unknownReason(m.unknown_reason)}</span>;
   const p = m.provenance;
+  const aggregates = Array.isArray(p.context.aggregates) ? (p.context.aggregates as string[]) : [];
   return (
     <span className="prov" data-testid="provenance">
-      <b className={p.status}>{p.status}</b>
-      {p.engine ? <> · {p.engine}</> : null}
-      {p.engine_version ? <> {p.engine_version}</> : p.engine ? <> (version not embedded)</> : null}
-      {" · patch "}
-      {p.game_version ?? "unknown"}
-      {Array.isArray(p.context.aggregates) && p.context.aggregates.length > 0 ? (
-        <span data-testid="aggregates"> · sums {(p.context.aggregates as string[]).join(", ")}</span>
-      ) : null}
+      <b className={p.status}>{provenanceLine(p).split(" ")[0]}</b>
+      {provenanceLine(p).slice(provenanceLine(p).split(" ")[0].length)}
+      {aggregates.length > 0 ? <span data-testid="aggregates"> · sums {aggregates.join(", ")}</span> : null}
     </span>
   );
 }
@@ -91,28 +88,32 @@ function diffTrees(v: BuildVariant): TreeDiff | null {
   };
 }
 
-function WhatIf({ code, parent, onVariant }: { code: string; parent: BuildSnapshot; onVariant?: (v: BuildVariant | null) => void }) {
-  const [kind, setKind] = useState("tree.deallocate");
-  const [node, setNode] = useState("");
+function WhatIf({
+  code,
+  parent,
+  request,
+  onVariant,
+}: {
+  code: string;
+  parent: BuildSnapshot;
+  request?: (Modification & { seq: number }) | null;
+  onVariant?: (v: BuildVariant | null) => void;
+}) {
+  const [kind, setKind] = useState("config.set");
   const [boss, setBoss] = useState("Uber");
   const [gem, setGem] = useState(parent.main_skill ?? "");
   const [level, setLevel] = useState("21");
   const [state, setState] = useState<WhatIfState>({ kind: "idle" });
 
+  const [lastSeq, setLastSeq] = useState(0);
+
   function modification(): Modification | null {
-    if (kind === "tree.deallocate" || kind === "tree.allocate") {
-      const id = Number(node);
-      return Number.isInteger(id) ? { kind, payload: { node_id: id } } : null;
-    }
     if (kind === "config.set") return { kind, payload: { name: "enemyIsBoss", value: boss } };
     if (kind === "gem.set_level") return gem ? { kind, payload: { gem, level: Number(level) } } : null;
     return null;
   }
 
-  async function onSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    const mod = modification();
-    if (!mod) return;
+  async function run(mod: Modification) {
     setState({ kind: "loading" });
     try {
       const variant = await recalculateBuild(code, [mod]);
@@ -125,27 +126,35 @@ function WhatIf({ code, parent, onVariant }: { code: string; parent: BuildSnapsh
     }
   }
 
+  // A click on the tree arrives as a request; run it once per click.
+  if (request && request.seq !== lastSeq) {
+    setLastSeq(request.seq);
+    void run({ kind: request.kind, payload: request.payload });
+  }
+
+  async function onSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    const mod = modification();
+    if (!mod) return;
+    await run(mod);
+  }
+
   const v = state.kind === "result" ? state.variant : null;
   const engineProv = v?.snapshot.metrics.find((m) => m.provenance)?.provenance ?? null;
   const applied = (engineProv?.context.modifications_applied as Array<Record<string, unknown>> | undefined) ?? [];
 
   return (
     <section className="whatif" aria-label="What if">
-      <h2>What if</h2>
+      <h2>Try a change</h2>
       <p className="hint">
-        Changes are applied inside headless Path of Building and recalculated there. Baseline = this export re-evaluated by the same
-        engine; the export column is what the author&apos;s PoB wrote.
+        Click a passive on the tree above, or pick a change here. Everything is recalculated by Path of Building itself — the
+        &quot;before&quot; column is this build re-evaluated by the same engine, so the comparison is fair.
       </p>
       <form onSubmit={onSubmit}>
-        <select value={kind} onChange={(e) => setKind(e.target.value)} data-testid="mod-kind" aria-label="Modification">
-          <option value="tree.deallocate">Deallocate passive node</option>
-          <option value="tree.allocate">Allocate passive node</option>
-          <option value="config.set">Enemy is boss</option>
+        <select value={kind} onChange={(e) => setKind(e.target.value)} data-testid="mod-kind" aria-label="Change">
+          <option value="config.set">Against which enemy?</option>
           <option value="gem.set_level">Main gem level</option>
         </select>
-        {kind === "tree.deallocate" || kind === "tree.allocate" ? (
-          <input value={node} onChange={(e) => setNode(e.target.value)} placeholder="node id, e.g. 41119" inputMode="numeric" data-testid="mod-node" aria-label="Node id" />
-        ) : null}
         {kind === "config.set" ? (
           <select value={boss} onChange={(e) => setBoss(e.target.value)} data-testid="mod-boss" aria-label="Enemy is boss">
             {BOSS_OPTIONS.map((o) => (
@@ -175,12 +184,10 @@ function WhatIf({ code, parent, onVariant }: { code: string; parent: BuildSnapsh
       {v && v.baseline ? (
         <div data-testid="whatif-result">
           <p className="prov" data-testid="engine-prov">
-            <b className="calculated">calculated</b> · {engineProv?.engine} {engineProv?.engine_version} · source {engineProv?.source} · data{" "}
-            {String(engineProv?.context.engine_data_version ?? "?")}
-            {engineProv?.context.engine_source_commit ? ` · commit ${String(engineProv.context.engine_source_commit).slice(0, 8)}` : ""}
+            <b className="calculated">calculated</b> by {engineProv?.engine} {engineProv?.engine_version} · game data {String(engineProv?.context.engine_data_version ?? "?")}
           </p>
           <p className="mono" data-testid="applied">
-            applied:{" "}
+            changed:{" "}
             {applied.map((a, i) => (
               <span key={i}>
                 {i > 0 ? "; " : ""}
@@ -189,16 +196,16 @@ function WhatIf({ code, parent, onVariant }: { code: string; parent: BuildSnapsh
               </span>
             ))}
             {" · "}
-            <span data-testid="variant-nodes">{v.snapshot.tree.node_ids.length} nodes</span>
+            <span data-testid="variant-nodes">{v.snapshot.tree.node_ids.length} passives</span>
           </p>
           <table>
             <thead>
               <tr>
                 <th>Metric</th>
-                <th style={{ textAlign: "right" }}>Export</th>
-                <th style={{ textAlign: "right" }}>Baseline (engine)</th>
-                <th style={{ textAlign: "right" }}>Variant</th>
-                <th style={{ textAlign: "right" }}>Δ vs baseline</th>
+                <th style={{ textAlign: "right" }}>In the export</th>
+                <th style={{ textAlign: "right" }}>Before</th>
+                <th style={{ textAlign: "right" }}>After</th>
+                <th style={{ textAlign: "right" }}>Change</th>
               </tr>
             </thead>
             <tbody>
@@ -231,6 +238,7 @@ function WhatIf({ code, parent, onVariant }: { code: string; parent: BuildSnapsh
 
 export function Result({ snapshot: s, code, source }: { snapshot: BuildSnapshot; code?: string; source?: SourceInfo | null }) {
   const [treeDiff, setTreeDiff] = useState<TreeDiff | null>(null);
+  const [treeRequest, setTreeRequest] = useState<(Modification & { seq: number }) | null>(null);
   const primary = PRIMARY_METRICS.map((k) => s.metrics.find((m) => m.key === k)).filter(Boolean) as Metric[];
   const rest = s.metrics.filter((m) => !PRIMARY_METRICS.includes(m.key));
   return (
@@ -249,8 +257,6 @@ export function Result({ snapshot: s, code, source }: { snapshot: BuildSnapshot;
           {s.main_skill ?? "main skill unknown"}
         </span>
         <span className="chip" data-testid="patch">patch {s.game_version ?? "unknown"}</span>
-        <span className="chip">{s.game}</span>
-        <span className="chip" title={s.raw.sha256}>input sha256 {s.raw.sha256.slice(0, 10)}…</span>
       </div>
 
       <div className="grid">
@@ -259,7 +265,24 @@ export function Result({ snapshot: s, code, source }: { snapshot: BuildSnapshot;
         ))}
       </div>
 
-      <h2>All metrics</h2>
+      <h2>Passive tree</h2>
+      <p className="mono" data-testid="tree">
+        {s.tree.unknown_reason
+          ? `unknown — ${unknownReason(s.tree.unknown_reason)}`
+          : `${s.tree.node_ids.length} passives · ${Object.keys(s.tree.mastery_effects).length} masteries · tree ${s.tree.version ?? "version unknown"}`}
+      </p>
+      {!s.tree.unknown_reason ? (
+        <PassiveTree
+          version={s.tree.version}
+          allocated={s.tree.node_ids}
+          ascendancy={s.character.subclass}
+          diff={treeDiff ?? null}
+          onNodeClick={code ? (id, allocated) => setTreeRequest({ kind: allocated ? "tree.deallocate" : "tree.allocate", payload: { node_id: id }, seq: Date.now() }) : undefined}
+        />
+      ) : null}
+      {code ? <p className="hint">Click a passive to try the build without it, or with it. The result is recalculated by the real engine below.</p> : null}
+
+      <h2>Details</h2>
       <table>
         <thead>
           <tr>
@@ -272,7 +295,7 @@ export function Result({ snapshot: s, code, source }: { snapshot: BuildSnapshot;
           {rest.map((m) => (
             <tr key={m.key} data-testid={`row-${m.key}`}>
               <td>{METRIC_LABELS[m.key] ?? m.key}</td>
-              <td className="num">{m.value === null ? <span className="muted">unknown</span> : formatMetric(m.value, m.unit).short}</td>
+              <td className="num">{m.value === null ? <span className="muted">—</span> : formatMetric(m.value, m.unit).short}</td>
               <td>
                 <ProvenanceLine m={m} />
               </td>
@@ -280,16 +303,6 @@ export function Result({ snapshot: s, code, source }: { snapshot: BuildSnapshot;
           ))}
         </tbody>
       </table>
-
-      <h2>Passive tree</h2>
-      <p className="mono" data-testid="tree">
-        {s.tree.unknown_reason
-          ? `unknown — ${s.tree.unknown_reason}`
-          : `${s.tree.node_ids.length} allocated nodes · tree ${s.tree.version ?? "version unknown"} · ${Object.keys(s.tree.mastery_effects).length} masteries`}
-      </p>
-      {!s.tree.unknown_reason ? (
-        <PassiveTree version={s.tree.version} allocated={s.tree.node_ids} ascendancy={s.character.subclass} diff={treeDiff ?? null} />
-      ) : null}
 
       <h2>Items ({s.items.length})</h2>
       <table data-testid="items">
@@ -349,14 +362,14 @@ export function Result({ snapshot: s, code, source }: { snapshot: BuildSnapshot;
               </a>
             </>
           ) : null}
-          {source.terms ? <> · fetched under: {source.terms}</> : null}
+
         </p>
       ) : null}
       {code ? (
-        <WhatIf code={code} parent={s} onVariant={(v) => setTreeDiff(v ? diffTrees(v) : null)} />
+        <WhatIf code={code} parent={s} request={treeRequest} onVariant={(v) => setTreeDiff(v ? diffTrees(v) : null)} />
       ) : (
         <p className="hint whatif" data-testid="whatif-unavailable">
-          What-if recalculation needs the original code; the corpus keeps only its hash. Paste the code on the analyse page.
+          To try changes on this build, paste its code on the Analyse page — saved builds cannot be recalculated from here.
         </p>
       )}
     </section>

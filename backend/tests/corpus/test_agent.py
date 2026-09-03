@@ -42,7 +42,8 @@ async def test_build_question_uses_tools_and_every_number_is_traceable(session, 
     assert "Slayer" in a.text and "Vaal Lightning Strike" in a.text
     assert a.audit.checked > 0 and a.audit.clean, a.audit.unverified
     assert any(
-        e.statement.startswith("Duelist Slayer") and "dps.total" in e.statement for e in a.evidence
+        e.statement.startswith("Duelist Slayer") and "DPS 18,619,974" in e.statement
+        for e in a.evidence
     )
     assert all(e.provenance.status == "calculated" for e in a.evidence)
     assert a.model == "scripted" and a.degraded == []
@@ -69,7 +70,7 @@ async def test_pasted_code_is_analysed(session, code_modern):
 
 async def test_empty_corpus_is_stated_not_padded(session):
     a = await ask(session, "Find me a Witch build", llm=LLM)
-    assert "0 build(s)" in a.text
+    assert "No build matches" in a.text
     assert a.audit.clean
 
 

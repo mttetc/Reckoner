@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { API_URL } from "@/lib/api";
+import { gameName } from "@/lib/copy";
 
 interface Status {
   engine: boolean | null;
@@ -34,20 +35,16 @@ export function StatusStrip() {
     <div className="strip" data-testid="status-strip" aria-label="Instance status">
       <span>
         <span className={`dot ${s.engine === null ? "" : s.engine ? "ok" : "off"}`} />
-        engine {s.engine === null ? "unknown" : s.engine ? <b>ready · recalculation available</b> : <b>not installed · analysis only</b>}
+        {s.engine === null ? "checking the calculator…" : s.engine ? <b>live recalculation available</b> : <b>recalculation unavailable on this server</b>}
       </span>
+      <span>{s.builds === null ? "" : <b>{s.builds} builds indexed</b>}</span>
       <span>
-        corpus {s.builds === null ? "unknown" : <b>{s.builds} builds</b>}
-      </span>
-      <span>
-        knowledge{" "}
-        {s.chunks === null ? (
-          "unknown"
-        ) : (
+        {s.patches ? (
           <b>
-            {s.chunks} passages
-            {s.patches ? ` (${Object.entries(s.patches).map(([g, n]) => `${g}: ${n}`).join(", ")})` : ""}
+            patch notes for {Object.keys(s.patches).map((g) => gameName(g)).join(" and ")}
           </b>
+        ) : (
+          ""
         )}
       </span>
     </div>

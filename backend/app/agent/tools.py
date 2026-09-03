@@ -117,15 +117,56 @@ def compact_snapshot(s: BuildSnapshot) -> dict:
     }
 
 
+GAME_NAMES: dict[str, str] = {
+    "poe": "Path of Exile",
+    "poe2": "Path of Exile 2",
+    "diablo3": "Diablo III",
+}
+
+
+def game_name(game: str) -> str:
+    return GAME_NAMES.get(game, game)
+
+
+def _n(count: int, word: str, plural: str | None = None) -> str:
+    return f"{count} {word if count == 1 else (plural or word + 's')}"
+
+
+METRIC_LABELS: dict[str, str] = {
+    "dps.total": "DPS",
+    "dps.full": "Full DPS",
+    "minion.dps.total": "Minion DPS",
+    "life.max": "Life",
+    "energy_shield.max": "Energy shield",
+    "ehp.total": "Effective HP",
+    "resist.fire": "Fire resistance",
+    "resist.cold": "Cold resistance",
+    "resist.lightning": "Lightning resistance",
+    "resist.chaos": "Chaos resistance",
+}
+
+
+def human_number(value: float, unit: str | None) -> str:
+    if unit == "%":
+        return f"{value:g}%"
+    if unit == "x":
+        return f"×{value:g}"
+    if abs(value) >= 1000:
+        return f"{value:,.0f}"
+    return f"{value:g}"
+
+
 def metric_evidence(s: BuildSnapshot, label: str) -> list[Evidence]:
+    """One readable sentence per headline number: for players, not for logs."""
     out: list[Evidence] = []
     for k in HEADLINE:
         m = s.metric(k.value)
         if m is None or m.value is None or m.provenance is None:
             continue
+        name = METRIC_LABELS.get(k.value, k.value)
         out.append(
             Evidence(
-                statement=f"{label}: {k.value} = {m.value:g}{(' ' + m.unit) if m.unit else ''}",
+                statement=f"{label} — {name} {human_number(m.value, m.unit)}",
                 provenance=m.provenance,
             )
         )
@@ -162,7 +203,9 @@ def _label(s: BuildSnapshot) -> str:
 def knowledge_evidence(h: Hit) -> Evidence:
     md = h.chunk.metadata
     return Evidence(
-        statement=f"{md.game} patch {md.patch or '?'} — {h.heading or h.title or md.source}",
+        statement=(
+            f"{game_name(md.game)} patch {md.patch or '?'} — {h.heading or h.title or md.source}"
+        ),
         provenance=Provenance(
             status=ProvenanceStatus.CLAIMED,
             source=md.source,
@@ -194,7 +237,7 @@ async def _list_games(ctx: ToolContext, _: NoArgs) -> ToolResult:
         }
         for a in list_adapters()
     ]
-    return ToolResult(data=data, summary=f"{len(data)} game(s) with adapters")
+    return ToolResult(data=data, summary=f"{len(data)} supported game(s)")
 
 
 class SearchBuildsArgs(BaseModel):
@@ -272,8 +315,12 @@ async def _search_builds(ctx: ToolContext, a: SearchBuildsArgs) -> ToolResult:
     return ToolResult(
         data=data,
         evidence=evidence,
-        summary=f"{res.total} match(es), returned {len(items)}"
-        + (f"; normalised: {'; '.join(normalised)}" if normalised else ""),
+        summary=(
+            "no match"
+            if res.total == 0
+            else f"{res.total} match{'es' if res.total > 1 else ''}, showing {len(items)}"
+        )
+        + (f" ({'; '.join(normalised)})" if normalised else ""),
     )
 
 
@@ -363,7 +410,7 @@ async def _calculate_build(ctx: ToolContext, a: CalculateBuildArgs) -> ToolResul
     return ToolResult(
         data=_variant_view(v),
         evidence=ev,
-        summary=f"{len(a.modifications)} modification(s) applied by the engine",
+        summary=f"recalculated with {_n(len(a.modifications), 'change')}",
     )
 
 
@@ -408,7 +455,7 @@ async def _compare_builds(ctx: ToolContext, a: CompareBuildsArgs) -> ToolResult:
             "note": "None = unknown, not zero",
         },
         evidence=ev,
-        summary=f"compared {len(snaps)} builds on {len(table)} metrics",
+        summary=f"compared {len(snaps)} builds on {len(table)} numbers",
     )
 
 
@@ -443,7 +490,7 @@ async def _search_knowledge(ctx: ToolContext, a: SearchKnowledgeArgs) -> ToolRes
     return ToolResult(
         data=data,
         evidence=[knowledge_evidence(h) for h in hits],
-        summary=f"{len(hits)} passage(s) from {a.game.value} knowledge",
+        summary=f"{_n(len(hits), 'passage')} from the {game_name(a.game.value)} patch notes",
     )
 
 
@@ -473,7 +520,7 @@ async def _get_patch_changes(ctx: ToolContext, a: PatchChangesArgs) -> ToolResul
                     for p in patches
                 ]
             },
-            summary=f"{len(patches)} patch(es) known for {a.game.value}",
+            summary=f"{_n(len(patches), 'patch', 'patches')} known for {game_name(a.game.value)}",
         )
     if a.patch not in {p["patch"] for p in patches}:
         raise ToolError(
@@ -501,13 +548,13 @@ async def _get_patch_changes(ctx: ToolContext, a: PatchChangesArgs) -> ToolResul
             ),
         },
         evidence=[knowledge_evidence(h) for h in hits],
-        summary=f"{len(hits)} passage(s) for {a.game.value} {a.patch}",
+        summary=f"{_n(len(hits), 'passage')} from {game_name(a.game.value)} {a.patch}",
     )
 
 
 async def _corpus_stats(ctx: ToolContext, _: NoArgs) -> ToolResult:
     data = await corpus_stats(ctx.session)
-    return ToolResult(data=data, summary=f"{data['snapshots']} snapshot(s) in the corpus")
+    return ToolResult(data=data, summary=f"{data['snapshots']} builds known")
 
 
 TOOLS: dict[str, Tool] = {

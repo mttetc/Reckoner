@@ -9,11 +9,11 @@ test.describe("corpus (seeded with the six fixtures)", () => {
     // The Chieftain ballista export has no TotalDPS: shown as unknown, not 0, and sorted last.
     const last = rows.last();
     await expect(last).toContainText("Chieftain");
-    await expect(last.locator("td").nth(3)).toHaveText("unknown");
-    await expect(last.locator("td").nth(3)).toHaveAttribute("title", /not present in this export/);
+    await expect(last.locator("td").nth(3)).toHaveText("—");
+    await expect(last.locator("td").nth(3)).toHaveAttribute("title", /not in this export/);
     // Best known DPS first.
     await expect(rows.first()).toContainText("Vaal Lightning Strike");
-    await expect(rows.first().locator("td").nth(3)).toHaveAttribute("title", /calculated · Path of Building/);
+    await expect(rows.first().locator("td").nth(3)).toHaveAttribute("title", /calculated by Path of Building/);
   });
 
   test("filters by class and skill; empty result is stated, not padded", async ({ page }) => {

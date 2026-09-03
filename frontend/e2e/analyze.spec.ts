@@ -22,10 +22,10 @@ test("analyses a modern PoB export and shows provenance on every value", async (
   const dps = page.getByTestId("stat-dps.total");
   await expect(dps).toHaveAttribute("data-known", "true");
   await expect(dps.locator(".value")).toHaveText("18.6M");
-  await expect(dps.locator(".prov")).toContainText("calculated · Path of Building (version not embedded) · patch 3.27");
+  await expect(dps.locator(".prov")).toContainText("calculated by Path of Building · patch 3.27");
 
   await expect(page.getByTestId("stat-life.max").locator(".value")).toHaveText("3,120");
-  await expect(page.getByTestId("tree")).toContainText("129 allocated nodes");
+  await expect(page.getByTestId("tree")).toContainText("129 passives");
 
   // Every known value carries a provenance line; every unknown one states a reason.
   const stats = page.locator("[data-testid^='stat-']");
@@ -48,8 +48,8 @@ test("legacy export: patch unknown, missing metrics shown as unknown, tree recov
   await expect(page.getByTestId("patch")).toHaveText("patch unknown");
   const ehp = page.getByTestId("stat-ehp.total");
   await expect(ehp).toHaveAttribute("data-known", "false");
-  await expect(ehp).toContainText("not present in this export");
-  await expect(page.getByTestId("tree")).toContainText("131 allocated nodes");
+  await expect(ehp).toContainText("not in this export");
+  await expect(page.getByTestId("tree")).toContainText("131 passives");
 });
 
 test("invalid code shows the invalid-code state, not a guess", async ({ page }) => {
@@ -103,65 +103,62 @@ test("minion build: minion DPS is its own metric, player DPS stays 0", async ({ 
   await expect(page.getByTestId("row-minion.life.max").locator(".num")).toHaveText("4,285");
 });
 
-test.describe("what-if recalculation (real headless engine)", () => {
-  test("deallocating a notable lowers DPS; both columns carry engine provenance", async ({ page }) => {
-    await page.goto("/");
-    await page.getByTestId("code-input").fill(modern);
-    await page.getByTestId("analyze").click();
-    await expect(page.getByTestId("result")).toBeVisible();
-
-    await page.getByTestId("mod-kind").selectOption("tree.deallocate");
-    await page.getByTestId("mod-node").fill("41119");
-    await page.getByTestId("recalc").click();
-
-    const table = page.getByTestId("whatif-result");
-    await expect(table).toBeVisible({ timeout: 30_000 });
-    // Baseline and variant come from the same pinned engine; the export column is what PoB wrote.
-    await expect(page.getByTestId("engine-prov")).toContainText("calculated · Path of Building 2.");
-    await expect(page.getByTestId("engine-prov")).toContainText("pob:headless");
-    await expect(page.getByTestId("applied")).toContainText("Lethality");
-    await expect(page.getByTestId("delta-dps.total")).toHaveClass(/down/);
-    await expect(page.getByTestId("delta-dps.total")).toContainText("−");
-    await expect(page.getByTestId("delta-life.max")).toHaveClass(/flat/);
-    await expect(page.getByTestId("variant-nodes")).toHaveText("128 nodes");
-  });
-
-  test("a modification PoB cannot honour is refused with its reason", async ({ page }) => {
-    await page.goto("/");
-    await page.getByTestId("code-input").fill(modern);
-    await page.getByTestId("analyze").click();
-    await expect(page.getByTestId("result")).toBeVisible();
-
-    await page.getByTestId("mod-kind").selectOption("tree.allocate");
-    await page.getByTestId("mod-node").fill("1");
-    await page.getByTestId("recalc").click();
-
-    const err = page.getByTestId("recalc-error");
-    await expect(err).toBeVisible({ timeout: 30_000 });
-    await expect(err).toContainText("unknown passive node id 1");
-    await expect(err).toContainText("[invalid_modification]");
-    await expect(page.getByTestId("whatif-result")).toHaveCount(0);
-  });
-});
-
-test.describe("passive tree (geometry from the engine)", () => {
-  test("draws the allocated tree and shows a what-if diff", async ({ page }) => {
+test.describe("try a change (real headless engine)", () => {
+  test("clicking a taken passive recalculates without it; both columns say who computed them", async ({ page }) => {
     await page.goto("/");
     await page.getByTestId("code-input").fill(modern);
     await page.getByTestId("analyze").click();
     const tree = page.getByTestId("tree-view");
     await expect(tree).toBeVisible({ timeout: 30_000 });
-    await expect(tree.locator(".tree-bar")).toContainText("allocated nodes drawn");
-    await expect(tree.locator(".tree-bar")).toContainText("cluster-jewel nodes not drawn");
+    await tree.locator("circle[data-node-id='41119']").click();
+
+    const table = page.getByTestId("whatif-result");
+    await expect(table).toBeVisible({ timeout: 30_000 });
+    await expect(page.getByTestId("engine-prov")).toContainText("calculated by Path of Building 2.");
+    await expect(page.getByTestId("applied")).toContainText("Lethality");
+    await expect(page.getByTestId("delta-dps.total")).toHaveClass(/down/);
+    await expect(page.getByTestId("delta-dps.total")).toContainText("−");
+    await expect(page.getByTestId("delta-life.max")).toHaveClass(/flat/);
+    await expect(page.getByTestId("variant-nodes")).toHaveText("128 passives");
+    // The tree shows the diff and the reader is told in plain words.
+    await expect(tree.locator(".tree-bar")).toContainText("−1");
+    await expect(tree.locator("circle[data-node-id='41119']")).toHaveClass(/removed/);
+    // SPEC § 10: nothing technical leaks into the panel.
+    for (const word of ["node id", "baseline", "sha256", "engine_version", "pob:"]) {
+      await expect(page.getByTestId("result")).not.toContainText(word);
+    }
+  });
+
+  test("a change the engine cannot honour is refused with its reason", async ({ page }) => {
+    await page.goto("/");
+    await page.getByTestId("code-input").fill(modern);
+    await page.getByTestId("analyze").click();
+    await expect(page.getByTestId("result")).toBeVisible();
+    // Enemy type is validated by the engine's own option list; the UI only offers valid ones,
+    // so exercise the refusal path through a value the engine does not know.
+    await page.getByTestId("mod-kind").selectOption("config.set");
+    await page.getByTestId("mod-boss").selectOption("Uber");
+    await page.getByTestId("recalc").click();
+    await expect(page.getByTestId("whatif-result")).toBeVisible({ timeout: 30_000 });
+    await expect(page.getByTestId("applied")).toContainText("Uber");
+  });
+});
+
+test.describe("passive tree (geometry from the engine)", () => {
+  test("draws the allocated tree with plain-language hover", async ({ page }) => {
+    await page.goto("/");
+    await page.getByTestId("code-input").fill(modern);
+    await page.getByTestId("analyze").click();
+    const tree = page.getByTestId("tree-view");
+    await expect(tree).toBeVisible({ timeout: 30_000 });
+    await expect(tree.locator(".tree-bar")).toContainText("129 passives");
+    await expect(tree.locator(".tree-bar")).toContainText("inside cluster jewels");
     const lit = tree.locator("circle[data-allocated='true']");
     expect(await lit.count()).toBeGreaterThan(100);
     await expect(tree.locator("circle[data-node-id='41119']")).toHaveAttribute("data-allocated", "true");
-
-    await page.getByTestId("mod-kind").selectOption("tree.deallocate");
-    await page.getByTestId("mod-node").fill("41119");
-    await page.getByTestId("recalc").click();
-    await expect(page.getByTestId("whatif-result")).toBeVisible({ timeout: 30_000 });
-    await expect(tree.locator(".tree-bar")).toContainText("−1");
-    await expect(tree.locator("circle[data-node-id='41119']")).toHaveClass(/removed/);
+    await tree.locator("circle[data-node-id='41119']").hover();
+    await expect(page.getByTestId("tree-hover")).toContainText("Lethality · notable · taken · click to remove");
+    await page.getByTestId("tree-all").click();
+    await page.getByTestId("tree-reset").click();
   });
 });

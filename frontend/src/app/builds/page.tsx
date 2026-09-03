@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { ApiRequestError, searchBuilds, type BuildSummary, type Metric } from "@/lib/api";
 import { formatMetric } from "@/lib/format";
+import { provenanceLine, unknownReason } from "@/lib/copy";
 import { Nav } from "@/components/Nav";
 import { ERROR_COPY } from "@/components/Result";
 
@@ -20,13 +21,13 @@ function Cell({ m }: { m: Metric | undefined }) {
   if (!m) return <td className="num muted">—</td>;
   if (m.value === null)
     return (
-      <td className="num muted" title={`unknown — ${m.unknown_reason ?? ""}`}>
-        unknown
+      <td className="num muted" title={unknownReason(m.unknown_reason)}>
+        —
       </td>
     );
   const p = m.provenance!;
   return (
-    <td className="num" title={`${p.status} · ${p.engine ?? p.source}${p.engine_version ? " " + p.engine_version : ""} · patch ${p.game_version ?? "unknown"}`}>
+    <td className="num" title={provenanceLine(p)}>
       {formatMetric(m.value, m.unit).short}
     </td>
   );
@@ -101,7 +102,7 @@ export default function BuildsPage() {
 
         {state.kind === "result" && state.items.length === 0 ? (
           <p className="mono muted" data-testid="corpus-empty">
-            No build matches. The corpus only contains what was ingested from permitted sources; it is not padded.
+            No build matches these filters. Only builds published on the official forums are listed.
           </p>
         ) : null}
 
@@ -126,7 +127,7 @@ export default function BuildsPage() {
                       {b.character.class_name ?? "?"}
                       {b.character.subclass ? ` · ${b.character.subclass}` : ""}
                     </Link>
-                    <span className="muted mono"> lvl {b.character.level ?? "?"}</span>
+                    <span className="muted mono"> level {b.character.level ?? "?"}</span>
                   </td>
                   <td>{b.main_skill ?? <span className="muted">unknown</span>}</td>
                   <td className="mono muted">{b.game_version ?? "unknown"}</td>

@@ -16,13 +16,13 @@ export interface TreeDiff {
 }
 
 const RADIUS: Record<string, number> = {
-  Normal: 26,
-  Notable: 40,
-  Keystone: 56,
-  Mastery: 34,
-  Socket: 40,
-  ClassStart: 64,
-  AscendClassStart: 44,
+  Normal: 42,
+  Notable: 64,
+  Keystone: 88,
+  Mastery: 54,
+  Socket: 62,
+  ClassStart: 100,
+  AscendClassStart: 70,
 };
 
 function nodeRadius(n: TreeNode): number {
@@ -47,12 +47,14 @@ export function PassiveTree({
   ascendancy,
   diff,
   height = 560,
+  onNodeClick,
 }: {
   version: string | null;
   allocated: number[];
   ascendancy?: string | null;
   diff?: TreeDiff | null;
   height?: number;
+  onNodeClick?: (id: number, allocated: boolean) => void;
 }) {
   const [geo, setGeo] = useState<TreeGeometry | null>(null);
   const [error, setError] = useState<{ code: string; message: string } | null>(null);
@@ -103,18 +105,25 @@ export function PassiveTree({
         edges.push({ key, d, lit: both, state });
       }
     }
-    let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
-    for (const n of visible) {
-      minX = Math.min(minX, n.x); maxX = Math.max(maxX, n.x);
-      minY = Math.min(minY, n.y); maxY = Math.max(maxY, n.y);
-    }
-    const pad = 300;
-    return { visible, edges, bounds: { x: minX - pad, y: minY - pad, w: maxX - minX + pad * 2, h: maxY - minY + pad * 2 } };
+    const box = (nodes: TreeNode[], pad: number) => {
+      let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+      for (const n of nodes) {
+        minX = Math.min(minX, n.x); maxX = Math.max(maxX, n.x);
+        minY = Math.min(minY, n.y); maxY = Math.max(maxY, n.y);
+      }
+      if (!Number.isFinite(minX)) return null;
+      return { x: minX - pad, y: minY - pad, w: maxX - minX + pad * 2, h: maxY - minY + pad * 2 };
+    };
+    const all = box(visible, 300)!;
+    // Default framing: the allocated path (what the reader came for), not the whole 25k-unit tree.
+    const build = box(visible.filter((n) => alloc.has(n.id)), 900) ?? all;
+    return { visible, edges, bounds: all, buildBounds: build };
   }, [geo, ascendancy, alloc, diff]);
 
   // viewBox pan/zoom (wheel + drag), no dependency. `override` is null until the user moves.
   const [override, setView] = useState<{ x: number; y: number; w: number; h: number } | null>(null);
-  const view = override ?? model?.bounds ?? null;
+  const [fitAll, setFitAll] = useState(false);
+  const view = override ?? (fitAll ? model?.bounds : model?.buildBounds) ?? null;
   const drag = useRef<{ x: number; y: number; vx: number; vy: number } | null>(null);
   const [dragging, setDragging] = useState(false);
 
@@ -162,29 +171,33 @@ export function PassiveTree({
     <div className="tree" data-testid="tree-view">
       <div className="tree-bar">
         <span className="mono">
-          <b>{total - clusterCount}</b> allocated nodes drawn · tree {version.replace("_", ".")}
-          {clusterCount ? ` · ${clusterCount} cluster-jewel nodes not drawn (they exist only inside this build)` : ""}
+          <b>{total}</b> passives{clusterCount ? ` · ${clusterCount} inside cluster jewels (not shown)` : ""}
         </span>
         {diff ? (
           <span className="mono">
-            <span className="added">+{diff.added.size}</span> <span className="removed">−{diff.removed.size}</span> vs baseline
+            <span className="added">+{diff.added.size}</span> <span className="removed">−{diff.removed.size}</span> after your change
           </span>
         ) : null}
-        <button type="button" className="ghost" onClick={() => setView(null)} data-testid="tree-reset">
-          fit
-        </button>
+        <span className="tree-actions">
+          <button type="button" className="ghost" onClick={() => { setView(null); setFitAll(false); }} data-testid="tree-reset">
+            zoom to build
+          </button>
+          <button type="button" className="ghost" onClick={() => { setView(null); setFitAll(true); }} data-testid="tree-all">
+            whole tree
+          </button>
+        </span>
       </div>
       <svg
         ref={svgRef}
         viewBox={`${view.x} ${view.y} ${view.w} ${view.h}`}
-        style={{ width: "100%", height, touchAction: "none", cursor: dragging ? "grabbing" : "grab" }}
+        style={{ width: "100%", height, touchAction: "none", cursor: dragging ? "grabbing" : "grab", transition: dragging ? "none" : "view-box 0.3s" }}
         onWheel={onWheel}
         onPointerDown={onPointerDown}
         onPointerMove={onPointerMove}
         onPointerUp={onPointerUp}
         onPointerLeave={onPointerUp}
         role="img"
-        aria-label={`Passive tree, ${total} allocated nodes`}
+        aria-label={`Passive tree, ${total} allocated passives`}
       >
         <g className="edges">
           {model.edges.map((e) => (
@@ -206,6 +219,8 @@ export function PassiveTree({
                 data-allocated={on ? "true" : "false"}
                 onPointerEnter={() => setHover(n)}
                 onPointerLeave={() => setHover(null)}
+                onClick={onNodeClick && n.type !== "ClassStart" && n.type !== "AscendClassStart" ? () => onNodeClick(n.id, on) : undefined}
+                style={onNodeClick ? { cursor: "pointer" } : undefined}
               >
                 <title>{`${n.name || n.type}${n.ascendancy ? ` · ${n.ascendancy}` : ""}${on ? " · allocated" : ""}`}</title>
               </circle>
@@ -214,7 +229,11 @@ export function PassiveTree({
         </g>
       </svg>
       <div className="tree-hover mono" data-testid="tree-hover" aria-live="polite">
-        {hover ? `${hover.name || hover.type} · ${hover.type}${hover.ascendancy ? ` · ${hover.ascendancy}` : ""}${alloc.has(hover.id) ? " · allocated" : ""} · #${hover.id}` : "hover a node"}
+        {hover
+          ? `${hover.name || hover.type}${hover.type !== "Normal" ? ` · ${hover.type.replace("ClassStart", "class start").replace("AscendClassStart", "ascendancy start").toLowerCase()}` : ""}${alloc.has(hover.id) ? " · taken" : ""}${onNodeClick ? (alloc.has(hover.id) ? " · click to remove" : " · click to add") : ""}`
+          : onNodeClick
+            ? "hover a passive · click to try a change"
+            : "hover a passive"}
       </div>
     </div>
   );
