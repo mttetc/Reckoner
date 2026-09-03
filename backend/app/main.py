@@ -1,9 +1,14 @@
+import logging
+from collections.abc import AsyncIterator
+from contextlib import asynccontextmanager
+
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
 from app.api.routes import ask, builds, corpus, games, knowledge, threads
 from app.config import settings
+from app.db.engine import dispose, init_db
 from app.domain.errors import (
     DomainError,
     EngineUnavailable,
@@ -13,7 +18,20 @@ from app.domain.errors import (
 )
 from app.knowledge.repository import GameFilterMissing
 
-app = FastAPI(title="Reckoner", version="0.1.0")
+
+@asynccontextmanager
+async def lifespan(_: FastAPI) -> AsyncIterator[None]:
+    # Schema bootstrap is idempotent (ADR-009: create_all until Alembic). A missing database is a
+    # degraded state the endpoints report themselves, not a reason to refuse to start.
+    try:
+        await init_db()
+    except Exception as exc:  # pragma: no cover — depends on the environment
+        logging.getLogger("reckoner").warning("database not initialised at startup: %s", exc)
+    yield
+    await dispose()
+
+
+app = FastAPI(title="Reckoner", version="0.1.0", lifespan=lifespan)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.cors_origins,
