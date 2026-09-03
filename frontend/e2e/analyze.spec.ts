@@ -102,9 +102,12 @@ test.describe("try a change (real headless engine)", () => {
     await expect(tree).toBeVisible({ timeout: 30_000 });
     await expect(tree.locator(".tree-bar")).toContainText("129 passives");
     await expect(tree.locator(".tree-bar")).toContainText("inside cluster jewels");
-    await tree.locator("circle[data-node-id='41119']").hover();
+    const lethality = tree.locator("circle[data-node-id='41119']");
+    await lethality.scrollIntoViewIfNeeded();
+    await lethality.hover({ force: true });
     await expect(result.getByTestId("tree-hover")).toContainText("Lethality · notable · taken · click to remove");
-    await tree.locator("circle[data-node-id='41119']").click();
+    // The thread keeps auto-scrolling while the card grows; skip the "stable" wait, the target is right.
+    await lethality.click({ force: true });
 
     await expect(result.getByTestId("whatif-result")).toBeVisible({ timeout: 30_000 });
     await expect(result.getByTestId("engine-prov")).toContainText("calculated by Path of Building 2.");

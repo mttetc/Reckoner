@@ -12,7 +12,7 @@ export const BuildCardUI = makeAssistantToolUI<Record<string, never>, { snapshot
     if (!result) return null;
     return (
       <div className="in-chat-card" data-testid="build-card">
-        <Result snapshot={result.snapshot} code={result.code} />
+        <Result snapshot={result.snapshot} code={result.code} compact />
       </div>
     );
   },

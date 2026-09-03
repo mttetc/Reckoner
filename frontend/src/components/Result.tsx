@@ -236,7 +236,17 @@ function WhatIf({
   );
 }
 
-export function Result({ snapshot: s, code, source }: { snapshot: BuildSnapshot; code?: string; source?: SourceInfo | null }) {
+export function Result({
+  snapshot: s,
+  code,
+  source,
+  compact = false,
+}: {
+  snapshot: BuildSnapshot;
+  code?: string;
+  source?: SourceInfo | null;
+  compact?: boolean;
+}) {
   const [treeDiff, setTreeDiff] = useState<TreeDiff | null>(null);
   const [treeRequest, setTreeRequest] = useState<(Modification & { seq: number }) | null>(null);
   const primary = PRIMARY_METRICS.map((k) => s.metrics.find((m) => m.key === k)).filter(Boolean) as Metric[];
@@ -282,7 +292,8 @@ export function Result({ snapshot: s, code, source }: { snapshot: BuildSnapshot;
       ) : null}
       {code ? <p className="hint">Click a passive to try the build without it, or with it. The result is recalculated by the real engine below.</p> : null}
 
-      <h2>Details</h2>
+      <details open={!compact} className="section">
+      <summary><h2>Details</h2></summary>
       <table>
         <thead>
           <tr>
@@ -304,7 +315,10 @@ export function Result({ snapshot: s, code, source }: { snapshot: BuildSnapshot;
         </tbody>
       </table>
 
-      <h2>Items ({s.items.length})</h2>
+      </details>
+
+      <details open={!compact} className="section">
+      <summary><h2>Items ({s.items.length})</h2></summary>
       <table data-testid="items">
         <thead>
           <tr>
@@ -329,7 +343,10 @@ export function Result({ snapshot: s, code, source }: { snapshot: BuildSnapshot;
         </tbody>
       </table>
 
-      <h2>Skill groups ({s.skills.length})</h2>
+      </details>
+
+      <details open={!compact} className="section">
+      <summary><h2>Skill groups ({s.skills.length})</h2></summary>
       <table data-testid="skills">
         <tbody>
           {s.skills.map((g, i) => (
@@ -343,6 +360,7 @@ export function Result({ snapshot: s, code, source }: { snapshot: BuildSnapshot;
           ))}
         </tbody>
       </table>
+      </details>
 
       {source ? (
         <p className="prov" data-testid="source">
