@@ -7,6 +7,8 @@ import { formatMetric } from "@/lib/format";
 import { Nav } from "@/components/Nav";
 import { ERROR_COPY } from "@/components/Result";
 
+const isWebUrl = (u: string | null | undefined) => !!u && /^https?:\/\//.test(u);
+
 const CLASSES = ["", "Duelist", "Marauder", "Ranger", "Scion", "Shadow", "Templar", "Witch"];
 
 type State =
@@ -133,9 +135,13 @@ export default function BuildsPage() {
                   <Cell m={metric(b, "ehp.total")} />
                   <td className="muted">
                     {b.source ? (
-                      <a href={b.source.parent_url ?? b.source.url} rel="noreferrer noopener" target="_blank" title={b.source.terms ?? ""}>
-                        {b.source.title ?? b.source.kind}
-                      </a>
+                      isWebUrl(b.source.parent_url ?? b.source.url) ? (
+                        <a href={b.source.parent_url ?? b.source.url} rel="noreferrer noopener" target="_blank" title={b.source.terms ?? ""}>
+                          {b.source.title ?? b.source.kind}
+                        </a>
+                      ) : (
+                        <span title={b.source.terms ?? ""}>{b.source.title ?? b.source.kind}</span>
+                      )
                     ) : (
                       "—"
                     )}

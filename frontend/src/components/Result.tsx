@@ -315,7 +315,14 @@ export function Result({ snapshot: s, code, source }: { snapshot: BuildSnapshot;
 
       {source ? (
         <p className="prov" data-testid="source">
-          source · <a href={source.url} rel="noreferrer noopener" target="_blank">{source.title ?? source.url}</a>
+          source ·{" "}
+          {/^https?:\/\//.test(source.url) ? (
+            <a href={source.url} rel="noreferrer noopener" target="_blank">
+              {source.title ?? source.url}
+            </a>
+          ) : (
+            <span>{source.title ?? source.url}</span>
+          )}
           {source.parent_url ? (
             <>
               {" "}· from{" "}

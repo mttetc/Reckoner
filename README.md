@@ -88,6 +88,26 @@ Create `backend/app/games/<game>/` implementing `GameAdapter`, register it in
 `backend/app/games/__init__.py`, add the id to `GameId`. Nothing else in `app/domain` should change;
 `test_domain_isolation.py` and the diff size are the measure.
 
+## Status (2026-09-04)
+
+Phase 1 vertical slice, all with tests and CI:
+
+| SPEC | Delivered |
+|---|---|
+| § 5 A import | PoB export → provenance-first snapshot; legacy and current layouts; 37 real forum exports parse clean |
+| § 5 B recalculation | Headless Path of Building at a pinned commit through our own stdio bridge; variant + same-engine baseline; refusals are explicit |
+| § 7 corpus | PostgreSQL + pgvector; policy-enforced ingestion from the official forums; search with unknown-last ordering |
+| § 6 knowledge | Official patch notes for PoE and PoE 2, versioned chunks, local embeddings, game filter by type, isolation test in CI |
+| § 9 agent | Nine deterministic tools with evidence; free local model by default (Ollama), Claude optional, scripted policy for tests; answers number-audited |
+| § 10 UX | No technical jargon reaches the user; every degraded state is drawn; Lighthouse 100 on all pages |
+| § 8 metric | Adding PoE 2 knowledge touched one 5-line file under `games/poe2/`; nothing in the common domain |
+
+Not done: the hand-authored visual identity (§ 11, by design — see ADR-005), item modifications
+in the engine bridge, game-data tools (`get_skill`, `get_item`, `get_tree`), Alembic migrations,
+streaming answers.
+
+Tests: 118 backend (unit, integration, engine, corpus, knowledge isolation, agent) · 17 Playwright.
+
 ## Data & legal
 
 Fixtures are PoB codes (two MIT-licensed, one public pobb.in paste with attribution). No guide

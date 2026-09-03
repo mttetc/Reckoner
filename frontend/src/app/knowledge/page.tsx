@@ -5,6 +5,17 @@ import { ApiRequestError, searchKnowledge, type KnowledgeHit } from "@/lib/api";
 import { Nav } from "@/components/Nav";
 import { ERROR_COPY } from "@/components/Result";
 
+function staleNote(retrievedAt: string | null): React.ReactNode {
+  if (!retrievedAt) return null;
+  const days = Math.floor((Date.now() - new Date(retrievedAt).getTime()) / 86_400_000);
+  if (days < 30) return null;
+  return (
+    <span className="estimated" data-testid="stale">
+      {" "}· retrieved {days} days ago, may be stale
+    </span>
+  );
+}
+
 const GAMES: Array<{ id: string; label: string }> = [
   { id: "poe", label: "Path of Exile" },
   { id: "poe2", label: "Path of Exile 2" },
@@ -34,8 +45,8 @@ export default function KnowledgePage() {
       <Nav current="knowledge" />
       <section className="panel">
         <p className="hint">
-          Official patch notes, chunked and versioned. Retrieval is filtered by game <em>before</em> ranking: PoE and PoE 2 share
-          names, not mechanics, so a passage from the other game is never a valid answer.
+          Official patch notes, split by section and tagged with their patch. Results are always limited to the game you pick: PoE and
+          PoE 2 share names, not mechanics, so a passage from the other game is never a valid answer.
         </p>
         <form className="filters" onSubmit={onSubmit} aria-label="Search knowledge">
           <select value={game} onChange={(e) => setGame(e.target.value)} data-testid="kn-game" aria-label="Game">
@@ -81,7 +92,8 @@ export default function KnowledgePage() {
                   )}
                   {h.heading ? <> › {h.heading}</> : null}
                   {h.chunk.metadata.published_at ? <> · published {h.chunk.metadata.published_at.slice(0, 10)}</> : null}
-                  <span className="muted"> · similarity {h.score.toFixed(2)}</span>
+                  <span className="muted"> · relevance {Math.round(h.score * 100)}%</span>
+                  {staleNote(h.chunk.metadata.retrieved_at)}
                 </div>
                 <pre className="excerpt">{h.chunk.text}</pre>
               </li>

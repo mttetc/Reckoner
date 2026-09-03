@@ -7,6 +7,26 @@ import { ERROR_COPY } from "@/components/Result";
 
 type State = { kind: "idle" } | { kind: "loading" } | { kind: "error"; code: string; message: string } | { kind: "result"; r: AskResponse };
 
+const STEP_LABELS: Record<string, string> = {
+  search_builds: "Searched builds",
+  get_build: "Read a build",
+  analyze_build_code: "Analysed the attached build",
+  calculate_build: "Recalculated in the engine",
+  compare_builds: "Compared builds",
+  search_knowledge: "Searched patch notes",
+  get_patch_changes: "Read patch notes",
+  corpus_stats: "Checked how many builds are known",
+  list_games: "Checked supported games",
+};
+
+function modelLabel(model: string): string {
+  // "openai_compat:qwen2.5:7b@http://…" → "qwen2.5:7b (local)"; "anthropic:claude-…" → "claude-…"
+  const m = model.replace(/^openai_compat:/, "").replace(/^anthropic:/, "");
+  const [name, host] = m.split("@");
+  if (host && /localhost|127\.0\.0\.1/.test(host)) return `${name} (local)`;
+  return name;
+}
+
 const EXAMPLES = ["Find me a tanky Duelist Lightning Strike build", "What changed for Lightning Strike in the latest PoE 2 patch?"];
 
 export default function AskPage() {
@@ -34,7 +54,7 @@ export default function AskPage() {
       <Nav current="ask" />
       <form className="panel" onSubmit={onSubmit} aria-label="Ask">
         <label htmlFor="q" className="muted">
-          Ask in your own words. The system searches, calculates and cites; the model only talks.
+          Ask in your own words. Reckoner searches its builds and patch notes, calculates, and cites where each number comes from.
         </label>
         <textarea id="q" value={question} onChange={(e) => setQuestion(e.target.value)} placeholder={EXAMPLES[0]} style={{ minHeight: 70 }} data-testid="ask-question" />
         <div className="row">
@@ -67,16 +87,32 @@ export default function AskPage() {
           </pre>
 
           <p className="prov" data-testid="ask-meta">
-            orchestrated by <b className={r.model === "scripted" ? "estimated" : "calculated"}>{r.model}</b>
-            {r.model === "scripted" ? " (no model — deterministic policy)" : ""} · {r.steps.length} tool call{r.steps.length === 1 ? "" : "s"} · {r.duration_ms} ms
-            {r.input_tokens ? ` · ${r.input_tokens}+${r.output_tokens} tokens` : ""}
+            {r.model === "scripted" ? (
+              <>
+                <b className="estimated">offline mode</b> — no language model; answers are assembled deterministically
+              </>
+            ) : (
+              <>
+                written by <b className="calculated">{modelLabel(r.model)}</b>
+              </>
+            )}
+            {" · "}
+            {r.steps.length} step{r.steps.length === 1 ? "" : "s"} · {(r.duration_ms / 1000).toFixed(1)} s
           </p>
 
           <p className={`prov audit ${r.audit.clean ? "ok" : "bad"}`} data-testid="ask-audit">
-            {r.audit.clean
-              ? `number audit: ${r.audit.checked} number${r.audit.checked === 1 ? "" : "s"} in the answer, all traceable to tool results`
-              : `number audit: ${r.audit.unverified.length} of ${r.audit.checked} numbers match no tool result — treat as unverified: ${r.audit.unverified.join(", ")}`}
+            {r.audit.checked === 0
+              ? "this answer contains no numbers"
+              : r.audit.clean
+                ? `${r.audit.checked} number${r.audit.checked === 1 ? "" : "s"} in this answer, every one produced by a calculation or a source`
+                : `${r.audit.unverified.length} of ${r.audit.checked} numbers come from no calculation or source — treat as unverified: ${r.audit.unverified.join(", ")}`}
           </p>
+
+          {r.steps.length > 0 && r.evidence.length === 0 ? (
+            <p className="prov audit bad" data-testid="ask-no-evidence">
+              nothing found to back this answer — no build and no source matched
+            </p>
+          ) : null}
 
           {r.degraded.length ? (
             <ul className="degraded" data-testid="ask-degraded">
@@ -87,12 +123,16 @@ export default function AskPage() {
           ) : null}
 
           <details data-testid="ask-steps">
-            <summary>How the answer was built ({r.steps.length} steps)</summary>
+            <summary>How this answer was built ({r.steps.length} step{r.steps.length === 1 ? "" : "s"})</summary>
             <ol className="steps">
               {r.steps.map((s, i) => (
                 <li key={i} className={s.ok ? "" : "bad"}>
-                  <code>{s.tool}</code>({Object.entries(s.args).map(([k, v]) => `${k}=${JSON.stringify(v)}`).join(", ")}) → {s.ok ? s.summary : `refused: ${s.error}`}
-                  <span className="muted"> · {s.duration_ms} ms</span>
+                  {STEP_LABELS[s.tool] ?? s.tool}
+                  {Object.keys(s.args).length ? (
+                    <span className="muted mono"> {Object.entries(s.args).filter(([, v]) => v !== null && v !== undefined).map(([k, v]) => `${k}: ${typeof v === "string" ? v : JSON.stringify(v)}`).join(" · ")}</span>
+                  ) : null}
+                  {" → "}
+                  {s.ok ? s.summary : <span className="bad">could not: {s.error}</span>}
                 </li>
               ))}
             </ol>
@@ -104,7 +144,7 @@ export default function AskPage() {
               <ul className="evidence">
                 {r.evidence.map((e, i) => (
                   <li key={i}>
-                    {e.statement}
+                    {e.statement.replace(/(\d)\.(\d)/g, "$1.$2")}
                     <span className="prov">
                       {" "}· <b className={e.provenance.status}>{e.provenance.status}</b>
                       {e.provenance.engine ? ` · ${e.provenance.engine}${e.provenance.engine_version ? " " + e.provenance.engine_version : ""}` : ` · ${e.provenance.source}`}

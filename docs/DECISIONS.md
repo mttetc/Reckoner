@@ -40,11 +40,29 @@ Phase 1 A (analyse a pasted build) is stateless. `docker-compose.yml` ships Post
 for the corpus and knowledge layers, but no table exists until the first feature needs one
 (SPEC § 3.13: no infrastructure ahead of actual need).
 
-## ADR-005 — Frontend styling is a placeholder
+## ADR-005 — Frontend styling is a placeholder; the visual identity is authored by hand (updated 2026-09-04)
 
-SPEC § 11 says the design is not to be generated. The current CSS only makes the prototype legible
-and demonstrates the *rules* (numbers in monospace, provenance next to every value, unknown as a
-first-class state, reduced-motion respected). The visual identity is to be authored by hand.
+SPEC § 11 says the design is not to be generated, and this repository honours that: no visual
+identity was produced by the assistant. What *is* engineered, because it is behaviour rather than
+look, and verified by Playwright or Lighthouse:
+
+- SPEC § 10 language: no "tool call", "RAG", "agent", "embedding", "vector" or "pipeline" reaches
+  the user. Steps read "Searched builds", "Recalculated in the engine"; the audit line reads
+  "N numbers in this answer, every one produced by a calculation or a source". A test asserts the
+  banned words are absent from an answer.
+- Every major state is drawn: loading, no result, invalid code, engine unavailable, corpus empty,
+  source unreachable, refused modification, insufficient evidence ("nothing found to back this
+  answer"), stale knowledge ("retrieved N days ago, may be stale"), unknown metric with reason.
+- Provenance is part of every value (card, table row, evidence line), never a separate page.
+- Numbers are monospace with a strong hierarchy; the palette is dark by default with a light
+  scheme; `prefers-reduced-motion` disables the one entrance animation.
+- Keyboard: the tab order is asserted; Lighthouse accessibility / best practices / SEO are 100
+  on all four pages, desktop and mobile (2026-09-04).
+- Fonts are Geist / Geist Mono as a neutral placeholder — not on the § 11 avoid-list, but a
+  choice the hand-authored identity should revisit along with colour, spacing and motion.
+
+The remaining § 11 work — typography, colour, density, the "game data terminal" character and
+intentional spring animations for ranking / recalculation / tree diffs — is the author's, by design.
 
 ## ADR-006 — Fixtures are structured build codes, never guide prose
 

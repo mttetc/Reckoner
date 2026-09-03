@@ -27,7 +27,7 @@ test.describe("knowledge (seeded with synthetic PoE + PoE 2 patch notes sharing 
     const first = page.getByTestId("kn-hit").first();
     await expect(first).toBeVisible();
     await expect(first.locator(".prov")).toContainText("3.29.0b");
-    await expect(first.locator(".prov")).toContainText("similarity");
+    await expect(first.locator(".prov")).toContainText("relevance");
     await expect(first.locator(".excerpt")).not.toBeEmpty();
   });
 });
