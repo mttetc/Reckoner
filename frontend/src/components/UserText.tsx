@@ -17,7 +17,7 @@ export function extractSimcProfile(text: string): string | null {
   const payload = lines.slice(0, end).join("\n").trim();
   return /\bspec=\w+/.test(payload) ? payload : null;
 }
-/** A WoWSims exporter payload: one JSON object with a class. */
+/** A WoWSims payload: the addon export ({"class": …}) or the sim page's JSON export ({"player": {"class": …}}). */
 const WOWSIMS_RE = /\{[\s\S]*"class"\s*:\s*"[^"]+"[\s\S]*\}/;
 
 export interface BuildPayload {

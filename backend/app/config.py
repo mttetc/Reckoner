@@ -51,6 +51,11 @@ class Settings(BaseSettings):
     # World of Warcraft (Retail) engine: SimulationCraft CLI. Unset → recalculation unavailable.
     simc_bin: str | None = None
     simc_iterations: int = 1000
+    wowsims_bin: str | None = None  # wowsimcli (WoW Classic engine), built with the item database
+    wowsims_iterations: int = 1000
+    wowsims_src: str | None = (
+        None  # WoWSims checkout for db.json and talent trees (default: next to the CLI)
+    )
 
 
 settings = Settings()

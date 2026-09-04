@@ -35,6 +35,7 @@ export function provenanceLine(p: { status: string; engine: string | null; engin
 export function sourceName(source: string): string {
   if (source.startsWith("ggg:")) return "official patch notes";
   if (source.startsWith("simc:")) return "SimulationCraft";
+  if (source.startsWith("wowsims:")) return "WoWSims";
   if (source === "pob:export") return "the build's export";
   if (source === "pob:headless") return "recalculation";
   return source;

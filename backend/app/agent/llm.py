@@ -320,9 +320,9 @@ class ScriptedLLM:
             elif isinstance(res, dict) and "main_skill" in res:
                 m = res["metrics"]
                 dps = m.get("dps.total", {})
+                patch = f", patch {dps['game_version']}" if dps.get("game_version") else ""
                 dps_s = (
-                    f"{dps['value']:,.1f} (calculated by {dps['engine']}, "
-                    f"patch {dps['game_version']})"
+                    f"{dps['value']:,.1f} (calculated by {dps['engine']}{patch})"
                     if dps.get("value") is not None
                     else "unknown"
                 )

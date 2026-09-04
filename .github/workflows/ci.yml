@@ -11,6 +11,8 @@ env:
   POB_COMMIT: ed354c2f8c42e148bc904c7508dbe851fb2cf952
   # SimulationCraft (WoW Retail engine). Keep in sync with backend/scripts/install_simc.sh.
   SIMC_COMMIT: b9880014fd36e63d301b8c7fe9a93c5a66f1a82f
+  # WoWSims Classic (WoW Classic engine). Keep in sync with backend/scripts/install_wowsims.sh.
+  WOWSIMS_COMMIT: 7779ebbf79dc7f1341e6ab939b28a3402c9a730a
   # Same LuaJIT commit as PoB's own test container (Dockerfile). Distro packages are too old:
   # PoB's sources use `x += 1`, which LuaJIT only accepts in its 2026 rolling builds.
   LUAJIT_COMMIT: 2460b3ff93a1c955de3d62cfc825de7d68dc272e
@@ -81,6 +83,25 @@ jobs:
       - name: Build SimulationCraft (pinned, no GUI)
         if: steps.simc-cache.outputs.cache-hit != 'true'
         run: backend/scripts/install_simc.sh
+      - name: Cache WoWSims Classic build
+        id: wowsims-cache
+        uses: actions/cache@v5
+        with:
+          path: |
+            .engines/wowsims-classic/build/wowsimcli
+            .engines/wowsims-classic/assets/database/db.json
+            .engines/wowsims-classic/ui/core/talents/trees
+          key: wowsims-${{ env.WOWSIMS_COMMIT }}-v1
+      - uses: actions/setup-go@v5
+        if: steps.wowsims-cache.outputs.cache-hit != 'true'
+        with: { go-version: "1.23", cache: false }
+      - name: Build WoWSims Classic CLI (pinned, with item database)
+        if: steps.wowsims-cache.outputs.cache-hit != 'true'
+        run: |
+          sudo apt-get install -y -q protobuf-compiler >/dev/null
+          go install google.golang.org/protobuf/cmd/protoc-gen-go@v1.36.6
+          echo "$(go env GOPATH)/bin" >> "$GITHUB_PATH"
+          PATH="$PATH:$(go env GOPATH)/bin" backend/scripts/install_wowsims.sh
       - name: Engine tests (must not skip)
         run: cd backend && .venv/bin/python -m pytest -q tests/engine tests/integration -rs
         env:
@@ -88,6 +109,8 @@ jobs:
           RECKONER_POB_SOURCE_COMMIT: ${{ env.POB_COMMIT }}
           RECKONER_SIMC_BIN: ${{ github.workspace }}/.engines/simc/build/simc
           RECKONER_SIMC_ITERATIONS: "300"
+          RECKONER_WOWSIMS_BIN: ${{ github.workspace }}/.engines/wowsims-classic/build/wowsimcli
+          RECKONER_WOWSIMS_ITERATIONS: "300"
 
   frontend:
     runs-on: ubuntu-latest
@@ -147,6 +170,25 @@ jobs:
       - name: Build SimulationCraft (pinned, no GUI)
         if: steps.simc-cache.outputs.cache-hit != 'true'
         run: backend/scripts/install_simc.sh
+      - name: Cache WoWSims Classic build
+        id: wowsims-cache
+        uses: actions/cache@v5
+        with:
+          path: |
+            .engines/wowsims-classic/build/wowsimcli
+            .engines/wowsims-classic/assets/database/db.json
+            .engines/wowsims-classic/ui/core/talents/trees
+          key: wowsims-${{ env.WOWSIMS_COMMIT }}-v1
+      - uses: actions/setup-go@v5
+        if: steps.wowsims-cache.outputs.cache-hit != 'true'
+        with: { go-version: "1.23", cache: false }
+      - name: Build WoWSims Classic CLI (pinned, with item database)
+        if: steps.wowsims-cache.outputs.cache-hit != 'true'
+        run: |
+          sudo apt-get install -y -q protobuf-compiler >/dev/null
+          go install google.golang.org/protobuf/cmd/protoc-gen-go@v1.36.6
+          echo "$(go env GOPATH)/bin" >> "$GITHUB_PATH"
+          PATH="$PATH:$(go env GOPATH)/bin" backend/scripts/install_wowsims.sh
       - uses: pnpm/action-setup@v6
         with: { version: 11 }
       - uses: actions/setup-node@v7
@@ -162,6 +204,8 @@ jobs:
           RECKONER_POB_SOURCE_COMMIT: ${{ env.POB_COMMIT }}
           RECKONER_SIMC_BIN: ${{ github.workspace }}/.engines/simc/build/simc
           RECKONER_SIMC_ITERATIONS: "300"
+          RECKONER_WOWSIMS_BIN: ${{ github.workspace }}/.engines/wowsims-classic/build/wowsimcli
+          RECKONER_WOWSIMS_ITERATIONS: "300"
       - uses: actions/upload-artifact@v7
         if: failure()
         with: { name: playwright-report, path: frontend/test-results, retention-days: 7 }

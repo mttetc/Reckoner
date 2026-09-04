@@ -207,7 +207,7 @@ export interface TreeGeometry {
 /** One talent as SimulationCraft decoded it from the loadout string (inside snapshot.extra). */
 export interface TalentTable {
   title: string;
-  kind: "class" | "spec" | "hero";
+  kind: string; // Retail: class | spec | hero — Classic: the tree name
   points: number;
   columns: number;
   talents: Array<{ name: string; rank: number; row: number; col: number; spell_id: number; partial: boolean }>;
@@ -224,7 +224,7 @@ export interface TalentGridNode {
 export interface TalentGeometry {
   class_name: string;
   spec: string;
-  trees: Array<{ kind: "class" | "spec" | "hero"; subtree: number | null; rows: number; columns: number; nodes: TalentGridNode[] }>;
+  trees: Array<{ kind: string; subtree: number | null; rows: number; columns: number; nodes: TalentGridNode[] }>;
 }
 
 export interface ApiError {

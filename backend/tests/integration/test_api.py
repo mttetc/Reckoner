@@ -16,9 +16,15 @@ def test_games_lists_capabilities_honestly():
     assert set(games) == {"poe", "wow", "wow_classic"}
     poe = games["poe"]
     assert poe["capabilities"]["analyze_existing"] is True
-    # The two Warcraft adapters analyse today; recalculation needs engines that are not installed.
+    # The two Warcraft adapters analyse always; recalculation is offered only with their engines.
+    from app.games.wow.simc.engine import SimcEngine
+    from app.games.wow_classic.wowsims.engine import WowSimsEngine
+
     assert games["wow"]["capabilities"]["analyze_existing"] is True
-    assert games["wow_classic"]["capabilities"]["recalculate_modified"] is False
+    assert games["wow"]["capabilities"]["recalculate_modified"] is SimcEngine().available()
+    assert (
+        games["wow_classic"]["capabilities"]["recalculate_modified"] is WowSimsEngine().available()
+    )
     assert games["wow"]["latest_tree_version"] is None
     from app.games.poe.engine import get_engine
 

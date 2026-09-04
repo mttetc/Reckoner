@@ -64,7 +64,9 @@ def test_classic_export_parses_into_the_common_domain():
     assert len(s.items) == 2
     assert s.extra["wow_classic.talents"] == "30305001302-05050005525010051"
     assert s.metric(MetricKey.DPS_TOTAL.value).value is None
-    with pytest.raises(EngineUnavailable):
+    # The addon export is never simulated: without WoWSims the engine is missing, with it the
+    # export itself is refused (no rotation, buffs or encounter).
+    with pytest.raises((EngineUnavailable, InvalidModification)):
         get_adapter("wow_classic").recalculate(
             CLASSIC, [Modification(kind="profile.set", payload={})]
         )

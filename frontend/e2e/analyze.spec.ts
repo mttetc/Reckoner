@@ -9,6 +9,7 @@ const voidSphere = fs.readFileSync(path.join(fixtures, "void_sphere_pathfinder_3
 const minions = fs.readFileSync(path.join(fixtures, "srs_guardian_3_23.txt"), "utf8");
 const wowRetail = fs.readFileSync(path.resolve(__dirname, "../../backend/tests/fixtures/wow/simc_warrior_fury_mid2.simc"), "utf8");
 const wowClassic = fs.readFileSync(path.resolve(__dirname, "../../backend/tests/fixtures/wow/fury_warrior_classic.json"), "utf8");
+const wowClassicSettings = fs.readFileSync(path.resolve(__dirname, "../../backend/tests/fixtures/wow/wowsims_fury_warrior_settings.json"), "utf8");
 
 async function paste(page: import("@playwright/test").Page, code: string, question = "") {
   await page.goto("/");
@@ -180,10 +181,35 @@ test.describe("other games through the same conversation", () => {
     await expect(result.getByTestId("variant-nodes")).toContainText("talents");
   });
 
-  test("a WoWSims export is read as Classic, kept apart from Retail", async ({ page }) => {
+  test("a WoWSims addon export is read as Classic, described but not simulated", async ({ page }) => {
     const result = await paste(page, wowClassic);
     await expect(page.getByTestId("ask-user-code")).toHaveText("WoWSims export attached");
     await expect(result.getByTestId("character")).toHaveText("Warrior · Fury");
-    await expect(result.getByTestId("stat-dps.total").locator(".prov")).toContainText("WoWSims");
+    const dps = result.getByTestId("stat-dps.total");
+    await expect(dps).toHaveAttribute("data-known", "false");
+    await expect(dps.locator(".prov")).toContainText("sim page");
+  });
+
+  test("a WoWSims sim-page export is simulated by WoWSims itself, talents drawn from its tree data", async ({ page }) => {
+    const result = await paste(page, wowClassicSettings, "Is this Classic warrior any good?");
+    await expect(page.getByTestId("ask-user-code")).toHaveText("WoWSims export attached");
+    await expect(result.getByTestId("character")).toHaveText("Warrior · Fury");
+    const dps = result.getByTestId("stat-dps.total");
+    await expect(dps).toHaveAttribute("data-known", "true");
+    await expect(dps.locator(".prov")).toContainText("calculated by WoWSims Classic");
+    await expect(result.getByTestId("tree")).toContainText("talents · Arms · Fury · Protection");
+    const grid = result.getByTestId("talent-grid");
+    await expect(grid.getByTestId("talent-tree-fury")).toBeVisible({ timeout: 30_000 });
+    await expect(grid).toHaveAttribute("data-source", "engine-grid", { timeout: 30_000 });
+    const taken = await grid.locator("circle[data-taken='true']").count();
+    expect(taken).toBe(15); // 51 points over 15 talents, as WoWSims' tree data reads the string
+    expect(await grid.locator("circle").count()).toBe(52); // every talent of the three warrior trees
+    // A shorter fight is simulated again by the same engine.
+    await result.getByTestId("mod-kind").selectOption("classic.length");
+    await result.getByTestId("mod-length").selectOption("45");
+    await result.getByTestId("recalc").click();
+    await expect(result.getByTestId("whatif-result")).toBeVisible({ timeout: 60_000 });
+    await expect(result.getByTestId("engine-prov")).toContainText("calculated by WoWSims Classic");
+    await expect(result.getByTestId("applied")).toContainText("duration → 45");
   });
 });

@@ -267,3 +267,24 @@ Data API needs credentials we do not have and would be a second source of truth 
 
 **Consequences.** CI builds SimulationCraft from source once per pinned commit (cached). Item
 levels come from the engine's report too, since the profile only carries ids and bonus lists.
+
+## ADR-013 — World of Warcraft Classic: WoWSims is the engine; its export is the input (2026-09-04)
+
+**Context.** WoWSims publishes no macOS CLI and its web server speaks protobuf only. The addon
+exporter's JSON describes a character but not a simulation (no rotation, buffs, encounter).
+
+**Decision.**
+- `backend/scripts/install_wowsims.sh` builds the pinned `wowsimcli` from source with the embedded
+  item database (`--tags=with_db`), the commit baked in as its version. CI caches the binary plus
+  the two data files we read.
+- The input a player pastes is the sim page's **Export → JSON** (`IndividualSimSettings`). We turn
+  it into a `RaidSimRequest` exactly as the WoWSims UI does (`makeRaidSimRequest`: player into one
+  party, raid/party buffs, debuffs, encounter, iterations) — a structural repackaging, no
+  interpretation — and read DPS/HPS/DTPS from `RaidSimResult`. The addon export is still read and
+  described, but never simulated; the card says why and what to paste instead.
+- Item names, quality and item level come from WoWSims' `assets/database/db.json`; talent names
+  and positions from `ui/core/talents/trees/<class>.json`, the digit-per-talent string decoded
+  against them (trailing zeros omitted, as WoWSims writes it). The dominant tree names the spec.
+- Changes are edits of the export (`talents.set`, `encounter.set`, `settings.set {path, value}`);
+  baseline and variant are both simulated by the same binary. A refused export is
+  `InvalidModification`, never a guess.

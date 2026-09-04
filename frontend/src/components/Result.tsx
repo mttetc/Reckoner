@@ -103,7 +103,8 @@ function WhatIf({
   onVariant?: (v: BuildVariant | null) => void;
 }) {
   const wow = parent.game === "wow";
-  const [kind, setKind] = useState(wow ? "wow.fight" : "config.set");
+  const classic = parent.game === "wow_classic";
+  const [kind, setKind] = useState(wow ? "wow.fight" : classic ? "classic.length" : "config.set");
   const [boss, setBoss] = useState("Uber");
   const [gem, setGem] = useState(parent.main_skill ?? "");
   const [level, setLevel] = useState("21");
@@ -120,6 +121,8 @@ function WhatIf({
     if (kind === "wow.fight") return { kind: "profile.set", payload: { key: "fight_style", value: fight } };
     if (kind === "wow.length") return { kind: "profile.set", payload: { key: "max_time", value: Number(length) } };
     if (kind === "wow.talents") return loadout.trim() ? { kind: "talents.set", payload: { loadout: loadout.trim() } } : null;
+    if (kind === "classic.length") return { kind: "encounter.set", payload: { key: "duration", value: Number(length) } };
+    if (kind === "classic.talents") return loadout.trim() ? { kind: "talents.set", payload: { loadout: loadout.trim() } } : null;
     return null;
   }
 
@@ -159,7 +162,9 @@ function WhatIf({
       <p className="hint">
         {wow
           ? "Pick a change here. Everything is simulated again by SimulationCraft itself — the \"before\" column is this build simulated by the same engine, so the comparison is fair."
-          : "Click a passive on the tree above, or pick a change here. Everything is recalculated by Path of Building itself — the \"before\" column is this build re-evaluated by the same engine, so the comparison is fair."}
+          : classic
+            ? "Pick a change here. Everything is simulated again by WoWSims itself — the \"before\" column is this build simulated by the same engine, so the comparison is fair."
+            : "Click a passive on the tree above, or pick a change here. Everything is recalculated by Path of Building itself — the \"before\" column is this build re-evaluated by the same engine, so the comparison is fair."}
       </p>
       <form onSubmit={onSubmit}>
         <select value={kind} onChange={(e) => setKind(e.target.value)} data-testid="mod-kind" aria-label="Change">
@@ -168,6 +173,11 @@ function WhatIf({
               <option value="wow.fight">Which kind of fight?</option>
               <option value="wow.length">How long a fight?</option>
               <option value="wow.talents">Another talent loadout</option>
+            </>
+          ) : classic ? (
+            <>
+              <option value="classic.length">How long a fight?</option>
+              <option value="classic.talents">Another talent build</option>
             </>
           ) : (
             <>
@@ -185,17 +195,17 @@ function WhatIf({
             ))}
           </select>
         ) : null}
-        {kind === "wow.length" ? (
+        {kind === "wow.length" || kind === "classic.length" ? (
           <select value={length} onChange={(e) => setLength(e.target.value)} data-testid="mod-length" aria-label="Fight length">
-            {["120", "180", "300", "450"].map((o) => (
+            {["45", "60", "90", "120", "180", "300", "450"].map((o) => (
               <option key={o} value={o}>
                 {o} s
               </option>
             ))}
           </select>
         ) : null}
-        {kind === "wow.talents" ? (
-          <input value={loadout} onChange={(e) => setLoadout(e.target.value)} placeholder="paste a talent loadout string" data-testid="mod-loadout" aria-label="Talent loadout" style={{ minWidth: 260 }} />
+        {kind === "wow.talents" || kind === "classic.talents" ? (
+          <input value={loadout} onChange={(e) => setLoadout(e.target.value)} placeholder={classic ? "talents like 30305001302-05050005525010051" : "paste a talent loadout string"} data-testid="mod-loadout" aria-label="Talent loadout" style={{ minWidth: 260 }} />
         ) : null}
         {kind === "config.set" ? (
           <select value={boss} onChange={(e) => setBoss(e.target.value)} data-testid="mod-boss" aria-label="Enemy is boss">
@@ -244,7 +254,7 @@ function WhatIf({
             ))}
             {" · "}
             <span data-testid="variant-nodes">
-              {v.snapshot.tree.node_ids.length} {wow ? "talents" : "passives"}
+              {v.snapshot.tree.node_ids.length} {wow || classic ? "talents" : "passives"}
             </span>
           </p>
           <table>
