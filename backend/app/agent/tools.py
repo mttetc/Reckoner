@@ -100,11 +100,27 @@ def compact_snapshot(s: BuildSnapshot) -> dict:
         "character": s.character.model_dump(),
         "main_skill": s.main_skill,
         "main_skill_note": (
-            f"dps.total is the engine's figure for the skill selected in the export "
-            f"({s.main_skill}); source: {ctx_total.get('main_skill_source', 'unknown')}. "
-            "A utility or movement skill left selected gives dps.total 0 while dps.full "
-            "sums the skills the author flagged."
+            (
+                f"dps.total is the engine's figure for the skill selected in the export "
+                f"({s.main_skill}); source: {ctx_total.get('main_skill_source', 'unknown')}. "
+                "A utility or movement skill left selected gives dps.total 0 while dps.full "
+                "sums the skills the author flagged."
+            )
+            if s.main_skill
+            else "this game has no main-skill selection; dps.total is the whole character's."
         ),
+        # Every skill / talent group by name — the only names the answer may use for them.
+        "skills": [
+            {
+                "group": g.label or g.slot or "skills",
+                "names": [
+                    f"{gem.name} ({gem.level})" if gem.level and gem.level > 1 else gem.name
+                    for gem in g.gems
+                ],
+            }
+            for g in s.skills
+            if g.gems
+        ],
         "dps_full_sums": ctx_full.get("aggregates"),
         "main_skill_links": [g.name for g in main_group.gems] if main_group else [],
         "metrics": {
@@ -197,7 +213,13 @@ def _one_line(s: BuildSnapshot, title: str | None, url: str | None) -> str:
 
 def _label(s: BuildSnapshot) -> str:
     c = s.character
-    return f"{c.class_name or '?'}{' ' + c.subclass if c.subclass else ''} · {s.main_skill or '?'}"
+    who = f"{c.class_name or '?'}{' ' + c.subclass if c.subclass else ''}"
+    if s.main_skill:
+        return f"{who} · {s.main_skill}"
+    dps = s.metric(MetricKey.DPS_TOTAL.value)
+    return (
+        f"{who} · {dps.value:,.0f} dps" if dps and dps.known else f"{who} · level {c.level or '?'}"
+    )
 
 
 def knowledge_evidence(h: Hit) -> Evidence:

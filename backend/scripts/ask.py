@@ -18,6 +18,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from app.agent.runner import ask  # noqa: E402
+from app.api.deps import build_store, knowledge_store  # noqa: E402
 from app.db.engine import dispose, session_factory  # noqa: E402
 
 
@@ -30,7 +31,9 @@ async def main() -> int:
     code = Path(args.code).read_text() if args.code else None
 
     async with session_factory()() as session:
-        a = await ask(session, args.question, game=args.game, code=code)
+        a = await ask(
+            build_store(session), knowledge_store(session), args.question, game=args.game, code=code
+        )
     await dispose()
 
     print(a.text)
