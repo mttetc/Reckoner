@@ -7,7 +7,7 @@ const modern = fs.readFileSync(path.join(fixtures, "slayer_lightning_strike_3_27
 const legacy = fs.readFileSync(path.join(fixtures, "elementalist_bv_2019.txt"), "utf8");
 const voidSphere = fs.readFileSync(path.join(fixtures, "void_sphere_pathfinder_3_29.txt"), "utf8");
 const minions = fs.readFileSync(path.join(fixtures, "srs_guardian_3_23.txt"), "utf8");
-const wowRetail = fs.readFileSync(path.resolve(__dirname, "../../backend/tests/fixtures/wow/fury_warrior.simc"), "utf8");
+const wowRetail = fs.readFileSync(path.resolve(__dirname, "../../backend/tests/fixtures/wow/simc_warrior_fury_mid2.simc"), "utf8");
 const wowClassic = fs.readFileSync(path.resolve(__dirname, "../../backend/tests/fixtures/wow/fury_warrior_classic.json"), "utf8");
 
 async function paste(page: import("@playwright/test").Page, code: string, question = "") {
@@ -144,15 +144,40 @@ test.describe("try a change (real headless engine)", () => {
 });
 
 test.describe("other games through the same conversation", () => {
-  test("a SimulationCraft profile is read as World of Warcraft, numbers honestly unknown", async ({ page }) => {
+  // Real SimulationCraft: the pasted profile is simulated as-is, its talents decoded by the engine.
+  test.describe.configure({ timeout: 120_000 });
+
+  test("a SimulationCraft profile is simulated by SimulationCraft itself, talents drawn from its data", async ({ page }) => {
     const result = await paste(page, wowRetail, "How is this warrior?");
     await expect(page.getByTestId("ask-user-code")).toHaveText("SimulationCraft profile attached");
+    await expect(page.getByTestId("ask-user-text")).toContainText("How is this warrior?");
     await expect(result.getByTestId("character")).toHaveText("Warrior · Fury");
+    await expect(result.getByTestId("main-skill")).toHaveCount(0);
     const dps = result.getByTestId("stat-dps.total");
-    await expect(dps).toHaveAttribute("data-known", "false");
-    await expect(dps.locator(".prov")).toContainText("run a simulation");
-    await expect(result.getByTestId("tree")).toContainText("unknown");
+    await expect(dps).toHaveAttribute("data-known", "true");
+    await expect(dps.locator(".prov")).toContainText("calculated by SimulationCraft");
+    await expect(result.getByTestId("patch")).toContainText("patch 12.");
+    await expect(result.getByTestId("tree")).toContainText("talents · Warrior · Fury · Slayer");
+    const grid = result.getByTestId("talent-grid");
+    await expect(grid.getByTestId("talent-tree-spec")).toBeVisible({ timeout: 30_000 });
+    await expect(grid).toHaveAttribute("data-source", "engine-grid", { timeout: 30_000 });
+    const taken = await grid.locator("circle[data-taken='true']").count();
+    const all = await grid.locator("circle").count();
+    expect(taken).toBeGreaterThan(60); // 73 talents in this build, as the engine decoded them
+    expect(all).toBeGreaterThan(taken + 10); // the grid also shows what the build did not take
+    await expect(grid.getByTestId("talent-tree-hero")).toHaveCount(1);
     await expect(result.getByTestId("tree-view")).toHaveCount(0);
+  });
+
+  test("a World of Warcraft change is simulated again by the same engine", async ({ page }) => {
+    const result = await paste(page, wowRetail);
+    await result.getByTestId("mod-kind").selectOption("wow.fight");
+    await result.getByTestId("mod-fight").selectOption("DungeonSlice");
+    await result.getByTestId("recalc").click();
+    await expect(result.getByTestId("whatif-result")).toBeVisible({ timeout: 60_000 });
+    await expect(result.getByTestId("engine-prov")).toContainText("calculated by SimulationCraft");
+    await expect(result.getByTestId("applied")).toContainText("fight_style → DungeonSlice");
+    await expect(result.getByTestId("variant-nodes")).toContainText("talents");
   });
 
   test("a WoWSims export is read as Classic, kept apart from Retail", async ({ page }) => {

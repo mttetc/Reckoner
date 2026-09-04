@@ -6,6 +6,7 @@ from pathlib import Path
 
 import pytest
 
+from app.config import settings
 from app.domain.build import GameId, Modification
 from app.domain.errors import EngineUnavailable, InvalidBuildCode, InvalidModification
 from app.domain.provenance import MetricKey
@@ -14,7 +15,8 @@ from app.games.wow.adapter import WowAdapter
 from app.games.wow.simc.engine import SimcEngine
 
 FIX = Path(__file__).parents[1] / "fixtures" / "wow"
-RETAIL = (FIX / "fury_warrior.simc").read_text()
+RETAIL = (FIX / "simc_warrior_fury_mid2.simc").read_text()  # real SimulationCraft sample
+SYNTHETIC = (FIX / "fury_warrior.simc").read_text()
 CLASSIC = (FIX / "fury_warrior_classic.json").read_text()
 
 
@@ -31,19 +33,23 @@ def test_detection_routes_each_payload_to_exactly_one_game(code_modern):
         detect_adapter("hello there")
 
 
-def test_retail_profile_parses_into_the_common_domain():
-    s = get_adapter("wow").parse_build(RETAIL)
+def test_retail_profile_parses_into_the_common_domain(monkeypatch):
+    monkeypatch.setattr(settings, "simc_bin", None)  # without the engine: honest unknowns
+    s = WowAdapter().parse_build(RETAIL)
     assert s.game == GameId.WOW
     assert (
         s.character.class_name == "Warrior"
         and s.character.subclass == "Fury"
-        and s.character.level == 80
+        and s.character.level == 90
     )
-    assert len(s.items) == 6 and s.items[0].slot == "head" and s.items[0].item_level == 639
-    assert s.extra["wow.talents"].startswith("BsQ")
+    assert len(s.items) == 14 and s.items[0].slot == "head"
+    assert s.items[0].name == "Tempered Horns Of The Jade Warlord"
+    assert s.extra["wow.talents"].startswith("CgE")
+    synthetic = WowAdapter().parse_build(SYNTHETIC)
+    assert synthetic.items[0].item_level == 639 and synthetic.character.level == 80
     dps = s.metric(MetricKey.DPS_TOTAL.value)
-    assert dps.value is None and "run a simulation" in dps.unknown_reason
-    assert s.tree.unknown_reason and "Blizzard" in s.tree.unknown_reason
+    assert dps.value is None and "SimulationCraft is not installed" in dps.unknown_reason
+    assert s.tree.unknown_reason and "SimulationCraft did not run" in s.tree.unknown_reason
     assert s.raw.kind == "simc_profile"
 
 
@@ -64,7 +70,8 @@ def test_classic_export_parses_into_the_common_domain():
         )
 
 
-def test_retail_without_simulationcraft_refuses_to_guess():
+def test_retail_without_simulationcraft_refuses_to_guess(monkeypatch):
+    monkeypatch.setattr(settings, "simc_bin", None)  # the dev .env may point at a real binary
     ad = WowAdapter(engine=SimcEngine(binary=None))
     assert ad.capabilities().recalculate_modified is False
     with pytest.raises(EngineUnavailable) as exc:
@@ -104,12 +111,13 @@ def test_retail_recalculation_runs_the_engine_twice_and_keeps_provenance(fake_si
     )
     base = v.baseline.metric(MetricKey.DPS_TOTAL.value)
     var = v.snapshot.metric(MetricKey.DPS_TOTAL.value)
-    assert base.value == 80000.5 and var.value == 70000.5
+    assert base.value == 90000.5 and var.value == 70000.5
     for m in (base, var):
         assert m.provenance.status == "calculated"
         assert m.provenance.engine == "SimulationCraft" and m.provenance.engine_version == "1130-01"
         assert m.provenance.context["iterations"] == 7
-    assert var.provenance.context["modifications_applied"][0]["payload"] == {
+    assert var.provenance.context["modifications_applied"][0] == {
+        "kind": "profile.set",
         "key": "level",
         "value": 70,
     }

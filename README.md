@@ -20,7 +20,7 @@ Modified-build recalculation runs through the real headless Path of Building whe
 |---|---|
 | Never a bare number — every value has provenance or is `unknown` with a reason | `Metric` validator, `backend/app/domain/provenance.py`; checked end-to-end in `frontend/e2e` |
 | Nothing game-specific in the common domain | `tests/unit/test_domain_isolation.py` greps the domain package |
-| Never simulate a modified calculation | `PoEAdapter.recalculate` runs the real headless Path of Building (pinned commit, `app/games/poe/engine/`) and returns a same-engine baseline next to the variant; without the engine the API returns 503, never a guess (ADR-008) |
+| Never simulate a modified calculation | `PoEAdapter.recalculate` runs the real headless Path of Building (pinned commit, `app/games/poe/engine/`); `WowAdapter` runs a pinned SimulationCraft (`app/games/wow/simc/`) and returns a same-engine baseline next to the variant; without the engine the API returns 503, never a guess (ADR-008) |
 | Build history never overwritten | `BuildSnapshot` is frozen; `Build` only appends snapshot ids |
 | Knowledge is game-aware | `KnowledgeRepository.search(game, …)` refuses an empty game (422); the API requires `game` by type; `tests/corpus/test_knowledge_isolation.py` proves zero cross-game hits both ways, in CI (ADR-010) |
 | The model is never the source of truth | `app/agent`: numbers come only from tools with `Evidence`; the final text is audited and untraceable numbers are shown as unverified (ADR-011) |
@@ -109,12 +109,12 @@ Phase 1 vertical slice, all with tests and CI:
 | SPEC | Delivered |
 |---|---|
 | § 5 A import | PoB export → provenance-first snapshot; legacy and current layouts; 37 real forum exports parse clean |
-| § 5 B recalculation | Headless Path of Building at a pinned commit through our own stdio bridge; variant + same-engine baseline; refusals are explicit |
+| § 5 B recalculation | Headless Path of Building at a pinned commit through our own stdio bridge; variant + same-engine baseline; refusals are explicit. World of Warcraft Retail: a pinned SimulationCraft CLI simulates the pasted profile as-is and every change (fight style, length, talent loadout); talents come from the engine's own decoded tables, the talent grid from its data (ADR-012) |
 | § 7 corpus | PostgreSQL + pgvector; policy-enforced ingestion from the official forums; search with unknown-last ordering |
 | § 6 knowledge | Official patch notes for PoE and PoE 2, versioned chunks, local embeddings, game filter by type, isolation test in CI |
 | § 9 agent | Nine deterministic tools with evidence; free local model by default (Ollama), Claude optional, scripted policy for tests; answers number-audited |
 | § 10 UX | One page, one conversation on assistant-ui: live steps while answering (SSE), build card with the passive tree and sources as tool UIs, conversation list, follow-up suggestions, feedback, dictation and read-aloud, attachments, edit/branch, markdown; no technical jargon reaches the user |
-| § 8 metric | Adding PoE 2 knowledge touched one 5-line file under `games/poe2/`. Adding World of Warcraft Retail (SimulationCraft profiles + engine) and Classic (WoWSims exports): 547 lines in `games/wow*/`, and outside them only two `GameId` values, two `MetricKey` values (hps, dtps), two registry lines, two engine settings and game names in the UI |
+| § 8 metric | Adding PoE 2 knowledge touched one 5-line file under `games/poe2/`. World of Warcraft Retail (SimulationCraft profiles, engine, talents) and Classic (WoWSims exports): ~1,100 lines in `games/wow*/`; outside them two `GameId` values, two `MetricKey` values (hps, dtps), two registry lines, two engine settings, one generic `talents` endpoint that delegates to the adapter, and in the UI the game names plus one game-specific card section (the talent grid) |
 
 Not done: the hand-authored visual identity (§ 11, by design — see ADR-005), item modifications
 in the engine bridge, game-data tools (`get_skill`, `get_item`, `get_tree`), Alembic migrations,

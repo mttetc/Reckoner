@@ -243,3 +243,27 @@ Typical latency on an M2 Pro: 10–50 s per question, 4–11k prompt tokens. Aft
 three reference questions (build search, PoE 2 patch, pasted code) answer correctly with a clean
 audit and sourced evidence.
 
+
+## ADR-012 — World of Warcraft Retail: SimulationCraft is the engine, and the only talent decoder (2026-09-04)
+
+**Context.** A SimulationCraft profile describes a character and carries no results. The talent
+loadout is an opaque Blizzard string; decoding it needs the game's trait tree data. Blizzard's Game
+Data API needs credentials we do not have and would be a second source of truth anyway.
+
+**Decision.**
+- A pinned SimulationCraft CLI (`backend/scripts/install_simc.sh`, commit in `SIMC_COMMIT`) is the
+  engine. A pasted profile is simulated as-is (`RECKONER_SIMC_ITERATIONS`, 1000 by default) and
+  every number says *calculated by SimulationCraft <version> · patch <game build>*; both values are
+  read from its `json2` report. Without the binary every number is unknown and says why.
+- Talents are never decoded by us. The engine's HTML report prints the loadout it decoded as
+  class / specialisation / hero tables (name, rank, row, column, spell id); we read those tables.
+  The full grid a specialisation can reach comes from `simc spell_query=talent.class=<class>`.
+  Both readers are checked against each other in `tests/unit/test_wow_talents.py`.
+- Changes are SimulationCraft's own overrides written into the profile text (`profile.set`,
+  `talents.set`); baseline and variant are simulated by the same binary. A refused profile is a
+  refused change (`InvalidModification`), never a guess.
+- The talent grid is display-only: a loadout string cannot be re-encoded without Blizzard's
+  encoder, so clicking a talent is not offered.
+
+**Consequences.** CI builds SimulationCraft from source once per pinned commit (cached). Item
+levels come from the engine's report too, since the profile only carries ids and bonus lists.

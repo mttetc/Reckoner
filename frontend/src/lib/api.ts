@@ -204,6 +204,29 @@ export interface TreeGeometry {
   classes: Array<{ name: string; ascendancies: string[] }>;
 }
 
+/** One talent as SimulationCraft decoded it from the loadout string (inside snapshot.extra). */
+export interface TalentTable {
+  title: string;
+  kind: "class" | "spec" | "hero";
+  points: number;
+  columns: number;
+  talents: Array<{ name: string; rank: number; row: number; col: number; spell_id: number; partial: boolean }>;
+}
+
+export interface TalentGridNode {
+  node: number;
+  row: number;
+  col: number;
+  max_rank: number;
+  choices: Array<{ name: string; spell_id: number }>;
+}
+
+export interface TalentGeometry {
+  class_name: string;
+  spec: string;
+  trees: Array<{ kind: "class" | "spec" | "hero"; subtree: number | null; rows: number; columns: number; nodes: TalentGridNode[] }>;
+}
+
 export interface ApiError {
   code: string;
   message: string;
@@ -294,6 +317,24 @@ export async function askReckoner(question: string, game?: string, code?: string
   const res = await post("/api/v1/ask", { question, game: game ?? null, code: code?.trim() ? code : null });
   if (!res.ok) throw await toError(res);
   return (await res.json()) as AskResponse;
+}
+
+const talentCache = new Map<string, Promise<TalentGeometry>>();
+
+/** Every talent node a specialisation can reach, from the game engine's data. Cached. */
+export function getTalentGeometry(game: string, className: string, spec: string): Promise<TalentGeometry> {
+  const key = `${game}/${className}/${spec}`.toLowerCase();
+  let p = talentCache.get(key);
+  if (!p) {
+    p = get(`/api/v1/games/${game}/talents/${encodeURIComponent(className.toLowerCase())}/${encodeURIComponent(spec.toLowerCase())}`).then(
+      async (res) => {
+        if (!res.ok) throw await toError(res);
+        return (await res.json()) as TalentGeometry;
+      },
+    );
+    talentCache.set(key, p);
+  }
+  return p;
 }
 
 const treeCache = new Map<string, Promise<TreeGeometry>>();

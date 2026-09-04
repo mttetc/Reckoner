@@ -58,6 +58,7 @@ class SimcItem:
     slot: str
     item_id: int | None
     raw: str
+    name: str | None = None  # SimC writes the item's slug first: head=tempered_horns_...,id=…
     fields: dict[str, str] = field(default_factory=dict)
 
 
@@ -104,8 +105,17 @@ def parse_profile(text: str) -> SimcProfile:
         if key in SLOTS:
             parts = [p for p in value.split(",") if p]
             kv = dict(p.split("=", 1) for p in parts if "=" in p)
+            slug = next((p for p in parts if "=" not in p), None)
             item_id = int(kv["id"]) if kv.get("id", "").isdigit() else None
-            items.append(SimcItem(slot=key, item_id=item_id, raw=value, fields=kv))
+            items.append(
+                SimcItem(
+                    slot=key,
+                    item_id=item_id,
+                    raw=value,
+                    name=slug.replace("_", " ").title() if slug else None,
+                    fields=kv,
+                )
+            )
         else:
             fields.setdefault(key, value)
     if class_name is None:

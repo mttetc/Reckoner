@@ -9,6 +9,8 @@ env:
   # Keep in sync with backend/scripts/install_pob.sh (POB_COMMIT). Bumping it changes every
   # recalculated metric's provenance, so it is a deliberate, reviewed change.
   POB_COMMIT: ed354c2f8c42e148bc904c7508dbe851fb2cf952
+  # SimulationCraft (WoW Retail engine). Keep in sync with backend/scripts/install_simc.sh.
+  SIMC_COMMIT: b9880014fd36e63d301b8c7fe9a93c5a66f1a82f
   # Same LuaJIT commit as PoB's own test container (Dockerfile). Distro packages are too old:
   # PoB's sources use `x += 1`, which LuaJIT only accepts in its 2026 rolling builds.
   LUAJIT_COMMIT: 2460b3ff93a1c955de3d62cfc825de7d68dc272e
@@ -41,7 +43,8 @@ jobs:
         run: .venv/bin/python scripts/first_light.py tests/fixtures/pob/slayer_lightning_strike_3_27.txt
 
   engine:
-    # SPEC § 5 B — the real headless Path of Building, pinned. Numbers asserted here come from PoB.
+    # SPEC § 5 B — the real engines, pinned: headless Path of Building and SimulationCraft.
+    # Numbers asserted here come from them.
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
@@ -69,11 +72,22 @@ jobs:
           key: pob-${{ env.POB_COMMIT }}-v1
       - name: Install Path of Building (pinned)
         run: backend/scripts/install_pob.sh
+      - name: Cache SimulationCraft build
+        id: simc-cache
+        uses: actions/cache@v5
+        with:
+          path: .engines/simc/build/simc
+          key: simc-${{ env.SIMC_COMMIT }}-v1
+      - name: Build SimulationCraft (pinned, no GUI)
+        if: steps.simc-cache.outputs.cache-hit != 'true'
+        run: backend/scripts/install_simc.sh
       - name: Engine tests (must not skip)
         run: cd backend && .venv/bin/python -m pytest -q tests/engine tests/integration -rs
         env:
           RECKONER_POB_SRC: ${{ github.workspace }}/.engines/pob/src
           RECKONER_POB_SOURCE_COMMIT: ${{ env.POB_COMMIT }}
+          RECKONER_SIMC_BIN: ${{ github.workspace }}/.engines/simc/build/simc
+          RECKONER_SIMC_ITERATIONS: "300"
 
   frontend:
     runs-on: ubuntu-latest
@@ -124,6 +138,15 @@ jobs:
           key: pob-${{ env.POB_COMMIT }}-v1
       - name: Install Path of Building (pinned)
         run: backend/scripts/install_pob.sh
+      - name: Cache SimulationCraft build
+        id: simc-cache
+        uses: actions/cache@v5
+        with:
+          path: .engines/simc/build/simc
+          key: simc-${{ env.SIMC_COMMIT }}-v1
+      - name: Build SimulationCraft (pinned, no GUI)
+        if: steps.simc-cache.outputs.cache-hit != 'true'
+        run: backend/scripts/install_simc.sh
       - uses: pnpm/action-setup@v6
         with: { version: 11 }
       - uses: actions/setup-node@v7
@@ -137,6 +160,8 @@ jobs:
           RECKONER_LLM: scripted
           RECKONER_POB_SRC: ${{ github.workspace }}/.engines/pob/src
           RECKONER_POB_SOURCE_COMMIT: ${{ env.POB_COMMIT }}
+          RECKONER_SIMC_BIN: ${{ github.workspace }}/.engines/simc/build/simc
+          RECKONER_SIMC_ITERATIONS: "300"
       - uses: actions/upload-artifact@v7
         if: failure()
         with: { name: playwright-report, path: frontend/test-results, retention-days: 7 }

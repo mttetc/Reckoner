@@ -327,9 +327,11 @@ class ScriptedLLM:
                     else "unknown"
                 )
                 ch = res["character"]
+                who = f"{ch.get('class_name')} {ch.get('subclass') or ''}".strip()
+                skill = f", {res['main_skill']}" if res.get("main_skill") else ""
                 lines.append(
-                    f"Your build: {ch.get('class_name')} {ch.get('subclass') or ''}, "
-                    f"{res['main_skill']}, patch {res['game_version']}. DPS {dps_s}."
+                    f"Your build: {who}{skill}, patch {res.get('game_version') or 'unknown'}. "
+                    f"DPS {dps_s}."
                 )
         # Markdown: paragraphs need a blank line between them, bullets are "- " items.
         out: list[str] = []

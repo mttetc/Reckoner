@@ -289,3 +289,13 @@ summary:hover { color: var(--fg); }
   .stat .value { font-size: 22px; }
   .msg.user { max-width: 100%; }
 }
+
+/* World of Warcraft talent grid (engine positions, engine-decoded loadout) */
+.talent-grid { display: flex; flex-wrap: wrap; gap: 18px 28px; margin: 6px 0 10px; }
+.talent-tree { margin: 0; }
+.talent-tree figcaption { font-family: var(--mono, ui-monospace, monospace); font-size: 12px; color: var(--fg-2); margin-bottom: 4px; }
+.talent-tree svg { display: block; max-width: 100%; height: auto; }
+.tnode { fill: var(--panel-2); stroke: var(--line-2); stroke-width: 1.5; }
+.tnode.choice { stroke-dasharray: 3 2; }
+.tnode.taken { fill: var(--accent); stroke: var(--accent-2); }
+.trank { font-family: var(--mono, ui-monospace, monospace); font-size: 10px; fill: var(--bg); pointer-events: none; }

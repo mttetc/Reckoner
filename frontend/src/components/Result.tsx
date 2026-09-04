@@ -9,9 +9,10 @@ import {
   type Metric,
   type Modification,
   type SourceInfo,
-} from "@/lib/api";
+ type TalentTable } from "@/lib/api";
 import { formatMetric, METRIC_LABELS, PRIMARY_METRICS } from "@/lib/format";
 import { PassiveTree, type TreeDiff } from "@/components/tree/PassiveTree";
+import { TalentGrid } from "@/components/tree/TalentGrid";
 import { provenanceLine, unknownReason } from "@/lib/copy";
 
 export const ERROR_COPY: Record<string, string> = {
@@ -62,6 +63,8 @@ type WhatIfState =
   | { kind: "error"; code: string; message: string }
   | { kind: "result"; variant: BuildVariant };
 
+/** SimulationCraft's built-in fight styles (its own names). */
+const FIGHT_STYLES = ["Patchwerk", "DungeonSlice", "HecticAddCleave", "LightMovement", "HeavyMovement", "CastingPatchwerk"];
 const BOSS_OPTIONS = ["None", "Boss", "Pinnacle", "Uber"];
 
 function Delta({ before, after, unit, testId }: { before: number | null; after: number | null; unit: string | null; testId: string }) {
@@ -99,10 +102,14 @@ function WhatIf({
   request?: (Modification & { seq: number }) | null;
   onVariant?: (v: BuildVariant | null) => void;
 }) {
-  const [kind, setKind] = useState("config.set");
+  const wow = parent.game === "wow";
+  const [kind, setKind] = useState(wow ? "wow.fight" : "config.set");
   const [boss, setBoss] = useState("Uber");
   const [gem, setGem] = useState(parent.main_skill ?? "");
   const [level, setLevel] = useState("21");
+  const [fight, setFight] = useState("DungeonSlice");
+  const [length, setLength] = useState("180");
+  const [loadout, setLoadout] = useState("");
   const [state, setState] = useState<WhatIfState>({ kind: "idle" });
 
   const [lastSeq, setLastSeq] = useState(0);
@@ -110,6 +117,9 @@ function WhatIf({
   function modification(): Modification | null {
     if (kind === "config.set") return { kind, payload: { name: "enemyIsBoss", value: boss } };
     if (kind === "gem.set_level") return gem ? { kind, payload: { gem, level: Number(level) } } : null;
+    if (kind === "wow.fight") return { kind: "profile.set", payload: { key: "fight_style", value: fight } };
+    if (kind === "wow.length") return { kind: "profile.set", payload: { key: "max_time", value: Number(length) } };
+    if (kind === "wow.talents") return loadout.trim() ? { kind: "talents.set", payload: { loadout: loadout.trim() } } : null;
     return null;
   }
 
@@ -147,14 +157,46 @@ function WhatIf({
     <section className="whatif" aria-label="What if">
       <h2>Try a change</h2>
       <p className="hint">
-        Click a passive on the tree above, or pick a change here. Everything is recalculated by Path of Building itself — the
-        &quot;before&quot; column is this build re-evaluated by the same engine, so the comparison is fair.
+        {wow
+          ? "Pick a change here. Everything is simulated again by SimulationCraft itself — the \"before\" column is this build simulated by the same engine, so the comparison is fair."
+          : "Click a passive on the tree above, or pick a change here. Everything is recalculated by Path of Building itself — the \"before\" column is this build re-evaluated by the same engine, so the comparison is fair."}
       </p>
       <form onSubmit={onSubmit}>
         <select value={kind} onChange={(e) => setKind(e.target.value)} data-testid="mod-kind" aria-label="Change">
-          <option value="config.set">Against which enemy?</option>
-          <option value="gem.set_level">Main gem level</option>
+          {wow ? (
+            <>
+              <option value="wow.fight">Which kind of fight?</option>
+              <option value="wow.length">How long a fight?</option>
+              <option value="wow.talents">Another talent loadout</option>
+            </>
+          ) : (
+            <>
+              <option value="config.set">Against which enemy?</option>
+              <option value="gem.set_level">Main gem level</option>
+            </>
+          )}
         </select>
+        {kind === "wow.fight" ? (
+          <select value={fight} onChange={(e) => setFight(e.target.value)} data-testid="mod-fight" aria-label="Fight style">
+            {FIGHT_STYLES.map((o) => (
+              <option key={o} value={o}>
+                {o}
+              </option>
+            ))}
+          </select>
+        ) : null}
+        {kind === "wow.length" ? (
+          <select value={length} onChange={(e) => setLength(e.target.value)} data-testid="mod-length" aria-label="Fight length">
+            {["120", "180", "300", "450"].map((o) => (
+              <option key={o} value={o}>
+                {o} s
+              </option>
+            ))}
+          </select>
+        ) : null}
+        {kind === "wow.talents" ? (
+          <input value={loadout} onChange={(e) => setLoadout(e.target.value)} placeholder="paste a talent loadout string" data-testid="mod-loadout" aria-label="Talent loadout" style={{ minWidth: 260 }} />
+        ) : null}
         {kind === "config.set" ? (
           <select value={boss} onChange={(e) => setBoss(e.target.value)} data-testid="mod-boss" aria-label="Enemy is boss">
             {BOSS_OPTIONS.map((o) => (
@@ -184,19 +226,26 @@ function WhatIf({
       {v && v.baseline ? (
         <div data-testid="whatif-result">
           <p className="prov" data-testid="engine-prov">
-            <b className="calculated">calculated</b> by {engineProv?.engine} {engineProv?.engine_version} · game data {String(engineProv?.context.engine_data_version ?? "?")}
+            <b className="calculated">calculated</b> by {engineProv?.engine} {engineProv?.engine_version}
+            {engineProv?.context.engine_data_version !== undefined
+              ? ` · game data ${String(engineProv.context.engine_data_version)}`
+              : engineProv?.game_version
+                ? ` · patch ${engineProv.game_version}`
+                : ""}
           </p>
           <p className="mono" data-testid="applied">
             changed:{" "}
             {applied.map((a, i) => (
               <span key={i}>
                 {i > 0 ? "; " : ""}
-                {String(a.kind)} {String(a.name ?? a.gem ?? "")}
-                {a.value !== undefined ? ` → ${String(a.value)}` : a.level !== undefined ? ` → ${String(a.level)}` : ""}
+                {String(a.kind)} {String(a.name ?? a.gem ?? a.key ?? "")}
+                {a.value !== undefined ? ` → ${String(a.value)}` : a.level !== undefined ? ` → ${String(a.level)}` : a.loadout !== undefined ? " → new loadout" : ""}
               </span>
             ))}
             {" · "}
-            <span data-testid="variant-nodes">{v.snapshot.tree.node_ids.length} passives</span>
+            <span data-testid="variant-nodes">
+              {v.snapshot.tree.node_ids.length} {wow ? "talents" : "passives"}
+            </span>
           </p>
           <table>
             <thead>
@@ -251,6 +300,8 @@ export function Result({
   const [treeRequest, setTreeRequest] = useState<(Modification & { seq: number }) | null>(null);
   const primary = PRIMARY_METRICS.map((k) => s.metrics.find((m) => m.key === k)).filter(Boolean) as Metric[];
   const rest = s.metrics.filter((m) => !PRIMARY_METRICS.includes(m.key));
+  const isWow = s.game === "wow" || s.game === "wow_classic";
+  const talentTables = (s.extra["wow.talent_tables"] as TalentTable[] | undefined) ?? [];
   return (
     <section className="panel fade" data-testid="result" aria-live="polite">
       <div className="header-line">
@@ -259,13 +310,15 @@ export function Result({
           {s.character.subclass ? ` · ${s.character.subclass}` : ""}
         </span>
         <span className="mono muted">level {s.character.level ?? "?"}</span>
-        <span
-          className="mono"
-          data-testid="main-skill"
-          title="Socket group selected in the export — PoB's DPS figures are computed for this skill"
-        >
-          {s.main_skill ?? "main skill unknown"}
-        </span>
+        {isWow ? null : (
+          <span
+            className="mono"
+            data-testid="main-skill"
+            title="Socket group selected in the export — PoB's DPS figures are computed for this skill"
+          >
+            {s.main_skill ?? "main skill unknown"}
+          </span>
+        )}
         <span className="chip" data-testid="patch">patch {s.game_version ?? "unknown"}</span>
       </div>
 
@@ -275,13 +328,16 @@ export function Result({
         ))}
       </div>
 
-      <h2>Passive tree</h2>
+      <h2>{isWow ? "Talents" : "Passive tree"}</h2>
       <p className="mono" data-testid="tree">
         {s.tree.unknown_reason
           ? `unknown — ${unknownReason(s.tree.unknown_reason)}`
-          : `${s.tree.node_ids.length} passives · ${Object.keys(s.tree.mastery_effects).length} masteries · tree ${s.tree.version ?? "version unknown"}`}
+          : isWow
+            ? `${s.tree.node_ids.length} talents · ${talentTables.map((t) => t.title).join(" · ")}`
+            : `${s.tree.node_ids.length} passives · ${Object.keys(s.tree.mastery_effects).length} masteries · tree ${s.tree.version ?? "version unknown"}`}
       </p>
-      {!s.tree.unknown_reason ? (
+      {isWow && talentTables.length ? <TalentGrid game={s.game} className={s.character.class_name} spec={s.character.subclass} tables={talentTables} /> : null}
+      {!s.tree.unknown_reason && !isWow ? (
         <PassiveTree
           version={s.tree.version}
           allocated={s.tree.node_ids}
@@ -290,7 +346,7 @@ export function Result({
           onNodeClick={code ? (id, allocated) => setTreeRequest({ kind: allocated ? "tree.deallocate" : "tree.allocate", payload: { node_id: id }, seq: Date.now() }) : undefined}
         />
       ) : null}
-      {code ? <p className="hint">Click a passive to try the build without it, or with it. The result is recalculated by the real engine below.</p> : null}
+      {code && !isWow ? <p className="hint">Click a passive to try the build without it, or with it. The result is recalculated by the real engine below.</p> : null}
 
       <details open={!compact} className="section">
       <summary><h2>Details</h2></summary>

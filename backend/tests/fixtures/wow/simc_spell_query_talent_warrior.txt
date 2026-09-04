@@ -1,0 +1,3684 @@
+SimulationCraft 1210-01 for World of Warcraft 12.1.0.69587 Live (hotfix 2026-09-02/69587, git build midnight b988001)
+Name         : Hunker Down
+Entry        : 112110
+Node         : 90450
+Definition   : 117115
+Tree         : spec (2)
+Class        : warrior
+Spec         : protection (73)
+Column       : 1
+Row          : 6
+Req. Points  : 8
+Max Rank     : 1
+Spell        : 1235022
+Subtree      : 0
+Sel. Index   : 100
+
+Name         : Battle Stance
+Entry        : 112112
+Node         : 90261
+Definition   : 117117
+Tree         : class (1)
+Class        : warrior
+Spec         : protection (73)
+Starter      : protection (73)
+Column       : 2
+Row          : 1
+Req. Points  : 0
+Max Rank     : 1
+Spell        : 386164
+Subtree      : 0
+Sel. Index   : 200
+
+Name         : Bloodborne
+Entry        : 112115
+Node         : 90264
+Definition   : 117120
+Tree         : spec (2)
+Class        : warrior
+Spec         : protection (73)
+Column       : 7
+Row          : 6
+Req. Points  : 8
+Max Rank     : 1
+Spell        : 385704
+Subtree      : 0
+Sel. Index   : 200
+
+Name         : Violent Outburst
+Entry        : 112116
+Node         : 90265
+Definition   : 117121
+Tree         : spec (2)
+Class        : warrior
+Spec         : protection (73)
+Column       : 7
+Row          : 9
+Req. Points  : 20
+Max Rank     : 1
+Spell        : 386477
+Subtree      : 0
+Sel. Index   : 100
+
+Name         : Die by the Sword
+Entry        : 112121
+Node         : 90269
+Definition   : 117126
+Tree         : spec (2)
+Class        : warrior
+Spec         : arms (71)
+Column       : 5
+Row          : 3
+Req. Points  : 0
+Max Rank     : 1
+Spell        : 118038
+Subtree      : 0
+Sel. Index   : 100
+
+Name         : Mortal Strike
+Entry        : 112122
+Node         : 90270
+Definition   : 117127
+Tree         : spec (2)
+Class        : warrior
+Spec         : arms (71)
+Column       : 4
+Row          : 1
+Req. Points  : 0
+Max Rank     : 1
+Spell        : 12294
+Subtree      : 0
+Sel. Index   : 100
+
+Name         : Overpower
+Entry        : 112123
+Node         : 90271
+Definition   : 117128
+Tree         : spec (2)
+Class        : warrior
+Spec         : arms (71)
+Column       : 3
+Row          : 2
+Req. Points  : 0
+Max Rank     : 1
+Spell        : 7384
+Subtree      : 0
+Sel. Index   : 100
+
+Name         : Improved Execute
+Entry        : 112125
+Node         : 90273
+Definition   : 117130
+Tree         : spec (2)
+Class        : warrior
+Spec         : arms (71)
+Column       : 5
+Row          : 4
+Req. Points  : 0
+Max Rank     : 1
+Spell        : 316405
+Subtree      : 0
+Sel. Index   : 100
+
+Name         : Sudden Death
+Entry        : 112126
+Node         : 90274
+Definition   : 117131
+Tree         : spec (2)
+Class        : warrior
+Spec         : arms (71)
+Column       : 5
+Row          : 2
+Req. Points  : 0
+Max Rank     : 1
+Spell        : 29725
+Subtree      : 0
+Sel. Index   : 100
+
+Name         : Fueled by Violence
+Entry        : 112128
+Node         : 90276
+Definition   : 117133
+Tree         : spec (2)
+Class        : warrior
+Spec         : arms (71)
+Column       : 3
+Row          : 3
+Req. Points  : 0
+Max Rank     : 1
+Spell        : 383103
+Subtree      : 0
+Sel. Index   : 100
+
+Name         : Bloodsurge
+Entry        : 112129
+Node         : 90277
+Definition   : 117134
+Tree         : spec (2)
+Class        : warrior
+Spec         : arms (71)
+Column       : 2
+Row          : 4
+Req. Points  : 0
+Max Rank     : 1
+Spell        : 384361
+Subtree      : 0
+Sel. Index   : 0
+
+Name         : Improved Overpower
+Entry        : 112131
+Node         : 90279
+Definition   : 117136
+Tree         : spec (2)
+Class        : warrior
+Spec         : arms (71)
+Column       : 3
+Row          : 4
+Req. Points  : 0
+Max Rank     : 1
+Spell        : 385571
+Subtree      : 0
+Sel. Index   : 100
+
+Name         : Tactician
+Entry        : 112134
+Node         : 90282
+Definition   : 117139
+Tree         : spec (2)
+Class        : warrior
+Spec         : arms (71)
+Column       : 2
+Row          : 5
+Req. Points  : 8
+Max Rank     : 1
+Spell        : 184783
+Subtree      : 0
+Sel. Index   : 100
+
+Name         : Bloodborne
+Entry        : 112135
+Node         : 90283
+Definition   : 117140
+Tree         : spec (2)
+Class        : warrior
+Spec         : arms (71)
+Column       : 2
+Row          : 8
+Req. Points  : 20
+Max Rank     : 2
+Spell        : 383287
+Subtree      : 0
+Sel. Index   : 0
+
+Name         : Dreadnaught
+Entry        : 112137
+Node         : 90285
+Definition   : 117142
+Tree         : spec (2)
+Class        : warrior
+Spec         : arms (71)
+Column       : 2
+Row          : 7
+Req. Points  : 8
+Max Rank     : 1
+Spell        : 262150
+Subtree      : 0
+Sel. Index   : 200
+
+Name         : Colossus Smash
+Entry        : 112144
+Node         : 90290
+Definition   : 117149
+Tree         : spec (2)
+Class        : warrior
+Spec         : arms (71)
+Column       : 4
+Row          : 5
+Req. Points  : 8
+Max Rank     : 1
+Spell        : 167105
+Subtree      : 0
+Sel. Index   : 100
+
+Name         : Massacre
+Entry        : 112145
+Node         : 90291
+Definition   : 117150
+Tree         : spec (2)
+Class        : warrior
+Spec         : arms (71)
+Column       : 5
+Row          : 7
+Req. Points  : 8
+Max Rank     : 1
+Spell        : 281001
+Subtree      : 0
+Sel. Index   : 0
+
+Name         : Impale
+Entry        : 112146
+Node         : 90292
+Definition   : 117151
+Tree         : spec (2)
+Class        : warrior
+Spec         : arms (71)
+Column       : 6
+Row          : 5
+Req. Points  : 8
+Max Rank     : 1
+Spell        : 383430
+Subtree      : 0
+Sel. Index   : 100
+
+Name         : Cleave
+Entry        : 112147
+Node         : 90293
+Definition   : 117152
+Tree         : spec (2)
+Class        : warrior
+Spec         : arms (71)
+Column       : 6
+Row          : 6
+Req. Points  : 8
+Max Rank     : 1
+Spell        : 845
+Replaces     : 1680
+Subtree      : 0
+Sel. Index   : 100
+
+Name         : Ignore Pain
+Entry        : 112149
+Node         : 90295
+Definition   : 117154
+Tree         : spec (2)
+Class        : warrior
+Spec         : protection (73)
+Column       : 5
+Row          : 1
+Req. Points  : 0
+Max Rank     : 1
+Spell        : 190456
+Subtree      : 0
+Sel. Index   : 100
+
+Name         : Devastating Focus
+Entry        : 112150
+Node         : 90296
+Definition   : 117155
+Tree         : spec (2)
+Class        : warrior
+Spec         : protection (73)
+Column       : 7
+Row          : 4
+Req. Points  : 0
+Max Rank     : 1
+Spell        : 1264330
+Subtree      : 0
+Sel. Index   : 100
+
+Name         : Devastator
+Entry        : 112151
+Node         : 90297
+Definition   : 117156
+Tree         : spec (2)
+Class        : warrior
+Spec         : protection (73)
+Column       : 8
+Row          : 3
+Req. Points  : 0
+Max Rank     : 1
+Spell        : 236279
+Replaces     : 20243
+Subtree      : 0
+Sel. Index   : 100
+
+Name         : Revenge
+Entry        : 112152
+Node         : 90298
+Definition   : 117157
+Tree         : spec (2)
+Class        : warrior
+Spec         : protection (73)
+Column       : 7
+Row          : 2
+Req. Points  : 0
+Max Rank     : 1
+Spell        : 6572
+Replaces     : 1464
+Subtree      : 0
+Sel. Index   : 100
+
+Name         : Fight Through the Flames
+Entry        : 112153
+Node         : 90299
+Definition   : 117158
+Tree         : spec (2)
+Class        : warrior
+Spec         : protection (73)
+Column       : 6
+Row          : 3
+Req. Points  : 0
+Max Rank     : 1
+Spell        : 452494
+Subtree      : 0
+Sel. Index   : 0
+
+Name         : Bloodsurge
+Entry        : 112154
+Node         : 90300
+Definition   : 117159
+Tree         : spec (2)
+Class        : warrior
+Spec         : protection (73)
+Column       : 7
+Row          : 5
+Req. Points  : 8
+Max Rank     : 1
+Spell        : 384361
+Subtree      : 0
+Sel. Index   : 0
+
+Name         : Instigate
+Entry        : 112155
+Node         : 90301
+Definition   : 117160
+Tree         : spec (2)
+Class        : warrior
+Spec         : protection (73)
+Column       : 3
+Row          : 5
+Req. Points  : 8
+Max Rank     : 1
+Spell        : 394311
+Subtree      : 0
+Sel. Index   : 0
+
+Name         : Shield Wall
+Entry        : 112156
+Node         : 90302
+Definition   : 117161
+Tree         : spec (2)
+Class        : warrior
+Spec         : protection (73)
+Column       : 5
+Row          : 5
+Req. Points  : 8
+Max Rank     : 1
+Spell        : 871
+Subtree      : 0
+Sel. Index   : 0
+
+Name         : Strategist
+Entry        : 112157
+Node         : 90303
+Definition   : 117162
+Tree         : spec (2)
+Class        : warrior
+Spec         : protection (73)
+Column       : 5
+Row          : 4
+Req. Points  : 0
+Max Rank     : 1
+Spell        : 384041
+Subtree      : 0
+Sel. Index   : 100
+
+Name         : Brace For Impact
+Entry        : 112158
+Node         : 90304
+Definition   : 117163
+Tree         : spec (2)
+Class        : warrior
+Spec         : protection (73)
+Column       : 2
+Row          : 3
+Req. Points  : 0
+Max Rank     : 1
+Spell        : 386030
+Subtree      : 0
+Sel. Index   : 100
+
+Name         : Demoralizing Shout
+Entry        : 112159
+Node         : 90305
+Definition   : 117164
+Tree         : spec (2)
+Class        : warrior
+Spec         : protection (73)
+Column       : 3
+Row          : 2
+Req. Points  : 0
+Max Rank     : 1
+Spell        : 1160
+Subtree      : 0
+Sel. Index   : 100
+
+Name         : Armor Specialization
+Entry        : 112160
+Node         : 90306
+Definition   : 117165
+Tree         : spec (2)
+Class        : warrior
+Spec         : protection (73)
+Column       : 4
+Row          : 3
+Req. Points  : 0
+Max Rank     : 1
+Spell        : 1234769
+Subtree      : 0
+Sel. Index   : 100
+
+Name         : Thunderlord
+Entry        : 112162
+Node         : 90308
+Definition   : 117167
+Tree         : spec (2)
+Class        : warrior
+Spec         : protection (73)
+Column       : 2
+Row          : 6
+Req. Points  : 8
+Max Rank     : 1
+Spell        : 385840
+Subtree      : 0
+Sel. Index   : 0
+
+Name         : Best Served Cold
+Entry        : 112163
+Node         : 90309
+Definition   : 117168
+Tree         : spec (2)
+Class        : warrior
+Spec         : protection (73)
+Column       : 8
+Row          : 5
+Req. Points  : 8
+Max Rank     : 1
+Spell        : 202560
+Subtree      : 0
+Sel. Index   : 100
+
+Name         : Deep Wounds
+Entry        : 112165
+Node         : 90310
+Definition   : 117170
+Tree         : spec (2)
+Class        : warrior
+Spec         : protection (73)
+Column       : 9
+Row          : 7
+Req. Points  : 8
+Max Rank     : 1
+Spell        : 1261060
+Subtree      : 0
+Sel. Index   : 0
+
+Name         : Enduring Defenses
+Entry        : 112166
+Node         : 90311
+Definition   : 117171
+Tree         : spec (2)
+Class        : warrior
+Spec         : protection (73)
+Column       : 5
+Row          : 7
+Req. Points  : 8
+Max Rank     : 2
+Spell        : 386027
+Subtree      : 0
+Sel. Index   : 0
+
+Name         : Heavy Repercussions
+Entry        : 112167
+Node         : 90312
+Definition   : 117172
+Tree         : spec (2)
+Class        : warrior
+Spec         : protection (73)
+Column       : 2
+Row          : 8
+Req. Points  : 20
+Max Rank     : 1
+Spell        : 203177
+Subtree      : 0
+Sel. Index   : 100
+
+Name         : Heavy Handed
+Entry        : 112169
+Node         : 90313
+Definition   : 117174
+Tree         : spec (2)
+Class        : warrior
+Spec         : protection (73)
+Column       : 9
+Row          : 9
+Req. Points  : 20
+Max Rank     : 1
+Spell        : 1235088
+Subtree      : 0
+Sel. Index   : 100
+
+Name         : Booming Voice
+Entry        : 112170
+Node         : 90314
+Definition   : 117175
+Tree         : spec (2)
+Class        : warrior
+Spec         : protection (73)
+Column       : 3
+Row          : 9
+Req. Points  : 20
+Max Rank     : 1
+Spell        : 202743
+Subtree      : 0
+Sel. Index   : 100
+
+Name         : Shield Specialization
+Entry        : 112171
+Node         : 90315
+Definition   : 117176
+Tree         : spec (2)
+Class        : warrior
+Spec         : protection (73)
+Column       : 5
+Row          : 8
+Req. Points  : 20
+Max Rank     : 1
+Spell        : 386011
+Subtree      : 0
+Sel. Index   : 0
+
+Name         : Shield Charge
+Entry        : 112173
+Node         : 90317
+Definition   : 117178
+Tree         : spec (2)
+Class        : warrior
+Spec         : protection (73)
+Column       : 2
+Row          : 10
+Req. Points  : 20
+Max Rank     : 1
+Spell        : 385952
+Subtree      : 0
+Sel. Index   : 100
+
+Name         : Defender's Aegis
+Entry        : 112174
+Node         : 90318
+Definition   : 117179
+Tree         : spec (2)
+Class        : warrior
+Spec         : protection (73)
+Column       : 3
+Row          : 6
+Req. Points  : 8
+Max Rank     : 1
+Spell        : 397103
+Subtree      : 0
+Sel. Index   : 100
+
+Name         : Fueled by Violence
+Entry        : 112176
+Node         : 90319
+Definition   : 117181
+Tree         : spec (2)
+Class        : warrior
+Spec         : protection (73)
+Column       : 2
+Row          : 7
+Req. Points  : 8
+Max Rank     : 1
+Spell        : 383103
+Subtree      : 0
+Sel. Index   : 0
+
+Name         : Tough as Nails
+Entry        : 112177
+Node         : 90320
+Definition   : 117182
+Tree         : spec (2)
+Class        : warrior
+Spec         : protection (73)
+Column       : 1
+Row          : 7
+Req. Points  : 8
+Max Rank     : 1
+Spell        : 385888
+Subtree      : 0
+Sel. Index   : 0
+
+Name         : Two-Handed Weapon Specialization
+Entry        : 112179
+Node         : 90322
+Definition   : 117184
+Tree         : class (1)
+Class        : warrior
+Spec         : arms (71)
+Column       : 4
+Row          : 9
+Req. Points  : 23
+Max Rank     : 2
+Spell        : 382896
+Subtree      : 0
+Sel. Index   : 0
+
+Name         : One-Handed Weapon Specialization
+Entry        : 112181
+Node         : 90324
+Definition   : 117186
+Tree         : class (1)
+Class        : warrior
+Spec         : protection (73)
+Column       : 4
+Row          : 9
+Req. Points  : 23
+Max Rank     : 2
+Spell        : 382895
+Subtree      : 0
+Sel. Index   : 200
+
+Name         : Berserker Stance
+Entry        : 112182
+Node         : 90325
+Definition   : 117187
+Tree         : class (1)
+Class        : warrior
+Spec         : fury (72)
+Starter      : fury (72)
+Column       : 2
+Row          : 1
+Req. Points  : 0
+Max Rank     : 1
+Spell        : 386196
+Subtree      : 0
+Sel. Index   : 100
+
+Name         : Impending Victory
+Entry        : 112183
+Node         : 90326
+Definition   : 117188
+Tree         : class (1)
+Class        : warrior
+Column       : 2
+Row          : 3
+Req. Points  : 0
+Max Rank     : 1
+Spell        : 202168
+Replaces     : 34428
+Subtree      : 0
+Sel. Index   : 100
+
+Name         : Battle Stance
+Entry        : 112184
+Node         : 90327
+Definition   : 117189
+Tree         : class (1)
+Class        : warrior
+Spec         : arms (71)
+Starter      : arms (71)
+Column       : 2
+Row          : 1
+Req. Points  : 0
+Max Rank     : 1
+Spell        : 386164
+Subtree      : 0
+Sel. Index   : 100
+
+Name         : War Machine
+Entry        : 112185
+Node         : 90328
+Definition   : 117190
+Tree         : class (1)
+Class        : warrior
+Column       : 3
+Row          : 2
+Req. Points  : 0
+Max Rank     : 1
+Spell        : 262231
+Subtree      : 0
+Sel. Index   : 0
+
+Name         : Intervene
+Entry        : 112186
+Node         : 90329
+Definition   : 117191
+Tree         : class (1)
+Class        : warrior
+Spec         : protection (73)
+Column       : 7
+Row          : 4
+Req. Points  : 0
+Max Rank     : 1
+Spell        : 3411
+Subtree      : 0
+Sel. Index   : 100
+
+Name         : Defensive Stance
+Entry        : 112187
+Node         : 90330
+Definition   : 117192
+Tree         : class (1)
+Class        : warrior
+Spec         : protection (73)
+Starter      : protection (73)
+Column       : 6
+Row          : 1
+Req. Points  : 0
+Max Rank     : 1
+Spell        : 386208
+Subtree      : 0
+Sel. Index   : 200
+
+Name         : Rallying Cry
+Entry        : 112188
+Node         : 90331
+Definition   : 117193
+Tree         : class (1)
+Class        : warrior
+Column       : 4
+Row          : 5
+Req. Points  : 8
+Max Rank     : 1
+Spell        : 97462
+Subtree      : 0
+Sel. Index   : 100
+
+Name         : Second Wind
+Entry        : 112190
+Node         : 90332
+Definition   : 117195
+Tree         : class (1)
+Class        : warrior
+Column       : 2
+Row          : 4
+Req. Points  : 0
+Max Rank     : 1
+Spell        : 29838
+Subtree      : 0
+Sel. Index   : 100
+
+Name         : Storm Bolt
+Entry        : 112198
+Node         : 90337
+Definition   : 117203
+Tree         : class (1)
+Class        : warrior
+Column       : 6
+Row          : 3
+Req. Points  : 0
+Max Rank     : 1
+Spell        : 107570
+Subtree      : 0
+Sel. Index   : 0
+
+Name         : Thunder Clap
+Entry        : 112205
+Node         : 90343
+Definition   : 117210
+Tree         : class (1)
+Class        : warrior
+Column       : 5
+Row          : 2
+Req. Points  : 0
+Max Rank     : 1
+Spell        : 6343
+Subtree      : 0
+Sel. Index   : 100
+
+Name         : Fast Footwork
+Entry        : 112206
+Node         : 90344
+Definition   : 117211
+Tree         : class (1)
+Class        : warrior
+Column       : 1
+Row          : 2
+Req. Points  : 0
+Max Rank     : 1
+Spell        : 382260
+Subtree      : 0
+Sel. Index   : 100
+
+Name         : Heroic Leap
+Entry        : 112208
+Node         : 90346
+Definition   : 117213
+Tree         : class (1)
+Class        : warrior
+Column       : 4
+Row          : 3
+Req. Points  : 0
+Max Rank     : 1
+Spell        : 6544
+Subtree      : 0
+Sel. Index   : 100
+
+Name         : Barbaric Training
+Entry        : 112209
+Node         : 90347
+Definition   : 117214
+Tree         : class (1)
+Class        : warrior
+Column       : 1
+Row          : 8
+Req. Points  : 23
+Max Rank     : 1
+Spell        : 383082
+Subtree      : 0
+Sel. Index   : 0
+
+Name         : Fearless
+Entry        : 112210
+Node         : 90348
+Definition   : 117215
+Tree         : class (1)
+Class        : warrior
+Column       : 3
+Row          : 6
+Req. Points  : 8
+Max Rank     : 1
+Spell        : 1271925
+Subtree      : 0
+Sel. Index   : 200
+
+Name         : Berserker Shout
+Entry        : 112211
+Node         : 90348
+Definition   : 117216
+Tree         : class (1)
+Class        : warrior
+Column       : 3
+Row          : 6
+Req. Points  : 8
+Max Rank     : 1
+Spell        : 384100
+Replaces     : 18499
+Subtree      : 0
+Sel. Index   : 100
+
+Name         : Shattering Throw
+Entry        : 112214
+Node         : 90351
+Definition   : 117219
+Tree         : class (1)
+Class        : warrior
+Column       : 1
+Row          : 6
+Req. Points  : 8
+Max Rank     : 1
+Spell        : 64382
+Subtree      : 0
+Sel. Index   : 100
+
+Name         : Wrecking Throw
+Entry        : 112215
+Node         : 90351
+Definition   : 117220
+Tree         : class (1)
+Class        : warrior
+Column       : 1
+Row          : 6
+Req. Points  : 8
+Max Rank     : 1
+Spell        : 384110
+Subtree      : 0
+Sel. Index   : 0
+
+Name         : Frothing Berserker
+Entry        : 112216
+Node         : 90352
+Definition   : 117221
+Tree         : class (1)
+Class        : warrior
+Column       : 3
+Row          : 4
+Req. Points  : 0
+Max Rank     : 1
+Spell        : 392792
+Subtree      : 0
+Sel. Index   : 100
+
+Name         : Pain and Gain
+Entry        : 112217
+Node         : 90353
+Definition   : 117222
+Tree         : class (1)
+Class        : warrior
+Column       : 5
+Row          : 4
+Req. Points  : 0
+Max Rank     : 1
+Spell        : 382549
+Subtree      : 0
+Sel. Index   : 0
+
+Name         : Bounding Stride
+Entry        : 112219
+Node         : 90355
+Definition   : 117224
+Tree         : class (1)
+Class        : warrior
+Column       : 4
+Row          : 4
+Req. Points  : 0
+Max Rank     : 1
+Spell        : 202163
+Subtree      : 0
+Sel. Index   : 0
+
+Name         : Wild Strikes
+Entry        : 112224
+Node         : 90360
+Definition   : 117229
+Tree         : class (1)
+Class        : warrior
+Column       : 6
+Row          : 9
+Req. Points  : 23
+Max Rank     : 2
+Spell        : 382946
+Subtree      : 0
+Sel. Index   : 100
+
+Name         : Armored to the Teeth
+Entry        : 112233
+Node         : 90366
+Definition   : 117238
+Tree         : class (1)
+Class        : warrior
+Column       : 2
+Row          : 7
+Req. Points  : 8
+Max Rank     : 2
+Spell        : 384124
+Subtree      : 0
+Sel. Index   : 100
+
+Name         : Reinforced Plates
+Entry        : 112235
+Node         : 90368
+Definition   : 117240
+Tree         : class (1)
+Class        : warrior
+Column       : 6
+Row          : 7
+Req. Points  : 8
+Max Rank     : 2
+Spell        : 382939
+Subtree      : 0
+Sel. Index   : 100
+
+Name         : Leeching Strikes
+Entry        : 112238
+Node         : 90371
+Definition   : 117243
+Tree         : class (1)
+Class        : warrior
+Column       : 7
+Row          : 2
+Req. Points  : 0
+Max Rank     : 1
+Spell        : 382258
+Subtree      : 0
+Sel. Index   : 100
+
+Name         : Dual Wield Specialization
+Entry        : 112240
+Node         : 90373
+Definition   : 117245
+Tree         : class (1)
+Class        : warrior
+Spec         : fury (72)
+Column       : 4
+Row          : 9
+Req. Points  : 23
+Max Rank     : 2
+Spell        : 382900
+Subtree      : 0
+Sel. Index   : 100
+
+Name         : Rumbling Earth
+Entry        : 112241
+Node         : 90374
+Definition   : 117246
+Tree         : class (1)
+Class        : warrior
+Column       : 2
+Row          : 6
+Req. Points  : 8
+Max Rank     : 1
+Spell        : 275339
+Subtree      : 0
+Sel. Index   : 0
+
+Name         : Shockwave
+Entry        : 112242
+Node         : 90375
+Definition   : 117247
+Tree         : class (1)
+Class        : warrior
+Column       : 2
+Row          : 5
+Req. Points  : 8
+Max Rank     : 1
+Spell        : 46968
+Subtree      : 0
+Sel. Index   : 100
+
+Name         : Overwhelming Rage
+Entry        : 112245
+Node         : 90378
+Definition   : 117250
+Tree         : class (1)
+Class        : warrior
+Column       : 3
+Row          : 5
+Req. Points  : 8
+Max Rank     : 1
+Spell        : 382767
+Subtree      : 0
+Sel. Index   : 100
+
+Name         : Champion's Spear
+Entry        : 112247
+Node         : 90380
+Definition   : 117252
+Tree         : class (1)
+Class        : warrior
+Column       : 3
+Row          : 10
+Req. Points  : 23
+Max Rank     : 1
+Spell        : 376079
+Subtree      : 0
+Sel. Index   : 100
+
+Name         : Cruel Strikes
+Entry        : 112248
+Node         : 90381
+Definition   : 117253
+Tree         : class (1)
+Class        : warrior
+Column       : 2
+Row          : 9
+Req. Points  : 23
+Max Rank     : 2
+Spell        : 392777
+Subtree      : 0
+Sel. Index   : 100
+
+Name         : Double Time
+Entry        : 112249
+Node         : 90382
+Definition   : 117254
+Tree         : class (1)
+Class        : warrior
+Column       : 4
+Row          : 7
+Req. Points  : 8
+Max Rank     : 1
+Spell        : 103827
+Subtree      : 0
+Sel. Index   : 100
+
+Name         : Spell Reflection
+Entry        : 112253
+Node         : 90385
+Definition   : 117258
+Tree         : class (1)
+Class        : warrior
+Column       : 6
+Row          : 5
+Req. Points  : 8
+Max Rank     : 1
+Spell        : 23920
+Subtree      : 0
+Sel. Index   : 100
+
+Name         : Wrath and Fury
+Entry        : 112255
+Node         : 90387
+Definition   : 117260
+Tree         : spec (2)
+Class        : warrior
+Spec         : fury (72)
+Column       : 7
+Row          : 7
+Req. Points  : 8
+Max Rank     : 1
+Spell        : 392936
+Subtree      : 0
+Sel. Index   : 100
+
+Name         : Improved Raging Blow
+Entry        : 112259
+Node         : 90390
+Definition   : 117264
+Tree         : spec (2)
+Class        : warrior
+Spec         : fury (72)
+Column       : 6
+Row          : 5
+Req. Points  : 8
+Max Rank     : 1
+Spell        : 383854
+Subtree      : 0
+Sel. Index   : 100
+
+Name         : Rampaging Ruin
+Entry        : 112260
+Node         : 90391
+Definition   : 117265
+Tree         : spec (2)
+Class        : warrior
+Spec         : fury (72)
+Column       : 7
+Row          : 5
+Req. Points  : 8
+Max Rank     : 1
+Spell        : 1265357
+Subtree      : 0
+Sel. Index   : 200
+
+Name         : Bloodthirst
+Entry        : 112261
+Node         : 90392
+Definition   : 117266
+Tree         : spec (2)
+Class        : warrior
+Spec         : fury (72)
+Column       : 4
+Row          : 1
+Req. Points  : 0
+Max Rank     : 1
+Spell        : 23881
+Subtree      : 0
+Sel. Index   : 100
+
+Name         : Warpaint
+Entry        : 112263
+Node         : 90394
+Definition   : 117268
+Tree         : spec (2)
+Class        : warrior
+Spec         : fury (72)
+Column       : 5
+Row          : 4
+Req. Points  : 0
+Max Rank     : 1
+Spell        : 208154
+Subtree      : 0
+Sel. Index   : 100
+
+Name         : Enraged Regeneration
+Entry        : 112264
+Node         : 90395
+Definition   : 117269
+Tree         : spec (2)
+Class        : warrior
+Spec         : fury (72)
+Column       : 3
+Row          : 4
+Req. Points  : 0
+Max Rank     : 1
+Spell        : 184364
+Subtree      : 0
+Sel. Index   : 100
+
+Name         : Raging Blow
+Entry        : 112265
+Node         : 90396
+Definition   : 117270
+Tree         : spec (2)
+Class        : warrior
+Spec         : fury (72)
+Column       : 4
+Row          : 2
+Req. Points  : 0
+Max Rank     : 1
+Spell        : 85288
+Subtree      : 0
+Sel. Index   : 100
+
+Name         : Spite
+Entry        : 112266
+Node         : 90397
+Definition   : 117271
+Tree         : spec (2)
+Class        : warrior
+Spec         : fury (72)
+Column       : 2
+Row          : 6
+Req. Points  : 8
+Max Rank     : 2
+Spell        : 383852
+Subtree      : 0
+Sel. Index   : 100
+
+Name         : Frenzied Enrage
+Entry        : 112267
+Node         : 90398
+Definition   : 117272
+Tree         : spec (2)
+Class        : warrior
+Spec         : fury (72)
+Column       : 4
+Row          : 3
+Req. Points  : 0
+Max Rank     : 1
+Spell        : 383848
+Subtree      : 0
+Sel. Index   : 100
+
+Name         : Fresh Meat
+Entry        : 112268
+Node         : 90399
+Definition   : 117273
+Tree         : spec (2)
+Class        : warrior
+Spec         : fury (72)
+Column       : 2
+Row          : 5
+Req. Points  : 8
+Max Rank     : 1
+Spell        : 215568
+Subtree      : 0
+Sel. Index   : 100
+
+Name         : Bloodborne
+Entry        : 112270
+Node         : 90401
+Definition   : 117275
+Tree         : spec (2)
+Class        : warrior
+Spec         : fury (72)
+Column       : 5
+Row          : 9
+Req. Points  : 20
+Max Rank     : 1
+Spell        : 385703
+Subtree      : 0
+Sel. Index   : 0
+
+Name         : Cold Steel, Hot Blood
+Entry        : 112271
+Node         : 90402
+Definition   : 117276
+Tree         : spec (2)
+Class        : warrior
+Spec         : fury (72)
+Column       : 1
+Row          : 7
+Req. Points  : 8
+Max Rank     : 1
+Spell        : 383959
+Subtree      : 0
+Sel. Index   : 100
+
+Name         : Focus in Chaos
+Entry        : 112272
+Node         : 90403
+Definition   : 117277
+Tree         : spec (2)
+Class        : warrior
+Spec         : fury (72)
+Column       : 1
+Row          : 4
+Req. Points  : 0
+Max Rank     : 1
+Spell        : 383486
+Subtree      : 0
+Sel. Index   : 100
+
+Name         : Bloodcraze
+Entry        : 112274
+Node         : 90405
+Definition   : 117279
+Tree         : spec (2)
+Class        : warrior
+Spec         : fury (72)
+Column       : 5
+Row          : 7
+Req. Points  : 8
+Max Rank     : 1
+Spell        : 393950
+Subtree      : 0
+Sel. Index   : 100
+
+Name         : Frenzy
+Entry        : 112275
+Node         : 90406
+Definition   : 117280
+Tree         : spec (2)
+Class        : warrior
+Spec         : fury (72)
+Column       : 4
+Row          : 8
+Req. Points  : 20
+Max Rank     : 1
+Spell        : 335077
+Subtree      : 0
+Sel. Index   : 100
+
+Name         : Hack and Slash
+Entry        : 112276
+Node         : 90407
+Definition   : 117281
+Tree         : spec (2)
+Class        : warrior
+Spec         : fury (72)
+Column       : 5
+Row          : 6
+Req. Points  : 8
+Max Rank     : 1
+Spell        : 383877
+Subtree      : 0
+Sel. Index   : 100
+
+Name         : Rampage
+Entry        : 112277
+Node         : 90408
+Definition   : 117282
+Tree         : spec (2)
+Class        : warrior
+Spec         : fury (72)
+Column       : 4
+Row          : 5
+Req. Points  : 8
+Max Rank     : 1
+Spell        : 184367
+Replaces     : 1464
+Subtree      : 0
+Sel. Index   : 100
+
+Name         : Massacre
+Entry        : 112279
+Node         : 90410
+Definition   : 117284
+Tree         : spec (2)
+Class        : warrior
+Spec         : fury (72)
+Column       : 1
+Row          : 5
+Req. Points  : 8
+Max Rank     : 1
+Spell        : 206315
+Subtree      : 0
+Sel. Index   : 100
+
+Name         : Recklessness
+Entry        : 112281
+Node         : 90412
+Definition   : 117286
+Tree         : spec (2)
+Class        : warrior
+Spec         : fury (72)
+Column       : 4
+Row          : 7
+Req. Points  : 8
+Max Rank     : 1
+Spell        : 1719
+Subtree      : 0
+Sel. Index   : 100
+
+Name         : Bladestorm
+Entry        : 112284
+Node         : 90415
+Definition   : 117289
+Tree         : spec (2)
+Class        : warrior
+Spec         : fury (72)
+Column       : 6
+Row          : 10
+Req. Points  : 20
+Max Rank     : 1
+Spell        : 227847
+Subtree      : 0
+Sel. Index   : 200
+
+Name         : Avatar
+Entry        : 112285
+Node         : 90415
+Definition   : 117290
+Tree         : spec (2)
+Class        : warrior
+Spec         : fury (72)
+Column       : 6
+Row          : 10
+Req. Points  : 20
+Max Rank     : 1
+Spell        : 107574
+Subtree      : 0
+Sel. Index   : 100
+
+Name         : Deft Experience
+Entry        : 112292
+Node         : 90421
+Definition   : 117297
+Tree         : spec (2)
+Class        : warrior
+Spec         : fury (72)
+Column       : 2
+Row          : 8
+Req. Points  : 20
+Max Rank     : 2
+Spell        : 383295
+Subtree      : 0
+Sel. Index   : 100
+
+Name         : Critical Thinking
+Entry        : 112296
+Node         : 90425
+Definition   : 117301
+Tree         : spec (2)
+Class        : warrior
+Spec         : fury (72)
+Column       : 6
+Row          : 8
+Req. Points  : 20
+Max Rank     : 2
+Spell        : 383297
+Subtree      : 0
+Sel. Index   : 100
+
+Name         : Improved Whirlwind
+Entry        : 112298
+Node         : 90427
+Definition   : 117303
+Tree         : spec (2)
+Class        : warrior
+Spec         : fury (72)
+Column       : 7
+Row          : 4
+Req. Points  : 0
+Max Rank     : 1
+Spell        : 12950
+Subtree      : 0
+Sel. Index   : 100
+
+Name         : Cruelty
+Entry        : 112299
+Node         : 90428
+Definition   : 117304
+Tree         : spec (2)
+Class        : warrior
+Spec         : fury (72)
+Column       : 6
+Row          : 6
+Req. Points  : 8
+Max Rank     : 2
+Spell        : 392931
+Subtree      : 0
+Sel. Index   : 100
+
+Name         : Improved Execute
+Entry        : 112300
+Node         : 90429
+Definition   : 117305
+Tree         : spec (2)
+Class        : warrior
+Spec         : fury (72)
+Column       : 6
+Row          : 3
+Req. Points  : 0
+Max Rank     : 1
+Spell        : 316402
+Subtree      : 0
+Sel. Index   : 100
+
+Name         : Sudden Death
+Entry        : 112301
+Node         : 90430
+Definition   : 117306
+Tree         : spec (2)
+Class        : warrior
+Spec         : fury (72)
+Column       : 2
+Row          : 3
+Req. Points  : 0
+Max Rank     : 1
+Spell        : 29725
+Subtree      : 0
+Sel. Index   : 100
+
+Name         : Whirling Blade
+Entry        : 112304
+Node         : 90432
+Definition   : 117309
+Tree         : spec (2)
+Class        : warrior
+Spec         : protection (73)
+Column       : 8
+Row          : 10
+Req. Points  : 20
+Max Rank     : 1
+Spell        : 1235113
+Subtree      : 0
+Sel. Index   : 200
+
+Name         : Avatar
+Entry        : 112305
+Node         : 90433
+Definition   : 117310
+Tree         : spec (2)
+Class        : warrior
+Spec         : protection (73)
+Column       : 8
+Row          : 8
+Req. Points  : 20
+Max Rank     : 1
+Spell        : 107574
+Subtree      : 0
+Sel. Index   : 100
+
+Name         : Indomitable
+Entry        : 112306
+Node         : 90434
+Definition   : 117311
+Tree         : spec (2)
+Class        : warrior
+Spec         : protection (73)
+Column       : 5
+Row          : 9
+Req. Points  : 20
+Max Rank     : 1
+Spell        : 202095
+Subtree      : 0
+Sel. Index   : 100
+
+Name         : Battle-Scarred Veteran
+Entry        : 112307
+Node         : 90435
+Definition   : 117312
+Tree         : spec (2)
+Class        : warrior
+Spec         : protection (73)
+Column       : 5
+Row          : 10
+Req. Points  : 20
+Max Rank     : 1
+Spell        : 386394
+Subtree      : 0
+Sel. Index   : 100
+
+Name         : Bloodletting
+Entry        : 112310
+Node         : 90438
+Definition   : 117315
+Tree         : spec (2)
+Class        : warrior
+Spec         : arms (71)
+Column       : 3
+Row          : 9
+Req. Points  : 20
+Max Rank     : 1
+Spell        : 383154
+Subtree      : 0
+Sel. Index   : 0
+
+Name         : Fatality
+Entry        : 112311
+Node         : 90439
+Definition   : 117316
+Tree         : spec (2)
+Class        : warrior
+Spec         : arms (71)
+Column       : 7
+Row          : 9
+Req. Points  : 20
+Max Rank     : 1
+Spell        : 383703
+Subtree      : 0
+Sel. Index   : 300
+
+Name         : Bladestorm
+Entry        : 112314
+Node         : 90441
+Definition   : 117319
+Tree         : spec (2)
+Class        : warrior
+Spec         : arms (71)
+Column       : 4
+Row          : 8
+Req. Points  : 20
+Max Rank     : 1
+Spell        : 227847
+Subtree      : 0
+Sel. Index   : 100
+
+Name         : Critical Thinking
+Entry        : 112317
+Node         : 90444
+Definition   : 117322
+Tree         : spec (2)
+Class        : warrior
+Spec         : arms (71)
+Column       : 6
+Row          : 8
+Req. Points  : 20
+Max Rank     : 2
+Spell        : 389306
+Subtree      : 0
+Sel. Index   : 100
+
+Name         : Executioner's Precision
+Entry        : 112318
+Node         : 90445
+Definition   : 117323
+Tree         : spec (2)
+Class        : warrior
+Spec         : arms (71)
+Column       : 5
+Row          : 9
+Req. Points  : 20
+Max Rank     : 1
+Spell        : 386634
+Subtree      : 0
+Sel. Index   : 0
+
+Name         : Sharpened Blades
+Entry        : 112320
+Node         : 90447
+Definition   : 117325
+Tree         : spec (2)
+Class        : warrior
+Spec         : arms (71)
+Column       : 5
+Row          : 6
+Req. Points  : 8
+Max Rank     : 2
+Spell        : 383341
+Subtree      : 0
+Sel. Index   : 200
+
+Name         : Punish
+Entry        : 112321
+Node         : 90448
+Definition   : 117326
+Tree         : spec (2)
+Class        : warrior
+Spec         : protection (73)
+Column       : 8
+Row          : 6
+Req. Points  : 8
+Max Rank     : 1
+Spell        : 275334
+Subtree      : 0
+Sel. Index   : 100
+
+Name         : Unyielding Stance
+Entry        : 112323
+Node         : 90449
+Definition   : 117328
+Tree         : spec (2)
+Class        : warrior
+Spec         : protection (73)
+Column       : 8
+Row          : 7
+Req. Points  : 8
+Max Rank     : 1
+Spell        : 1235047
+Subtree      : 0
+Sel. Index   : 0
+
+Name         : Spellbreaker
+Entry        : 112324
+Node         : 90450
+Definition   : 117329
+Tree         : spec (2)
+Class        : warrior
+Spec         : protection (73)
+Column       : 1
+Row          : 6
+Req. Points  : 8
+Max Rank     : 1
+Spell        : 1235023
+Subtree      : 0
+Sel. Index   : 0
+
+Name         : Brutal Vitality
+Entry        : 112325
+Node         : 90451
+Definition   : 117330
+Tree         : spec (2)
+Class        : warrior
+Spec         : protection (73)
+Column       : 2
+Row          : 5
+Req. Points  : 8
+Max Rank     : 1
+Spell        : 384036
+Subtree      : 0
+Sel. Index   : 200
+
+Name         : Defensive Stance
+Entry        : 114643
+Node         : 92537
+Definition   : 119649
+Tree         : class (1)
+Class        : warrior
+Spec         : arms (71)
+Starter      : arms (71)
+Column       : 6
+Row          : 1
+Req. Points  : 0
+Max Rank     : 1
+Spell        : 386208
+Subtree      : 0
+Sel. Index   : 200
+
+Name         : Defensive Stance
+Entry        : 114644
+Node         : 92538
+Definition   : 119650
+Tree         : class (1)
+Class        : warrior
+Spec         : fury (72)
+Starter      : fury (72)
+Column       : 6
+Row          : 1
+Req. Points  : 0
+Max Rank     : 1
+Spell        : 386208
+Subtree      : 0
+Sel. Index   : 100
+
+Name         : Overpowering Finish
+Entry        : 114733
+Node         : 92614
+Definition   : 119740
+Tree         : spec (2)
+Class        : warrior
+Spec         : arms (71)
+Column       : 2
+Row          : 6
+Req. Points  : 8
+Max Rank     : 1
+Spell        : 400205
+Subtree      : 0
+Sel. Index   : 200
+
+Name         : Powerful Momentum
+Entry        : 114739
+Node         : 92536
+Definition   : 119746
+Tree         : spec (2)
+Class        : warrior
+Spec         : arms (71)
+Column       : 7
+Row          : 6
+Req. Points  : 8
+Max Rank     : 1
+Spell        : 1261050
+Subtree      : 0
+Sel. Index   : 200
+
+Name         : Master Tactician
+Entry        : 114740
+Node         : 92615
+Definition   : 119747
+Tree         : spec (2)
+Class        : warrior
+Spec         : arms (71)
+Column       : 1
+Row          : 9
+Req. Points  : 20
+Max Rank     : 1
+Spell        : 1261057
+Subtree      : 0
+Sel. Index   : 0
+
+Name         : Show No Mercy
+Entry        : 117381
+Node         : 94784
+Definition   : 122393
+Tree         : hero (3)
+Class        : warrior
+Spec         : arms (71), fury (72)
+Column       : 1
+Row          : 4
+Req. Points  : 0
+Max Rank     : 1
+Spell        : 444771
+Subtree      : 60
+Sel. Index   : 100
+
+Name         : Thunder Blast
+Entry        : 117382
+Node         : 94785
+Definition   : 122394
+Tree         : hero (3)
+Class        : warrior
+Spec         : fury (72), protection (73)
+Column       : 1
+Row          : 3
+Req. Points  : 1
+Max Rank     : 1
+Spell        : 435607
+Subtree      : 61
+Sel. Index   : 100
+
+Name         : Culling Cyclone
+Entry        : 117383
+Node         : 94786
+Definition   : 122395
+Tree         : hero (3)
+Class        : warrior
+Spec         : arms (71), fury (72)
+Column       : 2
+Row          : 3
+Req. Points  : 0
+Max Rank     : 1
+Spell        : 444778
+Subtree      : 60
+Sel. Index   : 100
+
+Name         : Fierce Followthrough
+Entry        : 117384
+Node         : 94787
+Definition   : 122396
+Tree         : hero (3)
+Class        : warrior
+Spec         : arms (71), fury (72)
+Column       : 4
+Row          : 3
+Req. Points  : 0
+Max Rank     : 1
+Spell        : 444773
+Subtree      : 60
+Sel. Index   : 100
+
+Name         : Imminent Demise
+Entry        : 117385
+Node         : 94788
+Definition   : 122397
+Tree         : hero (3)
+Class        : warrior
+Spec         : arms (71), fury (72)
+Column       : 1
+Row          : 2
+Req. Points  : 0
+Max Rank     : 1
+Spell        : 444769
+Subtree      : 60
+Sel. Index   : 100
+
+Name         : Boneshaker
+Entry        : 117386
+Node         : 94789
+Definition   : 122398
+Tree         : hero (3)
+Class        : warrior
+Spec         : arms (71), protection (73)
+Column       : 4
+Row          : 2
+Req. Points  : 1
+Max Rank     : 1
+Spell        : 429639
+Subtree      : 62
+Sel. Index   : 100
+
+Name         : Gathering Clouds
+Entry        : 117389
+Node         : 94792
+Definition   : 122401
+Tree         : hero (3)
+Class        : warrior
+Spec         : fury (72), protection (73)
+Column       : 2
+Row          : 4
+Req. Points  : 0
+Max Rank     : 1
+Spell        : 436201
+Subtree      : 61
+Sel. Index   : 100
+
+Name         : Dominance of the Colossus
+Entry        : 117390
+Node         : 94793
+Definition   : 122402
+Tree         : hero (3)
+Class        : warrior
+Spec         : arms (71), protection (73)
+Column       : 3
+Row          : 5
+Req. Points  : 0
+Max Rank     : 1
+Spell        : 429636
+Subtree      : 62
+Sel. Index   : 100
+
+Name         : Precise Might
+Entry        : 117391
+Node         : 94794
+Definition   : 122403
+Tree         : hero (3)
+Class        : warrior
+Spec         : arms (71), protection (73)
+Column       : 2
+Row          : 4
+Req. Points  : 0
+Max Rank     : 1
+Spell        : 431548
+Subtree      : 62
+Sel. Index   : 100
+
+Name         : Relentless Pursuit
+Entry        : 117392
+Node         : 94795
+Definition   : 122404
+Tree         : hero (3)
+Class        : warrior
+Spec         : arms (71), fury (72)
+Column       : 4
+Row          : 2
+Req. Points  : 0
+Max Rank     : 1
+Spell        : 444776
+Subtree      : 60
+Sel. Index   : 100
+
+Name         : Practiced Strikes
+Entry        : 117393
+Node         : 94796
+Definition   : 122405
+Tree         : hero (3)
+Class        : warrior
+Spec         : arms (71), protection (73)
+Column       : 1
+Row          : 4
+Req. Points  : 0
+Max Rank     : 1
+Spell        : 429647
+Subtree      : 62
+Sel. Index   : 100
+
+Name         : Flashing Skies
+Entry        : 117394
+Node         : 94797
+Definition   : 122406
+Tree         : hero (3)
+Class        : warrior
+Spec         : fury (72), protection (73)
+Column       : 1
+Row          : 4
+Req. Points  : 1
+Max Rank     : 1
+Spell        : 437079
+Subtree      : 61
+Sel. Index   : 100
+
+Name         : Keep Your Feet on the Ground
+Entry        : 117395
+Node         : 94798
+Definition   : 122407
+Tree         : hero (3)
+Class        : warrior
+Spec         : fury (72), protection (73)
+Column       : 4
+Row          : 3
+Req. Points  : 0
+Max Rank     : 1
+Spell        : 438590
+Subtree      : 61
+Sel. Index   : 100
+
+Name         : One Against Many
+Entry        : 117396
+Node         : 94799
+Definition   : 122408
+Tree         : hero (3)
+Class        : warrior
+Spec         : arms (71), protection (73)
+Column       : 1
+Row          : 3
+Req. Points  : 0
+Max Rank     : 1
+Spell        : 429637
+Subtree      : 62
+Sel. Index   : 100
+
+Name         : Ground Current
+Entry        : 117397
+Node         : 94800
+Definition   : 122409
+Tree         : hero (3)
+Class        : warrior
+Spec         : fury (72), protection (73)
+Column       : 2
+Row          : 2
+Req. Points  : 0
+Max Rank     : 1
+Spell        : 436148
+Subtree      : 61
+Sel. Index   : 100
+
+Name         : Slayer's Malice
+Entry        : 117398
+Node         : 94801
+Definition   : 122410
+Tree         : hero (3)
+Class        : warrior
+Spec         : arms (71), fury (72)
+Column       : 4
+Row          : 4
+Req. Points  : 0
+Max Rank     : 1
+Spell        : 444779
+Subtree      : 60
+Sel. Index   : 100
+
+Name         : Lightning Strikes
+Entry        : 117400
+Node         : 94803
+Definition   : 122412
+Tree         : hero (3)
+Class        : warrior
+Spec         : fury (72), protection (73)
+Starter      : fury (72), protection (73)
+Column       : 3
+Row          : 1
+Req. Points  : 0
+Max Rank     : 1
+Spell        : 434969
+Subtree      : 61
+Sel. Index   : 100
+
+Name         : Avatar of the Storm
+Entry        : 117402
+Node         : 94805
+Definition   : 122414
+Tree         : hero (3)
+Class        : warrior
+Spec         : fury (72), protection (73)
+Column       : 3
+Row          : 5
+Req. Points  : 0
+Max Rank     : 1
+Spell        : 437134
+Subtree      : 61
+Sel. Index   : 100
+
+Name         : Mountain of Muscle and Scars
+Entry        : 117403
+Node         : 94806
+Definition   : 122415
+Tree         : hero (3)
+Class        : warrior
+Spec         : arms (71), protection (73)
+Column       : 4
+Row          : 4
+Req. Points  : 0
+Max Rank     : 1
+Spell        : 429642
+Subtree      : 62
+Sel. Index   : 100
+
+Name         : Burst of Power
+Entry        : 117404
+Node         : 94807
+Definition   : 122416
+Tree         : hero (3)
+Class        : warrior
+Spec         : fury (72), protection (73)
+Column       : 4
+Row          : 4
+Req. Points  : 0
+Max Rank     : 1
+Spell        : 437118
+Subtree      : 61
+Sel. Index   : 100
+
+Name         : Strength of the Mountain
+Entry        : 117405
+Node         : 94808
+Definition   : 122417
+Tree         : hero (3)
+Class        : warrior
+Spec         : fury (72), protection (73)
+Column       : 4
+Row          : 2
+Req. Points  : 0
+Max Rank     : 1
+Spell        : 437068
+Subtree      : 61
+Sel. Index   : 100
+
+Name         : Reap the Storm
+Entry        : 117406
+Node         : 94809
+Definition   : 122418
+Tree         : hero (3)
+Class        : warrior
+Spec         : arms (71), fury (72)
+Column       : 2
+Row          : 4
+Req. Points  : 0
+Max Rank     : 1
+Spell        : 444775
+Subtree      : 60
+Sel. Index   : 100
+
+Name         : Overwhelming Blades
+Entry        : 117407
+Node         : 94810
+Definition   : 122419
+Tree         : hero (3)
+Class        : warrior
+Spec         : arms (71), fury (72)
+Column       : 2
+Row          : 2
+Req. Points  : 0
+Max Rank     : 1
+Spell        : 444772
+Subtree      : 60
+Sel. Index   : 100
+
+Name         : Tide of Battle
+Entry        : 117408
+Node         : 94811
+Definition   : 122420
+Tree         : hero (3)
+Class        : warrior
+Spec         : arms (71), protection (73)
+Column       : 2
+Row          : 3
+Req. Points  : 0
+Max Rank     : 1
+Spell        : 429641
+Subtree      : 62
+Sel. Index   : 100
+
+Name         : Martial Expert
+Entry        : 117409
+Node         : 94812
+Definition   : 122421
+Tree         : hero (3)
+Class        : warrior
+Spec         : arms (71), protection (73)
+Column       : 1
+Row          : 2
+Req. Points  : 0
+Max Rank     : 1
+Spell        : 429638
+Subtree      : 62
+Sel. Index   : 100
+
+Name         : Death Drive
+Entry        : 117410
+Node         : 94813
+Definition   : 122422
+Tree         : hero (3)
+Class        : warrior
+Spec         : arms (71), fury (72)
+Column       : 1
+Row          : 3
+Req. Points  : 0
+Max Rank     : 1
+Spell        : 444770
+Subtree      : 60
+Sel. Index   : 100
+
+Name         : Slayer's Dominance
+Entry        : 117411
+Node         : 94814
+Definition   : 122423
+Tree         : hero (3)
+Class        : warrior
+Spec         : arms (71), fury (72)
+Starter      : arms (71), fury (72)
+Column       : 3
+Row          : 1
+Req. Points  : 0
+Max Rank     : 1
+Spell        : 444767
+Subtree      : 60
+Sel. Index   : 100
+
+Name         : No Stranger to Pain
+Entry        : 117412
+Node         : 94815
+Definition   : 122424
+Tree         : hero (3)
+Class        : warrior
+Spec         : arms (71), protection (73)
+Column       : 4
+Row          : 3
+Req. Points  : 0
+Max Rank     : 1
+Spell        : 429644
+Subtree      : 62
+Sel. Index   : 100
+
+Name         : Crashing Thunder
+Entry        : 117413
+Node         : 94816
+Definition   : 122425
+Tree         : hero (3)
+Class        : warrior
+Spec         : fury (72), protection (73)
+Column       : 1
+Row          : 2
+Req. Points  : 1
+Max Rank     : 1
+Spell        : 436707
+Subtree      : 61
+Sel. Index   : 100
+
+Name         : Storm Bolts
+Entry        : 117414
+Node         : 94817
+Definition   : 122426
+Tree         : hero (3)
+Class        : warrior
+Spec         : fury (72), protection (73)
+Column       : 2
+Row          : 3
+Req. Points  : 0
+Max Rank     : 1
+Spell        : 436162
+Subtree      : 61
+Sel. Index   : 100
+
+Name         : Demolish
+Entry        : 117415
+Node         : 94818
+Definition   : 122427
+Tree         : hero (3)
+Class        : warrior
+Spec         : arms (71), protection (73)
+Starter      : arms (71), protection (73)
+Column       : 3
+Row          : 1
+Req. Points  : 0
+Max Rank     : 1
+Spell        : 436358
+Subtree      : 62
+Sel. Index   : 100
+
+Name         : Colossal Might
+Entry        : 117416
+Node         : 94819
+Definition   : 122428
+Tree         : hero (3)
+Class        : warrior
+Spec         : arms (71), protection (73)
+Column       : 2
+Row          : 2
+Req. Points  : 0
+Max Rank     : 1
+Spell        : 429634
+Subtree      : 62
+Sel. Index   : 100
+
+Name         : Unrelenting Onslaught
+Entry        : 117417
+Node         : 94820
+Definition   : 122429
+Tree         : hero (3)
+Class        : warrior
+Spec         : arms (71), fury (72)
+Column       : 3
+Row          : 5
+Req. Points  : 0
+Max Rank     : 1
+Spell        : 444780
+Subtree      : 60
+Sel. Index   : 100
+
+Name         : Snap Induction
+Entry        : 118833
+Node         : 94797
+Definition   : 123733
+Tree         : hero (3)
+Class        : warrior
+Spec         : fury (72), protection (73)
+Column       : 1
+Row          : 4
+Req. Points  : 1
+Max Rank     : 1
+Spell        : 456270
+Subtree      : 61
+Sel. Index   : 200
+
+Name         : Thorim's Might
+Entry        : 118834
+Node         : 94792
+Definition   : 123734
+Tree         : hero (3)
+Class        : warrior
+Spec         : fury (72), protection (73)
+Column       : 2
+Row          : 4
+Req. Points  : 0
+Max Rank     : 1
+Spell        : 436152
+Subtree      : 61
+Sel. Index   : 200
+
+Name         : Storm Shield
+Entry        : 118835
+Node         : 94817
+Definition   : 123735
+Tree         : hero (3)
+Class        : warrior
+Spec         : fury (72), protection (73)
+Column       : 2
+Row          : 3
+Req. Points  : 0
+Max Rank     : 1
+Spell        : 438597
+Subtree      : 61
+Sel. Index   : 200
+
+Name         : Steadfast as the Peaks
+Entry        : 118836
+Node         : 94798
+Definition   : 123736
+Tree         : hero (3)
+Class        : warrior
+Spec         : fury (72), protection (73)
+Column       : 4
+Row          : 3
+Req. Points  : 0
+Max Rank     : 1
+Spell        : 434970
+Subtree      : 61
+Sel. Index   : 200
+
+Name         : Honed Reflexes
+Entry        : 118850
+Node         : 95956
+Definition   : 123750
+Tree         : class (1)
+Class        : warrior
+Column       : 7
+Row          : 6
+Req. Points  : 8
+Max Rank     : 1
+Spell        : 391271
+Subtree      : 0
+Sel. Index   : 100
+
+Name         : Crackling Thunder
+Entry        : 118853
+Node         : 95959
+Definition   : 123753
+Tree         : class (1)
+Class        : warrior
+Column       : 5
+Row          : 3
+Req. Points  : 0
+Max Rank     : 1
+Spell        : 203201
+Subtree      : 0
+Sel. Index   : 100
+
+Name         : Powerful Enrage
+Entry        : 119112
+Node         : 90398
+Definition   : 124012
+Tree         : spec (2)
+Class        : warrior
+Spec         : fury (72)
+Column       : 4
+Row          : 3
+Req. Points  : 0
+Max Rank     : 1
+Spell        : 440277
+Subtree      : 0
+Sel. Index   : 200
+
+Name         : Reckless Abandon
+Entry        : 119139
+Node         : 90388
+Definition   : 124039
+Tree         : spec (2)
+Class        : warrior
+Spec         : fury (72)
+Column       : 4
+Row          : 10
+Req. Points  : 20
+Max Rank     : 1
+Spell        : 396749
+Subtree      : 0
+Sel. Index   : 100
+
+Name         : Arterial Bleed
+Entry        : 119856
+Node         : 94799
+Definition   : 124756
+Tree         : hero (3)
+Class        : warrior
+Spec         : arms (71), protection (73)
+Column       : 1
+Row          : 3
+Req. Points  : 0
+Max Rank     : 1
+Spell        : 440995
+Subtree      : 62
+Sel. Index   : 200
+
+Name         : Veteran Vitality
+Entry        : 119857
+Node         : 94815
+Definition   : 124757
+Tree         : hero (3)
+Class        : warrior
+Spec         : arms (71), protection (73)
+Column       : 4
+Row          : 3
+Req. Points  : 0
+Max Rank     : 1
+Spell        : 440993
+Subtree      : 62
+Sel. Index   : 200
+
+Name         : Earthquaker
+Entry        : 119858
+Node         : 94789
+Definition   : 124758
+Tree         : hero (3)
+Class        : warrior
+Spec         : arms (71), protection (73)
+Column       : 4
+Row          : 2
+Req. Points  : 1
+Max Rank     : 1
+Spell        : 440992
+Subtree      : 62
+Sel. Index   : 200
+
+Name         : 0
+Entry        : 123388
+Node         : 99851
+Definition   : 0
+Tree         : selection (4)
+Class        : warrior
+Spec         : protection (73)
+Column       : 1
+Row          : 1
+Req. Points  : 0
+Max Rank     : 1
+Spell        : 0
+Subtree      : 61
+Sel. Index   : 200
+
+Name         : 0
+Entry        : 123389
+Node         : 99852
+Definition   : 0
+Tree         : selection (4)
+Class        : warrior
+Spec         : fury (72)
+Column       : 2
+Row          : 1
+Req. Points  : 0
+Max Rank     : 1
+Spell        : 0
+Subtree      : 60
+Sel. Index   : 200
+
+Name         : 0
+Entry        : 123390
+Node         : 99853
+Definition   : 0
+Tree         : selection (4)
+Class        : warrior
+Spec         : arms (71)
+Column       : 1
+Row          : 1
+Req. Points  : 0
+Max Rank     : 1
+Spell        : 0
+Subtree      : 60
+Sel. Index   : 200
+
+Name         : 0
+Entry        : 123391
+Node         : 99851
+Definition   : 0
+Tree         : selection (4)
+Class        : warrior
+Spec         : protection (73)
+Column       : 1
+Row          : 1
+Req. Points  : 0
+Max Rank     : 1
+Spell        : 0
+Subtree      : 62
+Sel. Index   : 100
+
+Name         : 0
+Entry        : 123392
+Node         : 99852
+Definition   : 0
+Tree         : selection (4)
+Class        : warrior
+Spec         : fury (72)
+Column       : 2
+Row          : 1
+Req. Points  : 0
+Max Rank     : 1
+Spell        : 0
+Subtree      : 61
+Sel. Index   : 100
+
+Name         : 0
+Entry        : 123393
+Node         : 99853
+Definition   : 0
+Tree         : selection (4)
+Class        : warrior
+Spec         : arms (71)
+Column       : 1
+Row          : 1
+Req. Points  : 0
+Max Rank     : 1
+Spell        : 0
+Subtree      : 62
+Sel. Index   : 100
+
+Name         : Vicious Agility
+Entry        : 123408
+Node         : 94795
+Definition   : 128246
+Tree         : hero (3)
+Class        : warrior
+Spec         : arms (71), fury (72)
+Column       : 4
+Row          : 2
+Req. Points  : 0
+Max Rank     : 1
+Spell        : 444777
+Subtree      : 60
+Sel. Index   : 200
+
+Name         : Brutal Finish
+Entry        : 123409
+Node         : 94786
+Definition   : 128247
+Tree         : hero (3)
+Class        : warrior
+Spec         : arms (71), fury (72)
+Column       : 2
+Row          : 3
+Req. Points  : 0
+Max Rank     : 1
+Spell        : 446085
+Subtree      : 60
+Sel. Index   : 200
+
+Name         : Opportunist
+Entry        : 123770
+Node         : 94787
+Definition   : 128608
+Tree         : hero (3)
+Class        : warrior
+Spec         : arms (71), fury (72)
+Column       : 4
+Row          : 3
+Req. Points  : 0
+Max Rank     : 1
+Spell        : 444774
+Subtree      : 60
+Sel. Index   : 200
+
+Name         : Massacre
+Entry        : 132878
+Node         : 107575
+Definition   : 137664
+Tree         : spec (2)
+Class        : warrior
+Spec         : protection (73)
+Column       : 1
+Row          : 9
+Req. Points  : 20
+Max Rank     : 1
+Spell        : 281001
+Subtree      : 0
+Sel. Index   : 100
+
+Name         : Last Stand
+Entry        : 132879
+Node         : 107576
+Definition   : 137665
+Tree         : spec (2)
+Class        : warrior
+Spec         : protection (73)
+Column       : 5
+Row          : 6
+Req. Points  : 8
+Max Rank     : 1
+Spell        : 1243659
+Subtree      : 0
+Sel. Index   : 100
+
+Name         : Ravager
+Entry        : 132880
+Node         : 90432
+Definition   : 137666
+Tree         : spec (2)
+Class        : warrior
+Spec         : protection (73)
+Column       : 8
+Row          : 10
+Req. Points  : 20
+Max Rank     : 1
+Spell        : 228920
+Subtree      : 0
+Sel. Index   : 300
+
+Name         : Impenetrable Wall
+Entry        : 132881
+Node         : 90318
+Definition   : 137667
+Tree         : spec (2)
+Class        : warrior
+Spec         : protection (73)
+Column       : 3
+Row          : 6
+Req. Points  : 8
+Max Rank     : 1
+Spell        : 384072
+Subtree      : 0
+Sel. Index   : 200
+
+Name         : Enduring Alacrity
+Entry        : 132882
+Node         : 107577
+Definition   : 137668
+Tree         : spec (2)
+Class        : warrior
+Spec         : protection (73)
+Column       : 7
+Row          : 8
+Req. Points  : 20
+Max Rank     : 1
+Spell        : 384063
+Subtree      : 0
+Sel. Index   : 100
+
+Name         : Focused Vigor
+Entry        : 132883
+Node         : 107578
+Definition   : 137669
+Tree         : spec (2)
+Class        : warrior
+Spec         : protection (73)
+Column       : 3
+Row          : 8
+Req. Points  : 20
+Max Rank     : 1
+Spell        : 384067
+Subtree      : 0
+Sel. Index   : 100
+
+Name         : Sudden Death
+Entry        : 132884
+Node         : 90264
+Definition   : 137670
+Tree         : spec (2)
+Class        : warrior
+Spec         : protection (73)
+Column       : 7
+Row          : 6
+Req. Points  : 8
+Max Rank     : 1
+Spell        : 29725
+Subtree      : 0
+Sel. Index   : 300
+
+Name         : Into the Fray
+Entry        : 132885
+Node         : 90312
+Definition   : 137671
+Tree         : spec (2)
+Class        : warrior
+Spec         : protection (73)
+Column       : 2
+Row          : 8
+Req. Points  : 20
+Max Rank     : 1
+Spell        : 202603
+Subtree      : 0
+Sel. Index   : 200
+
+Name         : Disrupting Shout
+Entry        : 132886
+Node         : 107579
+Definition   : 137672
+Tree         : spec (2)
+Class        : warrior
+Spec         : protection (73)
+Column       : 3
+Row          : 4
+Req. Points  : 0
+Max Rank     : 1
+Spell        : 386071
+Replaces     : 1161
+Subtree      : 0
+Sel. Index   : 100
+
+Name         : Stance Mastery
+Entry        : 134031
+Node         : 108542
+Definition   : 138814
+Tree         : class (1)
+Class        : warrior
+Column       : 5
+Row          : 10
+Req. Points  : 23
+Max Rank     : 1
+Spell        : 1280961
+Subtree      : 0
+Sel. Index   : 100
+
+Name         : Anger Management
+Entry        : 134032
+Node         : 108543
+Definition   : 138815
+Tree         : class (1)
+Class        : warrior
+Column       : 1
+Row          : 10
+Req. Points  : 23
+Max Rank     : 1
+Spell        : 152278
+Subtree      : 0
+Sel. Index   : 100
+
+Name         : Battlefield Commander
+Entry        : 134033
+Node         : 108544
+Definition   : 138816
+Tree         : class (1)
+Class        : warrior
+Column       : 7
+Row          : 10
+Req. Points  : 23
+Max Rank     : 1
+Spell        : 424742
+Subtree      : 0
+Sel. Index   : 100
+
+Name         : Interpose
+Entry        : 134213
+Node         : 108674
+Definition   : 138991
+Tree         : class (1)
+Class        : warrior
+Spec         : fury (72)
+Column       : 7
+Row          : 4
+Req. Points  : 0
+Max Rank     : 1
+Spell        : 1244088
+Subtree      : 0
+Sel. Index   : 200
+
+Name         : Intervene
+Entry        : 134214
+Node         : 108674
+Definition   : 138992
+Tree         : class (1)
+Class        : warrior
+Spec         : fury (72)
+Column       : 7
+Row          : 4
+Req. Points  : 0
+Max Rank     : 1
+Spell        : 3411
+Subtree      : 0
+Sel. Index   : 100
+
+Name         : Interpose
+Entry        : 134216
+Node         : 108676
+Definition   : 138994
+Tree         : class (1)
+Class        : warrior
+Spec         : arms (71)
+Column       : 7
+Row          : 4
+Req. Points  : 0
+Max Rank     : 1
+Spell        : 1244088
+Subtree      : 0
+Sel. Index   : 200
+
+Name         : Intervene
+Entry        : 134217
+Node         : 108676
+Definition   : 141828
+Tree         : class (1)
+Class        : warrior
+Spec         : arms (71)
+Column       : 7
+Row          : 4
+Req. Points  : 0
+Max Rank     : 1
+Spell        : 3411
+Subtree      : 0
+Sel. Index   : 100
+
+Name         : Resonant Voice
+Entry        : 134225
+Node         : 108685
+Definition   : 139003
+Tree         : class (1)
+Class        : warrior
+Column       : 5
+Row          : 8
+Req. Points  : 23
+Max Rank     : 1
+Spell        : 1243660
+Subtree      : 0
+Sel. Index   : 100
+
+Name         : Crushing Force
+Entry        : 134226
+Node         : 108686
+Definition   : 139004
+Tree         : class (1)
+Class        : warrior
+Column       : 7
+Row          : 8
+Req. Points  : 23
+Max Rank     : 1
+Spell        : 382764
+Subtree      : 0
+Sel. Index   : 100
+
+Name         : Intimidating Shout
+Entry        : 134254
+Node         : 108705
+Definition   : 139027
+Tree         : class (1)
+Class        : warrior
+Column       : 5
+Row          : 6
+Req. Points  : 8
+Max Rank     : 1
+Spell        : 5246
+Subtree      : 0
+Sel. Index   : 100
+
+Name         : Rend
+Entry        : 135597
+Node         : 109391
+Definition   : 140353
+Tree         : class (1)
+Class        : warrior
+Spec         : arms (71)
+Column       : 1
+Row          : 4
+Req. Points  : 0
+Max Rank     : 1
+Spell        : 772
+Subtree      : 0
+Sel. Index   : 100
+
+Name         : Fervor of Battle
+Entry        : 135932
+Node         : 90267
+Definition   : 140687
+Tree         : spec (2)
+Class        : warrior
+Spec         : arms (71)
+Column       : 6
+Row          : 4
+Req. Points  : 0
+Max Rank     : 1
+Spell        : 202316
+Subtree      : 0
+Sel. Index   : 100
+
+Name         : Battlelord
+Entry        : 135933
+Node         : 109679
+Definition   : 140688
+Tree         : spec (2)
+Class        : warrior
+Spec         : arms (71)
+Column       : 2
+Row          : 10
+Req. Points  : 20
+Max Rank     : 1
+Spell        : 386630
+Subtree      : 0
+Sel. Index   : 100
+
+Name         : Martial Prowess
+Entry        : 135934
+Node         : 109680
+Definition   : 140689
+Tree         : spec (2)
+Class        : warrior
+Spec         : arms (71)
+Column       : 1
+Row          : 7
+Req. Points  : 8
+Max Rank     : 1
+Spell        : 1273062
+Subtree      : 0
+Sel. Index   : 100
+
+Name         : Efficiency
+Entry        : 135935
+Node         : 109681
+Definition   : 140690
+Tree         : spec (2)
+Class        : warrior
+Spec         : arms (71)
+Column       : 1
+Row          : 6
+Req. Points  : 8
+Max Rank     : 1
+Spell        : 1261047
+Subtree      : 0
+Sel. Index   : 200
+
+Name         : Brute Force
+Entry        : 135936
+Node         : 109681
+Definition   : 140691
+Tree         : spec (2)
+Class        : warrior
+Spec         : arms (71)
+Column       : 1
+Row          : 6
+Req. Points  : 8
+Max Rank     : 1
+Spell        : 1261046
+Subtree      : 0
+Sel. Index   : 100
+
+Name         : Collateral Damage
+Entry        : 135937
+Node         : 109682
+Definition   : 140692
+Tree         : spec (2)
+Class        : warrior
+Spec         : arms (71)
+Column       : 6
+Row          : 7
+Req. Points  : 8
+Max Rank     : 1
+Spell        : 334779
+Subtree      : 0
+Sel. Index   : 100
+
+Name         : Crushing Combo
+Entry        : 135938
+Node         : 109683
+Definition   : 140693
+Tree         : spec (2)
+Class        : warrior
+Spec         : arms (71)
+Column       : 4
+Row          : 7
+Req. Points  : 8
+Max Rank     : 1
+Spell        : 1261056
+Subtree      : 0
+Sel. Index   : 200
+
+Name         : Tactical Edge
+Entry        : 135939
+Node         : 109683
+Definition   : 140694
+Tree         : spec (2)
+Class        : warrior
+Spec         : arms (71)
+Column       : 4
+Row          : 7
+Req. Points  : 8
+Max Rank     : 1
+Spell        : 1261051
+Subtree      : 0
+Sel. Index   : 100
+
+Name         : Deep Wounds
+Entry        : 135940
+Node         : 109684
+Definition   : 140695
+Tree         : spec (2)
+Class        : warrior
+Spec         : arms (71)
+Column       : 3
+Row          : 7
+Req. Points  : 8
+Max Rank     : 1
+Spell        : 1261060
+Subtree      : 0
+Sel. Index   : 100
+
+Name         : Mortal Wounds
+Entry        : 135941
+Node         : 109685
+Definition   : 140696
+Tree         : spec (2)
+Class        : warrior
+Spec         : arms (71)
+Column       : 4
+Row          : 10
+Req. Points  : 20
+Max Rank     : 1
+Spell        : 1261062
+Subtree      : 0
+Sel. Index   : 100
+
+Name         : Broad Strokes
+Entry        : 135942
+Node         : 109686
+Definition   : 140697
+Tree         : spec (2)
+Class        : warrior
+Spec         : arms (71)
+Column       : 4
+Row          : 6
+Req. Points  : 8
+Max Rank     : 1
+Spell        : 1261049
+Subtree      : 0
+Sel. Index   : 200
+
+Name         : Just Warming Up
+Entry        : 135943
+Node         : 109686
+Definition   : 140698
+Tree         : spec (2)
+Class        : warrior
+Spec         : arms (71)
+Column       : 4
+Row          : 6
+Req. Points  : 8
+Max Rank     : 1
+Spell        : 1261048
+Subtree      : 0
+Sel. Index   : 100
+
+Name         : Strength of Arms
+Entry        : 135944
+Node         : 109687
+Definition   : 140699
+Tree         : spec (2)
+Class        : warrior
+Spec         : arms (71)
+Column       : 3
+Row          : 6
+Req. Points  : 8
+Max Rank     : 2
+Spell        : 400803
+Subtree      : 0
+Sel. Index   : 100
+
+Name         : Capacitance
+Entry        : 136068
+Node         : 109809
+Definition   : 140823
+Tree         : hero (3)
+Class        : warrior
+Spec         : fury (72), protection (73)
+Column       : 5
+Row          : 4
+Req. Points  : 0
+Max Rank     : 1
+Spell        : 1270724
+Subtree      : 61
+Sel. Index   : 100
+
+Name         : Conductivity
+Entry        : 136069
+Node         : 109810
+Definition   : 140824
+Tree         : hero (3)
+Class        : warrior
+Spec         : fury (72), protection (73)
+Column       : 5
+Row          : 3
+Req. Points  : 0
+Max Rank     : 1
+Spell        : 1270723
+Subtree      : 61
+Sel. Index   : 100
+
+Name         : Storm Surge
+Entry        : 136070
+Node         : 109811
+Definition   : 140825
+Tree         : hero (3)
+Class        : warrior
+Spec         : fury (72), protection (73)
+Column       : 5
+Row          : 2
+Req. Points  : 0
+Max Rank     : 1
+Spell        : 275336
+Subtree      : 61
+Sel. Index   : 100
+
+Name         : Celeritous Conclusion
+Entry        : 136071
+Node         : 109812
+Definition   : 140826
+Tree         : hero (3)
+Class        : warrior
+Spec         : arms (71), protection (73)
+Column       : 5
+Row          : 4
+Req. Points  : 0
+Max Rank     : 1
+Spell        : 1270710
+Subtree      : 62
+Sel. Index   : 100
+
+Name         : Cut to the Bone
+Entry        : 136072
+Node         : 109813
+Definition   : 140827
+Tree         : hero (3)
+Class        : warrior
+Spec         : arms (71), protection (73)
+Column       : 5
+Row          : 3
+Req. Points  : 0
+Max Rank     : 1
+Spell        : 1270709
+Subtree      : 62
+Sel. Index   : 100
+
+Name         : Decimator
+Entry        : 136073
+Node         : 109814
+Definition   : 140828
+Tree         : hero (3)
+Class        : warrior
+Spec         : arms (71), protection (73)
+Column       : 5
+Row          : 2
+Req. Points  : 0
+Max Rank     : 1
+Spell        : 1270704
+Subtree      : 62
+Sel. Index   : 100
+
+Name         : Unhinged
+Entry        : 136074
+Node         : 109815
+Definition   : 140829
+Tree         : hero (3)
+Class        : warrior
+Spec         : arms (71), fury (72)
+Column       : 5
+Row          : 4
+Req. Points  : 0
+Max Rank     : 1
+Spell        : 386628
+Subtree      : 60
+Sel. Index   : 100
+
+Name         : Deadly Focus
+Entry        : 136075
+Node         : 109816
+Definition   : 140830
+Tree         : hero (3)
+Class        : warrior
+Spec         : arms (71), fury (72)
+Column       : 5
+Row          : 3
+Req. Points  : 0
+Max Rank     : 1
+Spell        : 1270718
+Subtree      : 60
+Sel. Index   : 100
+
+Name         : Violent Euphoria
+Entry        : 136076
+Node         : 109817
+Definition   : 140831
+Tree         : hero (3)
+Class        : warrior
+Spec         : arms (71), fury (72)
+Column       : 5
+Row          : 2
+Req. Points  : 0
+Max Rank     : 1
+Spell        : 1270717
+Subtree      : 60
+Sel. Index   : 100
+
+Name         : Ragedrinker
+Entry        : 136447
+Node         : 109962
+Definition   : 141220
+Tree         : spec (2)
+Class        : warrior
+Spec         : fury (72)
+Column       : 3
+Row          : 7
+Req. Points  : 8
+Max Rank     : 1
+Spell        : 1265356
+Subtree      : 0
+Sel. Index   : 100
+
+Name         : Vicious Contempt
+Entry        : 136448
+Node         : 109963
+Definition   : 141221
+Tree         : spec (2)
+Class        : warrior
+Spec         : fury (72)
+Column       : 1
+Row          : 9
+Req. Points  : 20
+Max Rank     : 1
+Spell        : 383885
+Subtree      : 0
+Sel. Index   : 100
+
+Name         : Surge of Adrenaline
+Entry        : 136449
+Node         : 109964
+Definition   : 141222
+Tree         : spec (2)
+Class        : warrior
+Spec         : fury (72)
+Column       : 7
+Row          : 9
+Req. Points  : 20
+Max Rank     : 1
+Spell        : 1265359
+Subtree      : 0
+Sel. Index   : 100
+
+Name         : Kill or Be Killed
+Entry        : 136450
+Node         : 109965
+Definition   : 141223
+Tree         : spec (2)
+Class        : warrior
+Spec         : fury (72)
+Column       : 4
+Row          : 6
+Req. Points  : 8
+Max Rank     : 1
+Spell        : 1265361
+Subtree      : 0
+Sel. Index   : 100
+
+Name         : Deep Wounds
+Entry        : 136451
+Node         : 109966
+Definition   : 141224
+Tree         : spec (2)
+Class        : warrior
+Spec         : fury (72)
+Column       : 1
+Row          : 6
+Req. Points  : 8
+Max Rank     : 1
+Spell        : 1261060
+Subtree      : 0
+Sel. Index   : 100
+
+Name         : Meat Cleaver
+Entry        : 136452
+Node         : 109967
+Definition   : 141225
+Tree         : spec (2)
+Class        : warrior
+Spec         : fury (72)
+Column       : 7
+Row          : 6
+Req. Points  : 8
+Max Rank     : 1
+Spell        : 280392
+Subtree      : 0
+Sel. Index   : 100
+
+Name         : Executioner's Wrath
+Entry        : 136453
+Node         : 109968
+Definition   : 141226
+Tree         : spec (2)
+Class        : warrior
+Spec         : fury (72)
+Column       : 2
+Row          : 10
+Req. Points  : 20
+Max Rank     : 1
+Spell        : 1265570
+Subtree      : 0
+Sel. Index   : 100
+
+Name         : Scent of Blood
+Entry        : 136454
+Node         : 109969
+Definition   : 141227
+Tree         : spec (2)
+Class        : warrior
+Spec         : fury (72)
+Column       : 3
+Row          : 6
+Req. Points  : 8
+Max Rank     : 1
+Spell        : 1265355
+Subtree      : 0
+Sel. Index   : 100
+
+Name         : Javelineer
+Entry        : 136625
+Node         : 110118
+Definition   : 141397
+Tree         : class (1)
+Class        : warrior
+Column       : 3
+Row          : 8
+Req. Points  : 23
+Max Rank     : 1
+Spell        : 1271948
+Subtree      : 0
+Sel. Index   : 100
+
+Name         : Field Dressing
+Entry        : 136626
+Node         : 110119
+Definition   : 141398
+Tree         : class (1)
+Class        : warrior
+Column       : 5
+Row          : 5
+Req. Points  : 8
+Max Rank     : 1
+Spell        : 1271926
+Subtree      : 0
+Sel. Index   : 100
+
+Name         : Piercing Howl
+Entry        : 136627
+Node         : 108705
+Definition   : 141399
+Tree         : class (1)
+Class        : warrior
+Column       : 5
+Row          : 6
+Req. Points  : 8
+Max Rank     : 1
+Spell        : 12323
+Subtree      : 0
+Sel. Index   : 200
+
+Name         : Ignore Pain
+Entry        : 136701
+Node         : 90276
+Definition   : 141473
+Tree         : spec (2)
+Class        : warrior
+Spec         : arms (71)
+Column       : 3
+Row          : 3
+Req. Points  : 0
+Max Rank     : 1
+Spell        : 1277297
+Subtree      : 0
+Sel. Index   : 200
+
+Name         : Ravager
+Entry        : 136702
+Node         : 90441
+Definition   : 141474
+Tree         : spec (2)
+Class        : warrior
+Spec         : arms (71)
+Column       : 4
+Row          : 8
+Req. Points  : 20
+Max Rank     : 1
+Spell        : 228920
+Subtree      : 0
+Sel. Index   : 200
+
+Name         : Avatar
+Entry        : 136703
+Node         : 110176
+Definition   : 141475
+Tree         : spec (2)
+Class        : warrior
+Spec         : arms (71)
+Column       : 6
+Row          : 10
+Req. Points  : 20
+Max Rank     : 1
+Spell        : 107574
+Subtree      : 0
+Sel. Index   : 100
+
+Name         : Odyn's Fury
+Entry        : 136735
+Node         : 110203
+Definition   : 141507
+Tree         : spec (2)
+Class        : warrior
+Spec         : fury (72)
+Column       : 3
+Row          : 9
+Req. Points  : 20
+Max Rank     : 1
+Spell        : 385059
+Subtree      : 0
+Sel. Index   : 100
+
+Name         : Invigorating Fury
+Entry        : 136890
+Node         : 110330
+Definition   : 141653
+Tree         : spec (2)
+Class        : warrior
+Spec         : fury (72)
+Column       : 3
+Row          : 5
+Req. Points  : 8
+Max Rank     : 1
+Spell        : 383468
+Subtree      : 0
+Sel. Index   : 100
+
+Name         : Master of Warfare
+Entry        : 136987
+Node         : 110407
+Definition   : 141750
+Tree         : spec (2)
+Class        : warrior
+Spec         : arms (71)
+Column       : 4
+Row          : 11
+Req. Points  : 20
+Max Rank     : 1
+Spell        : 1269307
+Subtree      : 0
+Sel. Index   : 300
+
+Name         : Master of Warfare
+Entry        : 136988
+Node         : 110407
+Definition   : 141751
+Tree         : spec (2)
+Class        : warrior
+Spec         : arms (71)
+Column       : 4
+Row          : 11
+Req. Points  : 20
+Max Rank     : 2
+Spell        : 1269306
+Subtree      : 0
+Sel. Index   : 200
+
+Name         : Master of Warfare
+Entry        : 136989
+Node         : 110407
+Definition   : 141752
+Tree         : spec (2)
+Class        : warrior
+Spec         : arms (71)
+Column       : 4
+Row          : 11
+Req. Points  : 20
+Max Rank     : 1
+Spell        : 1269314
+Subtree      : 0
+Sel. Index   : 100
+
+Name         : Phalanx
+Entry        : 136999
+Node         : 110411
+Definition   : 141762
+Tree         : spec (2)
+Class        : warrior
+Spec         : protection (73)
+Column       : 5
+Row          : 11
+Req. Points  : 20
+Max Rank     : 1
+Spell        : 1269313
+Subtree      : 0
+Sel. Index   : 300
+
+Name         : Phalanx
+Entry        : 137000
+Node         : 110411
+Definition   : 141763
+Tree         : spec (2)
+Class        : warrior
+Spec         : protection (73)
+Column       : 5
+Row          : 11
+Req. Points  : 20
+Max Rank     : 2
+Spell        : 1269312
+Subtree      : 0
+Sel. Index   : 200
+
+Name         : Phalanx
+Entry        : 137001
+Node         : 110411
+Definition   : 141764
+Tree         : spec (2)
+Class        : warrior
+Spec         : protection (73)
+Column       : 5
+Row          : 11
+Req. Points  : 20
+Max Rank     : 1
+Spell        : 1269311
+Subtree      : 0
+Sel. Index   : 100
+
+Name         : Rampaging Berserker
+Entry        : 137002
+Node         : 110412
+Definition   : 141765
+Tree         : spec (2)
+Class        : warrior
+Spec         : fury (72)
+Column       : 4
+Row          : 11
+Req. Points  : 20
+Max Rank     : 1
+Spell        : 1269310
+Subtree      : 0
+Sel. Index   : 300
+
+Name         : Rampaging Berserker
+Entry        : 137003
+Node         : 110412
+Definition   : 141766
+Tree         : spec (2)
+Class        : warrior
+Spec         : fury (72)
+Column       : 4
+Row          : 11
+Req. Points  : 20
+Max Rank     : 2
+Spell        : 1269309
+Subtree      : 0
+Sel. Index   : 200
+
+Name         : Rampaging Berserker
+Entry        : 137004
+Node         : 110412
+Definition   : 141767
+Tree         : spec (2)
+Class        : warrior
+Spec         : fury (72)
+Column       : 4
+Row          : 11
+Req. Points  : 20
+Max Rank     : 1
+Spell        : 1269308
+Subtree      : 0
+Sel. Index   : 100
+
+Name         : Blood and Thunder
+Entry        : 137471
+Node         : 110653
+Definition   : 142231
+Tree         : class (1)
+Class        : warrior
+Spec         : protection (73)
+Column       : 1
+Row          : 4
+Req. Points  : 0
+Max Rank     : 1
+Spell        : 384277
+Subtree      : 0
+Sel. Index   : 100
+
+Name         : Storm of Blood
+Entry        : 137472
+Node         : 110654
+Definition   : 142232
+Tree         : class (1)
+Class        : warrior
+Spec         : fury (72)
+Column       : 1
+Row          : 4
+Req. Points  : 0
+Max Rank     : 1
+Spell        : 1299025
+Subtree      : 0
+Sel. Index   : 100
+
+Name         : Mass Execution
+Entry        : 137473
+Node         : 92614
+Definition   : 142233
+Tree         : spec (2)
+Class        : warrior
+Spec         : arms (71)
+Column       : 2
+Row          : 6
+Req. Points  : 8
+Max Rank     : 1
+Spell        : 1273075
+Subtree      : 0
+Sel. Index   : 300
+
+Name         : Carving Blades
+Entry        : 137487
+Node         : 109967
+Definition   : 142247
+Tree         : spec (2)
+Class        : warrior
+Spec         : fury (72)
+Column       : 7
+Row          : 6
+Req. Points  : 8
+Max Rank     : 1
+Spell        : 1300463
+Subtree      : 0
+Sel. Index   : 200
+

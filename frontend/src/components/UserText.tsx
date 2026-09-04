@@ -1,8 +1,22 @@
 "use client";
 
 export const CODE_RE = /e[JN][A-Za-z0-9+/_=-]{200,}/;
-/** A SimulationCraft addon profile: a class line followed by key=value lines. */
-const SIMC_RE = /(?:^|\n)(?:deathknight|demonhunter|druid|evoker|hunter|mage|monk|paladin|priest|rogue|shaman|warlock|warrior)="[^"\n]*"\n[\s\S]*?\bspec=\w+[\s\S]*?(?=\n\s*\n(?![#a-z_0-9]+=)|$)/;
+/** The first line of a SimulationCraft addon profile: `<class>="<name>"`. */
+const SIMC_CLASS_LINE_RE = /(?:^|\s)((?:deathknight|demonhunter|druid|evoker|hunter|mage|monk|paladin|priest|rogue|shaman|warlock|warrior)="[^"\n]*")/;
+/** Lines a profile is made of: comments, blanks, `key=value` / `key+=value` overrides. */
+const SIMC_LINE_RE = /^\s*(?:#.*|[A-Za-z_][\w.]*\s*\+?=.*|)$/;
+
+/** The profile runs from its class line to the last line that still looks like profile text. */
+export function extractSimcProfile(text: string): string | null {
+  const start = text.match(SIMC_CLASS_LINE_RE);
+  if (!start || start.index === undefined) return null;
+  const from = start.index + start[0].indexOf(start[1]);
+  const lines = text.slice(from).split("\n");
+  let end = 1;
+  while (end < lines.length && SIMC_LINE_RE.test(lines[end])) end++;
+  const payload = lines.slice(0, end).join("\n").trim();
+  return /\bspec=\w+/.test(payload) ? payload : null;
+}
 /** A WoWSims exporter payload: one JSON object with a class. */
 const WOWSIMS_RE = /\{[\s\S]*"class"\s*:\s*"[^"]+"[\s\S]*\}/;
 
@@ -15,8 +29,8 @@ export interface BuildPayload {
 export function extractBuildPayload(text: string): BuildPayload | null {
   const pob = text.match(CODE_RE);
   if (pob) return { payload: pob[0], label: "Path of Building code attached" };
-  const simc = text.match(SIMC_RE);
-  if (simc) return { payload: simc[0].trim(), label: "SimulationCraft profile attached" };
+  const simc = extractSimcProfile(text);
+  if (simc) return { payload: simc, label: "SimulationCraft profile attached" };
   const sims = text.match(WOWSIMS_RE);
   if (sims) {
     try {

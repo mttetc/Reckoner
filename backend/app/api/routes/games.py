@@ -34,3 +34,16 @@ def tree_geometry(game: GameId, version: str) -> dict:
             detail={"code": "not_available", "message": f"{game.value} has no tree geometry"},
         )
     return fn(version)
+
+
+@router.get("/{game}/talents/{class_name}/{spec}")
+def talent_geometry(game: GameId, class_name: str, spec: str) -> dict:
+    """Talent grid of one class specialisation, from the game engine's data. 503 without engine."""
+    adapter = get_adapter(game)
+    fn = getattr(adapter, "talent_geometry", None)
+    if fn is None:
+        raise HTTPException(
+            status_code=404,
+            detail={"code": "not_available", "message": f"{game.value} has no talent grid"},
+        )
+    return fn(class_name, spec)
