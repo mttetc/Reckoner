@@ -36,6 +36,10 @@ ALLOWED_HOSTS: dict[str, HostRule] = {
         host="www.pathofexile.com",
         terms="official forum, public thread pages; robots.txt honoured",
     ),
+    "worldofwarcraft.blizzard.com": HostRule(
+        host="worldofwarcraft.blizzard.com",
+        terms="official publisher news pages (hotfixes, content update notes); robots.txt honoured",
+    ),
     "pobb.in": HostRule(
         host="pobb.in",
         # https://github.com/Dav1dde/pasteofexile#public-api — '/:id/raw' is documented as a

@@ -2,6 +2,8 @@
 
     .venv/bin/python scripts/ingest_patch_notes.py --game poe --limit 5
     .venv/bin/python scripts/ingest_patch_notes.py --game poe2 --limit 5
+    .venv/bin/python scripts/ingest_patch_notes.py --game wow --limit 5          # Blizzard news
+    .venv/bin/python scripts/ingest_patch_notes.py --game wow_classic --limit 5  # Classic sections
 
 Politeness and permissions: app/corpus/policy.py. Idempotent per thread URL.
 """
@@ -21,6 +23,8 @@ from app.knowledge.ingest import ingest_documents  # noqa: E402
 FETCHERS = {
     "poe": "app.games.poe.sources.patch_notes",
     "poe2": "app.games.poe2.sources.patch_notes",
+    "wow": "app.games.wow.sources.patch_notes",
+    "wow_classic": "app.games.wow_classic.sources.patch_notes",
 }
 
 

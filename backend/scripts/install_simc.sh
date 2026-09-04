@@ -31,7 +31,7 @@ fi
 git -C "$DEST" fetch --quiet origin "$SIMC_COMMIT"
 git -C "$DEST" checkout --quiet "$SIMC_COMMIT"
 
-cmake -S "$DEST" -B "$DEST/build" -DCMAKE_BUILD_TYPE=Release -DBUILD_GUI=OFF >/dev/null
+cmake -S "$DEST" -B "$DEST/build" -DCMAKE_BUILD_TYPE=Release -DBUILD_GUI=OFF -DSC_NO_NETWORKING=ON >/dev/null
 cmake --build "$DEST/build" --target simc -j"$(nproc 2>/dev/null || sysctl -n hw.ncpu)"
 "$DEST/build/simc" 2>/dev/null | head -1 || true
 echo "SimulationCraft built at $DEST/build/simc"
