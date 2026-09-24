@@ -340,7 +340,7 @@ calculated · PoB X     verified 2h ago      observed
 Next.js · FastAPI · PostgreSQL + pgvector · moteurs headless · cron / scripts
 ```
 
-**Pas de Redis, pas de Celery** tant que la charge réelle ne le justifie pas. Le domaine reste indépendant de tout framework IA — LangGraph, LlamaIndex ou LangChain peuvent servir ponctuellement, **jamais devenir l'architecture**.
+**Pas de Redis, pas de Celery** tant que la charge réelle ne le justifie pas. Le domaine, les outils et l'audit restent indépendants de tout framework IA. LangGraph orchestre la boucle de l'agent (ADR-013) ; il ne porte ni les faits, ni les preuves, ni le domaine.
 
 ---
 

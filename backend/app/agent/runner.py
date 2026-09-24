@@ -57,6 +57,19 @@ async def ask(
     on_event: EventHook | None = None,
 ) -> AgentAnswer:
     """``on_event`` receives step_start / step_end dicts as tools run — for live UIs."""
+    if settings.agent_engine == "graph":
+        from app.agent import graph
+
+        return await graph.ask(
+            builds,
+            knowledge,
+            question,
+            game=game,
+            code=code,
+            llm=llm,
+            max_steps=max_steps,
+            on_event=on_event,
+        )
     t0 = time.monotonic()
 
     async def emit(event: dict[str, Any]) -> None:

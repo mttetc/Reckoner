@@ -47,6 +47,8 @@ class Settings(BaseSettings):
         default=None, validation_alias="RECKONER_ANTHROPIC_API_KEY"
     )
     agent_max_steps: int = 6
+    # graph — LangGraph state machine (ADR-013, default); loop — hand-written loop (ADR-011)
+    agent_engine: str = "graph"
 
     # World of Warcraft (Retail) engine: SimulationCraft CLI. Unset → recalculation unavailable.
     simc_bin: str | None = None

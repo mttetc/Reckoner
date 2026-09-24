@@ -39,7 +39,7 @@ backend/            FastAPI · Python ≥ 3.12
   app/corpus/       ingestion policy (allowlist, robots.txt, rate limit) + pipeline (validate, dedupe, persist)
   app/db/           PostgreSQL + pgvector: models, repository (search with unknown-last ordering)
   app/knowledge/    versioned knowledge: heading-aware chunker, local embeddings (fastembed / hash), game-filtered retrieval
-  app/agent/        tool registry + evidence, LLM clients (Ollama/OpenAI-compatible, Anthropic, scripted), loop, number audit
+  app/agent/        tool registry + evidence, LLM clients (Ollama/OpenAI-compatible, Anthropic, scripted), LangGraph state machine (graph.py; hand-written loop kept behind RECKONER_AGENT_ENGINE=loop), number audit
   app/api/          /ask · /builds/analyze · /builds/recalculate · /builds · /builds/{id} · /corpus/stats · /knowledge/search · /knowledge/patches · /games
   scripts/first_light.py   SPEC § 15: decode a real code, print DPS and life with provenance
   scripts/ingest_forum.py  corpus ingestion from the official forums (policy-enforced; cron, not HTTP)
