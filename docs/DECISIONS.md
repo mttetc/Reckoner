@@ -288,3 +288,29 @@ exporter's JSON describes a character but not a simulation (no rotation, buffs, 
 - Changes are edits of the export (`talents.set`, `encounter.set`, `settings.set {path, value}`);
   baseline and variant are both simulated by the same binary. A refused export is
   `InvalidModification`, never a guess.
+
+
+## ADR-013 — Agent orchestration: LangGraph is the default engine (2026-09-24)
+
+**Context.** ADR-011 chose a hand-written loop over any agent framework. A measured spike
+(same tools, same LLM clients, same `AgentAnswer`; 136 tests green on both engines; byte-identical
+answers and latency on the three reference questions against qwen2.5:7b) showed the framework
+changes nothing in answer quality — the quality lives in the tools and the audit. The reason to
+adopt it is alignment with the ecosystem: a known convention for contributors, and access to
+checkpointing, streaming and tooling without writing them.
+
+**Decisions.**
+- `app/agent/graph.py` is the default engine (`agent_engine=graph`). Nodes: `model`, `tools`,
+  `audit`, `limit`. The `audit` node gets one correction edge: unverified numbers are sent back
+  to the model once before the answer is returned. Checkpointing is available (`thread_id`) and
+  not yet exposed by the API.
+- LangGraph orchestrates; it does not own anything. LLM clients keep the provider protocol of
+  ADR-011 (no LangChain chat model), tools return `Evidence`, the audit is ours, the domain never
+  imports the framework (`tests/unit/test_domain_isolation.py` still applies).
+- The hand-written loop stays behind `agent_engine=loop` as the reference implementation until
+  the graph has run a full release.
+- LangSmith tracing stays off (no API key); traces remain in the response, as before.
+
+**Consequences.** 17 packages added to the runtime. SPEC § 12 amended: a framework may
+orchestrate the agent as long as the domain, the tools and the audit stay framework-free.
+
