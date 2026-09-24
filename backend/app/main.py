@@ -6,6 +6,7 @@ from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
+from app.agent.memory import close_checkpointer, get_checkpointer
 from app.api.routes import ask, builds, corpus, games, knowledge, threads
 from app.config import settings
 from app.db.engine import dispose, init_db
@@ -27,7 +28,12 @@ async def lifespan(_: FastAPI) -> AsyncIterator[None]:
         await init_db()
     except Exception as exc:  # pragma: no cover — depends on the environment
         logging.getLogger("reckoner").warning("database not initialised at startup: %s", exc)
+    try:
+        await get_checkpointer()  # conversation memory tables; unreachable → answers say so
+    except Exception as exc:  # pragma: no cover — depends on the environment
+        logging.getLogger("reckoner").warning("conversation memory unavailable: %s", exc)
     yield
+    await close_checkpointer()
     await dispose()
 
 

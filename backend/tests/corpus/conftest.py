@@ -14,6 +14,7 @@ from app.db import engine as db_engine
 from app.db.models import Base
 
 TEST_URL = settings.database_url.rsplit("/", 1)[0] + "/reckoner_test"
+settings.agent_memory = "memory"  # conversation memory stays in-process; threads are per test
 
 
 def _prepare() -> bool:

@@ -95,6 +95,11 @@ class AskRequest(BaseModel):
         default=None, description="Hint; the agent still passes it to tools."
     )
     code: str | None = Field(default=None, description="Optional build code to reason about.")
+    thread_id: str | None = Field(
+        default=None,
+        max_length=128,
+        description="Conversation to continue. Omit to start one; the response returns its id.",
+    )
 
 
 class StepView(BaseModel):
@@ -134,6 +139,9 @@ class AskResponse(BaseModel):
     input_tokens: int
     output_tokens: int
     duration_ms: int
+    thread_id: str | None = Field(
+        default=None, description="Conversation id to send back with the next question."
+    )
 
 
 class CorpusStats(BaseModel):

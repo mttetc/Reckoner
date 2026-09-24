@@ -32,6 +32,7 @@ class AgentAnswer:
     input_tokens: int = 0
     output_tokens: int = 0
     duration_ms: int = 0
+    thread_id: str | None = None  # conversation resumed / started (graph engine with memory)
 
 
 def _tool_schemas() -> list[dict]:
@@ -55,8 +56,10 @@ async def ask(
     llm: LLMClient | None = None,
     max_steps: int | None = None,
     on_event: EventHook | None = None,
+    thread_id: str | None = None,
 ) -> AgentAnswer:
-    """``on_event`` receives step_start / step_end dicts as tools run — for live UIs."""
+    """``on_event`` receives step_start / step_end dicts as tools run — for live UIs.
+    ``thread_id`` resumes a conversation (graph engine; the loop has no memory and says so)."""
     if settings.agent_engine == "graph":
         from app.agent import graph
 
@@ -69,6 +72,7 @@ async def ask(
             llm=llm,
             max_steps=max_steps,
             on_event=on_event,
+            thread_id=thread_id,
         )
     t0 = time.monotonic()
 
@@ -88,6 +92,8 @@ async def ask(
         content += "\n\n[build code attached]"
     messages: list[dict] = [{"role": "user", "content": content}]
     answer = AgentAnswer(text="", model=llm.name)
+    if thread_id:
+        answer.degraded.append("conversation memory needs the graph engine; this turn stands alone")
     results_for_audit: list = []
     seen_evidence: set[str] = set()
 

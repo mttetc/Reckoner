@@ -49,6 +49,11 @@ class Settings(BaseSettings):
     agent_max_steps: int = 6
     # graph — LangGraph state machine (ADR-013, default); loop — hand-written loop (ADR-011)
     agent_engine: str = "graph"
+    # Conversation memory (graph engine): postgres — LangGraph checkpoints in the corpus database
+    # (default); memory — process-local (tests); off — every question starts a new conversation.
+    agent_memory: str = "postgres"
+    agent_memory_turns: int = 4  # turns the model sees; storage keeps the whole conversation
+    agent_memory_pool_size: int = 5
 
     # World of Warcraft (Retail) engine: SimulationCraft CLI. Unset → recalculation unavailable.
     simc_bin: str | None = None

@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import asyncio
 import json
+import uuid
 from collections.abc import AsyncIterator
 
 from fastapi import APIRouter
@@ -13,6 +14,7 @@ from app.agent.runner import AgentAnswer
 from app.agent.runner import ask as run_agent
 from app.api.deps import Builds, Feedback, Knowledge, Session
 from app.api.schemas import AskRequest, AskResponse, AuditView, FeedbackRequest, StepView
+from app.config import settings
 
 router = APIRouter(tags=["ask"])
 
@@ -41,13 +43,25 @@ def _to_response(a: AgentAnswer) -> AskResponse:
         input_tokens=a.input_tokens,
         output_tokens=a.output_tokens,
         duration_ms=a.duration_ms,
+        thread_id=a.thread_id,
     )
+
+
+def _thread(req: AskRequest) -> str | None:
+    if settings.agent_memory == "off":
+        return None
+    return req.thread_id or str(uuid.uuid4())
 
 
 @router.post("/ask", response_model=AskResponse)
 async def ask(req: AskRequest, builds: Builds, knowledge: Knowledge) -> AskResponse:
     a = await run_agent(
-        builds, knowledge, req.question, game=req.game.value if req.game else None, code=req.code
+        builds,
+        knowledge,
+        req.question,
+        game=req.game.value if req.game else None,
+        code=req.code,
+        thread_id=_thread(req),
     )
     return _to_response(a)
 
@@ -69,6 +83,7 @@ async def ask_stream(req: AskRequest, builds: Builds, knowledge: Knowledge) -> S
                 game=req.game.value if req.game else None,
                 code=req.code,
                 on_event=on_event,
+                thread_id=_thread(req),
             )
             await queue.put({"type": "done", "response": _to_response(a).model_dump(mode="json")})
         except Exception as exc:  # the stream must end with something the client can show

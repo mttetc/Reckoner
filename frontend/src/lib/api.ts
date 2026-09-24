@@ -180,6 +180,8 @@ export interface AskResponse {
   input_tokens: number;
   output_tokens: number;
   duration_ms: number;
+  /** Conversation id the backend resumed or started; sent back with the next question. */
+  thread_id: string | null;
 }
 
 export interface TreeNode {
