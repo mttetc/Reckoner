@@ -27,12 +27,18 @@ async def main() -> int:
     ap.add_argument("question")
     ap.add_argument("--game", default=None)
     ap.add_argument("--code", default=None, help="path to a file holding a build code")
+    ap.add_argument("--thread", default=None, help="conversation id to continue (memory)")
     args = ap.parse_args()
     code = Path(args.code).read_text() if args.code else None
 
     async with session_factory()() as session:
         a = await ask(
-            build_store(session), knowledge_store(session), args.question, game=args.game, code=code
+            build_store(session),
+            knowledge_store(session),
+            args.question,
+            game=args.game,
+            code=code,
+            thread_id=args.thread,
         )
     await dispose()
 
@@ -53,6 +59,8 @@ async def main() -> int:
     for d in a.degraded:
         print(f"— degraded: {d}")
     print(f"— evidence: {len(a.evidence)} item(s)")
+    if a.thread_id:
+        print(f"— thread: {a.thread_id}  (continue with --thread {a.thread_id})")
     return 0
 
 

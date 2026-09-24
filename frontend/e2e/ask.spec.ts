@@ -1,4 +1,8 @@
 import { expect, test } from "@playwright/test";
+import fs from "node:fs";
+import path from "node:path";
+
+const modern = fs.readFileSync(path.resolve(__dirname, "../../backend/tests/fixtures/pob/slayer_lightning_strike_3_27.txt"), "utf8");
 
 test.describe("conversation (assistant-ui thread; scripted policy — no model in e2e)", () => {
   test("a build question shows traceable numbers, steps and evidence", async ({ page }) => {
@@ -75,5 +79,20 @@ test.describe("conversation (assistant-ui thread; scripted policy — no model i
     await item.click();
     await expect(page.getByTestId("ask-user").first()).toContainText("Find me a Templar build");
     await expect(page.getByTestId("ask-result").last()).toContainText("Guardian");
+  });
+
+  test("the conversation remembers a pasted build: a follow-up without the code still reasons about it", async ({ page }) => {
+    await page.goto("/");
+    await page.getByTestId("ask-question").fill(`How strong is this? ${modern}`);
+    await page.getByTestId("ask-submit").click();
+    await expect(page.getByTestId("ask-result").last().getByTestId("build-card")).toBeVisible({ timeout: 30_000 });
+
+    await page.getByTestId("ask-question").fill("How strong is my build?");
+    await page.getByTestId("ask-submit").click();
+    await expect(page.getByTestId("ask-result")).toHaveCount(2, { timeout: 20_000 });
+    const second = page.getByTestId("ask-result").last();
+    // "Your build:" only comes from analysing an attached code — the one remembered from turn 1.
+    await expect(second.getByTestId("ask-answer")).toContainText("Your build: Duelist Slayer");
+    await expect(second.getByTestId("ask-audit")).toHaveClass(/ok/);
   });
 });

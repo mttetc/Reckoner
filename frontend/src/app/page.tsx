@@ -53,8 +53,12 @@ async function* sse(res: Response, signal: AbortSignal): AsyncGenerator<StepEven
   }
 }
 
-/** Everything behind one streaming adapter: live steps, then the answer, the build and the sources. */
-const adapter: ChatModelAdapter = {
+/**
+ * Everything behind one streaming adapter: live steps, then the answer, the build and the sources.
+ * `threadId` resolves the conversation's server id per call: the backend keeps the agent's memory
+ * (earlier turns, an attached build code) under that id.
+ */
+const makeAdapter = (threadId: () => Promise<string | undefined>): ChatModelAdapter => ({
   async *run({ messages, abortSignal }) {
     const last = [...messages].reverse().find((m) => m.role === "user");
     const raw = last
@@ -76,7 +80,7 @@ const adapter: ChatModelAdapter = {
       res = await fetch(`${API_URL}/api/v1/ask/stream`, {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ question, game: null, code: code ?? null }),
+        body: JSON.stringify({ question, game: null, code: code ?? null, thread_id: (await threadId()) ?? null }),
         signal: abortSignal,
       });
     } catch {
@@ -130,7 +134,7 @@ const adapter: ChatModelAdapter = {
     });
     yield { content, metadata: { custom: { suggestions: answer.suggestions } } };
   },
-};
+});
 
 /** Follow-ups come from what the tools actually returned; the empty thread gets the examples. */
 const suggestion: SuggestionAdapter = {
@@ -173,6 +177,19 @@ const ThreadProvider: FC<PropsWithChildren> = ({ children }) => {
 const threadList = makeThreadListAdapter(ThreadProvider);
 
 function useReckonerRuntime() {
+  const aui = useAui();
+  // Resolved on every call, never captured at mount (assistant-ui's remote thread list contract).
+  const adapter = useMemo(
+    () =>
+      makeAdapter(async () => {
+        try {
+          return (await aui.threadListItem().initialize()).remoteId;
+        } catch {
+          return undefined;
+        }
+      }),
+    [aui],
+  );
   return useLocalRuntime(adapter, {
     adapters: {
       attachments: new CompositeAttachmentAdapter([new SimpleTextAttachmentAdapter()]),

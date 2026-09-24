@@ -314,3 +314,24 @@ checkpointing, streaming and tooling without writing them.
 **Consequences.** 17 packages added to the runtime. SPEC § 12 amended: a framework may
 orchestrate the agent as long as the domain, the tools and the audit stay framework-free.
 
+### ADR-013 addendum — conversation memory (2026-09-24)
+
+The graph's state is checkpointed by LangGraph (`langgraph-checkpoint-postgres`, same database
+as the corpus, tables created on first use; `agent_memory=memory` in tests, `off` to disable).
+`POST /ask` takes and returns a `thread_id`; the frontend sends the conversation's server id,
+so the agent's memory and the displayed thread are the same conversation.
+
+- State is split: conversation-level fields accumulate (`messages`, turn boundaries,
+  `results_for_audit`, the attached `code` and `game`); per-turn fields are reset and reported
+  (`steps`, `evidence`, `degraded`, tokens). A build code attached earlier stays available to the
+  tools; numbers returned by tools in earlier turns stay verifiable by the audit.
+- The model sees the last `agent_memory_turns` (4) turns, cut on turn boundaries so tool_use /
+  tool_result pairs stay whole; storage keeps everything.
+- Checkpoints only deserialise our own types (`Evidence`, `Provenance`, `ToolCallRecord`, …),
+  an explicit allowlist; anything else is refused.
+- An unreachable store degrades the turn (`degraded`: memory unavailable); it never blocks it.
+- The hand-written loop has no memory and says so when given a `thread_id`.
+
+Measured with qwen2.5:7b: a second turn without the code re-analyses the remembered build;
+the prompt grows to ~12k tokens with one turn of history, hence the window.
+

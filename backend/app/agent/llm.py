@@ -204,13 +204,16 @@ class ScriptedLLM:
     name = "scripted"
 
     async def complete(self, system: str, messages: list[dict], tools: list[dict]) -> LLMResponse:
-        user = next(m for m in messages if m["role"] == "user")
-        question = (
-            user["content"] if isinstance(user["content"], str) else json.dumps(user["content"])
+        # The current turn starts at the last plain user message; earlier turns are history.
+        start = max(
+            i
+            for i, m in enumerate(messages)
+            if m["role"] == "user" and isinstance(m["content"], str)
         )
+        question = messages[start]["content"]
         game = "poe2" if re.search(r"\bpoe ?2\b|path of exile 2", question, re.I) else "poe"
         tool_results = [
-            m for m in messages if m["role"] == "user" and isinstance(m["content"], list)
+            m for m in messages[start:] if m["role"] == "user" and isinstance(m["content"], list)
         ]
         if not tool_results:
             return LLMResponse(stop_reason="tool_use", tool_calls=self._plan(question, game))
